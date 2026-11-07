@@ -1,0 +1,36 @@
+/* Exclusive to the two existing organic previews. Original images keep their
+   natural ratio; the promotional shape overlaps their lower edge. */
+.organic-preview {background:#fdf8f4}
+.organic-preview header {position:relative;background:#fdf8f4}
+.organic-preview .organic-defs {position:absolute;pointer-events:none}
+.organic-preview .au {display:grid;grid-template-columns:minmax(0,1.35fr) minmax(370px,1fr);gap:clamp(24px,3vw,48px);max-width:1680px;margin:auto;padding:32px 40px 56px;align-items:start;background:radial-gradient(ellipse at 95% 12%,#fce7da 0,transparent 40%),radial-gradient(ellipse at 70% 95%,#efe5f7 0,transparent 40%)}
+.organic-preview .af {grid-column:2;grid-row:1;min-width:0;padding:0;align-self:start}
+.organic-preview .organic-card {max-width:560px;background:#fff;border:1px solid #eee5f0;border-radius:30px;box-shadow:0 18px 55px rgba(78,40,103,.06);padding:32px clamp(24px,2.5vw,40px)}
+.organic-preview .organic-card h2 {font-size:34px;letter-spacing:-.035em}
+.organic-preview .organic-card .sub {font-size:14px;line-height:1.7}
+.organic-preview .organic-card .chip {font-size:12px}
+.organic-preview #prototype-style-13 {gap:12px;flex-wrap:wrap;font-size:12px}
+.organic-preview #prototype-style-14 {font-size:12px}
+.organic-preview .organic-art {grid-column:1;grid-row:1;position:relative;display:grid;grid-template-columns:1fr;align-items:start;align-content:start;min-width:0;min-height:0;border-radius:0;clip-path:none;overflow:visible;isolation:isolate}
+.organic-preview #v-login .organic-art,.organic-preview #v-register .organic-art {background:none}
+.organic-preview .organic-art>div {display:block;margin:0;padding:0;box-shadow:none;max-width:none;background:none}
+.organic-preview .organic-art .organic-picture {width:100%;overflow:hidden;border-radius:28px;grid-column:1;grid-row:1}
+.organic-preview .organic-picture img {display:block;width:100%;height:auto;aspect-ratio:1672/941}
+/* A shallow overlap protects the hands near the image's lower edge. The shape
+   extends over the page, not over an empty or enlarged illustration panel. */
+.organic-preview .organic-art .organic-story {grid-column:1;grid-row:2;position:relative;z-index:1;margin:-20px 0 0;padding:16px 24px 20px;background:linear-gradient(130deg,#fffdfa,#fff4ed 72%,#f5eafa);border-radius:12% 22% 16% 18% / 24% 32% 22% 30%;box-shadow:none;max-width:none}
+.organic-preview .organic-story .hw {font-size:23px}
+.organic-preview .organic-story h2 {font-size:clamp(25px,2vw,29px);line-height:1.2;margin:5px 0 9px;letter-spacing:-.03em}
+.organic-preview .organic-story ul {font-size:12px;line-height:1.5;margin:0}
+@media(max-width:1100px) {.organic-preview .au {grid-template-columns:minmax(0,1.1fr) minmax(340px,1fr);padding:24px;gap:24px}.organic-preview .organic-card {padding:28px 24px}.organic-preview .brand small {display:none}.organic-preview .organic-art .organic-story {margin-left:0;margin-right:0;padding:16px 20px 20px}.organic-preview .organic-story .hw {font-size:23px}.organic-preview .organic-story ul {font-size:12px}}
+@media(min-width:761px) and (max-width:900px) {.organic-preview .au {grid-template-columns:minmax(0,1fr) minmax(330px,1fr);padding:20px;gap:20px}.organic-preview .organic-card {padding:26px 22px}.organic-preview .organic-card h2 {font-size:29px}.organic-preview .organic-story h2 {font-size:27px}.organic-preview .r2 {grid-template-columns:1fr 1fr}}
+@media(max-width:760px) {.organic-preview .au {display:flex;flex-direction:column;padding:12px 16px 32px;gap:24px}.organic-preview .af {order:0;width:100%;padding:0}.organic-preview .organic-card {max-width:560px;margin:auto;padding:28px 24px;border-radius:26px}.organic-preview .organic-art {order:1;width:100%;min-height:0}.organic-preview .organic-picture img {height:auto}.organic-preview .organic-art .organic-story {display:block;margin:-16px 0 0;padding:16px 22px 20px}.organic-preview .organic-story h2 {font-size:26px}.organic-preview .organic-story ul {font-size:12px}.organic-preview .r2 {grid-template-columns:1fr}}
+
+/* Small spacing refinements only: unchanged content, image geometry and controls. */
+.organic-preview .organic-story li {margin:2px 0}
+.organic-preview.registro-preview .organic-card {padding-top:26px;padding-bottom:26px}
+.organic-preview.registro-preview .organic-card h2 {margin-top:12px}
+.organic-preview.registro-preview .organic-card .sub {margin-bottom:8px}
+.organic-preview.registro-preview .organic-card form label {margin-top:10px}
+.organic-preview.registro-preview .organic-card .btn {margin-top:16px}
+.organic-preview.registro-preview .organic-card .alt {margin-top:14px;margin-bottom:0}

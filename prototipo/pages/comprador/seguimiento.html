@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Seguimiento de participaciones</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../../assets/css/shared/base.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/tokens.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/componentes.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/dashboard-comprador.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/necesidades.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/participacion.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/seguimiento.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/seguimiento-presentacion.css?v=estable-3c1c3867bc47">
+<script src="../../assets/js/shared/acceso-roles.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/datos-compartidos.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/cuentas.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/utils.js?v=estable-3c1c3867bc47"></script><link rel="stylesheet" href="../../assets/css/comprador/banner.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/menu-lateral.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/app.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/tesis.css?v=estable-3c1c3867bc47">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icono-nexora-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/images/icono-nexora-64.png">
+<link rel="stylesheet" href="../../assets/css/comprador/asistente.css?v=estable-3c1c3867bc47">
+</head>
+<body data-role-access="required" data-page="seguimiento" class="tracking-preview">
+<div id="buyer-icons"></div>
+<div class="app"><div id="buyer-sidebar"></div><main class="main">
+ <div id="buyer-header"></div>
+ <section id="tracking-summary" class="tracking-summary" aria-label="Resumen de participaciones"></section>
+ <div class="tracking-filters">
+  <div class="nx-toolbar"><label class="nx-search"><span class="sr">Buscar participación</span><svg class="ic" aria-hidden="true"><use href="#search"/></svg><input id="tracking-search" type="search" placeholder="Buscar producto o proveedor…"></label></div>
+  <div class="nx-chips tracking-chiprow"><div class="nx-chips" id="tracking-status-chips" role="group" aria-label="Filtrar por estado de participación"></div><span class="tracking-divider" aria-hidden="true"></span><div class="nx-chips" id="tracking-op-chips" role="group" aria-label="Filtrar por estado de la compra"></div></div>
+ </div>
+ <div class="tracking-controls"><p id="tracking-count" role="status"></p><button class="btn o" id="tracking-clear" type="button">Limpiar filtros</button></div>
+ <p id="tracking-notice" class="need-detail-note" role="status" hidden></p>
+ <section class="tp-registers" aria-label="Tus participaciones"><div class="tp-columns" aria-hidden="true"><span>Producto y presentación</span><span>Cantidad</span><span>Proveedor</span><span>Confirmación · Lima</span><span>Estado</span><span>Acción</span></div><section id="tracking-list" class="tracking-grid" tabindex="-1" role="list" aria-label="Historial de participaciones"></section></section>
+ <a class="btn o" href="dashboard.html">Volver al inicio</a>
+</main></div>
+<div id="buyer-modals"></div>
+<script src="../../assets/js/demo-session.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/datos-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/estado-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/componentes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/tesis-ui.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/resumen-participacion.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/imagenes-producto.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/seguimiento-presentacion.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/seguimiento.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/asistente.js?v=estable-3c1c3867bc47"></script>
+</body>
+</html>

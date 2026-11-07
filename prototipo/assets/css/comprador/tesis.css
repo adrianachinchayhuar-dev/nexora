@@ -1,0 +1,92 @@
+/* NEXORA · Tramos, estado visible, ahorro estimado y «No me interesa» (usa solo tokens --nx-*). */
+.tx-ic{width:16px;height:16px;flex:none}
+/* Estado visible: un color y un ícono por cada uno de los 4 */
+.tx-estado{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 10px;border-radius:var(--nx-radius-pill);font:700 12.5px/1.2 var(--nx-font);white-space:nowrap}
+.tx-estado--reuniendo{background:var(--nx-lilac);color:var(--nx-violet-700)}
+.tx-estado--esperando_precio{background:var(--nx-peach);color:var(--nx-orange-ink)}
+.tx-estado--confirmada{background:var(--nx-success-50);color:var(--nx-success)}
+.tx-estado--no_se_concreto{background:#EEEAF2;color:var(--nx-muted)}
+.tx-pasos .is-fail .nx-steps__dot{background:var(--nx-danger-50);color:var(--nx-danger)}
+.tx-pasos .nx-steps__t{display:flex;flex-direction:column;gap:2px}
+.tx-pasos small{font-weight:500;color:var(--nx-muted)}
+.tx-pasos .nx-steps__dot .tx-ic{width:16px;height:16px}
+/* Ahorro y etiquetas con explicación */
+.tx-ahorro{font:500 var(--nx-fs-body)/1.4 var(--nx-font);color:var(--nx-ink)}
+.tx-ahorro strong{color:var(--nx-success);font-weight:800}
+.tx-ahorro--no{color:var(--nx-muted)}
+.tx-tags{display:inline-flex;gap:6px;flex-wrap:wrap;vertical-align:middle}
+.tx-tag{position:relative;display:inline-block;padding:1px 8px;border-radius:var(--nx-radius-pill);background:var(--nx-panel);color:var(--nx-muted);font:600 11px/1.5 var(--nx-font);border:1px solid var(--nx-line);cursor:help}
+.tx-tag[data-tip]:hover::after,.tx-tag[data-tip]:focus::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 6px);z-index:30;width:max-content;max-width:min(240px,70vw);padding:8px 10px;border-radius:var(--nx-radius-sm);background:var(--nx-indigo);color:#fff;font:500 12px/1.35 var(--nx-font);box-shadow:var(--nx-shadow-2);white-space:normal}
+.tx-tag:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+/* Barra de tramos */
+.tx-barra{display:grid;gap:var(--nx-space-3)}
+.tx-barra__top{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--nx-space-3)}
+.tx-barra__top p{margin:0}
+.tx-barra__qty{font:500 var(--nx-fs-body) var(--nx-font);color:var(--nx-muted)}
+.tx-barra__qty strong{font-size:var(--nx-fs-figure);color:var(--nx-ink);line-height:1}
+.tx-barra__precio{text-align:right}
+.tx-barra__precio strong{display:block;font:800 var(--nx-fs-figure)/1 var(--nx-font);color:var(--nx-violet)}
+.tx-barra__precio small{color:var(--nx-muted);font-size:var(--nx-fs-detail)}
+.tx-track{position:relative;height:14px;margin:26px 0 26px;border-radius:var(--nx-radius-pill);background:var(--nx-lilac)}
+.tx-fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:linear-gradient(90deg,var(--nx-violet),var(--nx-orange));min-width:14px}
+.tx-mark{position:absolute;top:-4px;width:2px;height:22px;background:var(--nx-muted);opacity:.6}
+.tx-mark.is-hit{background:var(--nx-success);opacity:1}
+.tx-mark--min{background:var(--nx-orange-ink);opacity:.9}
+/* El mínimo va arriba de la barra; las marcas de tramo, abajo: nunca se pisan. */
+.tx-track .tx-mark--min span{top:auto;bottom:24px;color:var(--nx-orange-ink)}
+.tx-track .tx-mark[data-borde=der] span{left:auto;right:0;transform:none}.tx-track .tx-mark[data-borde=izq] span{left:0;transform:none}
+.tx-mark span{position:absolute;top:24px;left:50%;transform:translateX(-50%);font:600 11px var(--nx-font);color:var(--nx-muted);white-space:nowrap}
+.tx-falta,.tx-minimo,.tx-contigo{margin:0;font:500 var(--nx-fs-body)/1.4 var(--nx-font);color:var(--nx-ink)}
+.tx-falta strong,.tx-contigo strong{color:var(--nx-violet)}
+.tx-contigo{padding:8px 12px;border-radius:var(--nx-radius-sm);background:var(--nx-peach);color:var(--nx-orange-ink)}
+.tx-minimo{color:var(--nx-muted);font-size:var(--nx-fs-detail)}
+.tx-lista{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.tx-lista li{display:flex;align-items:center;gap:var(--nx-space-3);padding:8px 12px;border-radius:var(--nx-radius-sm);font:500 var(--nx-fs-detail) var(--nx-font);color:var(--nx-muted)}
+.tx-lista li span{flex:1}
+.tx-lista li strong{font-size:var(--nx-fs-body);color:var(--nx-ink)}
+.tx-lista li em{font:700 11px var(--nx-font);font-style:normal;color:var(--nx-violet-700);background:var(--nx-lilac-200);padding:2px 8px;border-radius:var(--nx-radius-pill)}
+.tx-lista .is-actual{background:var(--nx-lilac);color:var(--nx-ink);font-weight:700;outline:2px solid var(--nx-violet);outline-offset:-2px}
+/* Mini (tarjetas) */
+.tx-mini{display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap}
+.tx-mini__bar{flex:0 0 72px;height:6px;border-radius:var(--nx-radius-pill);background:var(--nx-lilac);overflow:hidden}
+.tx-mini__bar i{display:block;height:100%;background:var(--nx-violet);border-radius:inherit}
+.tx-mini__txt{font:600 var(--nx-fs-detail) var(--nx-font);color:var(--nx-violet-700)}
+/* Tarjeta con «No me interesa» al lado del enlace */
+.tx-item{position:relative}
+.tx-item>a{display:flex}
+.tx-item--acc>a{padding-bottom:48px}
+.tx-item__acciones{position:absolute;left:16px;bottom:10px;z-index:1}
+.tx-item__acciones .nx-btn{min-height:32px;padding:4px 0;border:0;background:none;font-weight:600;font-size:var(--nx-fs-detail);color:var(--nx-muted);text-decoration:underline}
+.tx-ocultas{margin:0;color:var(--nx-muted);font:500 var(--nx-fs-detail) var(--nx-font)}
+.tx-oculta-aviso{display:flex;align-items:center;gap:var(--nx-space-3);flex-wrap:wrap}
+@media (max-width:640px){.tx-barra__precio strong,.tx-barra__qty strong{font-size:26px}.tx-lista li{padding:8px}}
+/* Filas con estado y ahorro (Seguimiento, Mensajes) */
+.tx-seg{grid-column:1/-1;display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap;margin-top:4px}
+.tx-seg .tx-ahorro{font-size:var(--nx-fs-detail)}
+/* Registrar pedido: zona y marca */
+.nr-zone-now{margin:0;display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap;font:500 var(--nx-fs-body) var(--nx-font)}
+.nr-brand{display:grid;gap:var(--nx-space-2);grid-column:1/-1}
+.nr-solo{display:flex;gap:var(--nx-space-4);flex-wrap:wrap}
+.nr-solo label{display:flex;align-items:center;gap:6px;font:600 var(--nx-fs-detail) var(--nx-font);min-height:var(--nx-control-sm)}
+.tx-sub{display:block;margin-top:2px;font:600 var(--nx-fs-detail) var(--nx-font);color:var(--nx-violet-700)}
+/* Pedido repetido */
+.nr-dup{border:2px solid var(--nx-orange);background:var(--nx-peach);display:grid;gap:var(--nx-space-3)}
+.nr-dup p{margin:0;font:500 var(--nx-fs-body)/1.4 var(--nx-font);color:var(--nx-ink)}
+.nr-dup__acciones{display:flex;gap:var(--nx-space-2);flex-wrap:wrap}
+
+/* Fechas de la compra: lo que necesitas, cierre y entrega. */
+.tx-fechas__datos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.tx-fechas__datos dt{font-size:13px;color:var(--nx-ink-soft,#5b5670)}
+.tx-fechas__datos dd{margin:2px 0 0;font-weight:700}
+.tx-linea{display:flex;list-style:none;margin:0;padding:0}
+.tx-linea li{position:relative;flex:1;min-width:0;padding-top:18px;font-size:13px;text-align:center}
+.tx-linea li::before{content:"";position:absolute;top:6px;left:0;right:0;height:2px;background:#ddd8ea}
+.tx-linea li:first-child::before{left:50%}
+.tx-linea li:last-child::before{right:50%}
+.tx-linea i{position:absolute;top:1px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--nx-violet,#5b2ba0)}
+.tx-linea b,.tx-linea small{display:block}
+.tx-linea .is-pedido i{background:var(--nx-orange,#ee7a3c)}
+.tx-tarde{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.tx-tarde p{margin:0}
+@media (max-width:640px){.tx-fechas__datos{grid-template-columns:1fr}}
+

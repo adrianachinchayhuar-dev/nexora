@@ -1,0 +1,11 @@
+require('./helpers/utils-compartidas.cjs');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');const {fixture,supplier,buyerKey}=require('./helpers/proveedor-fixture.cjs');
+const memory=fixture(),p=supplier(memory),andina='PROV-DEMO-ANDINA';p.c.window.NexoraProviderSession.enter(andina);const api=p.c.window.NexoraProviderState.catalog;
+const buyerBefore=memory[buyerKey];let render;p.c.window.NexoraProviderUI.start=fn=>{render=fn;fn(p.read(andina),andina);};
+vm.runInContext(fs.readFileSync('assets/js/proveedor/dashboard.js','utf8'),p.c);let html=p.nodes['provider-content'].innerHTML;assert.ok(html.includes('<strong>0</strong><span>Productos en mi catálogo'));assert.ok(html.includes('Aún no tienes productos en tu catálogo'));assert.ok(!html.includes('Productos asociados'));assert.ok(html.includes('Mi catálogo'));assert.ok(html.includes('Tus compras en grupo'));assert.ok(html.includes('hero-proveedor-logistica.png'));
+const one=api.saveDraft({name:'Producto privado Andina',brand:'Marca'}).product,two=api.saveDraft({name:'Otro privado'}).product;
+const before=JSON.stringify(memory);render(p.read(andina),andina);html=p.nodes['provider-content'].innerHTML;assert.ok(html.includes('<strong>2</strong><span>Productos en mi catálogo'));assert.ok(html.includes('producto='+one.id));assert.ok(html.includes('producto='+two.id));assert.equal(JSON.stringify(memory),before);
+p.c.window.NexoraProviderSession.enter('PROV-DEMO-LIMA-SUR');render(p.read('PROV-DEMO-LIMA-SUR'),'PROV-DEMO-LIMA-SUR');html=p.nodes['provider-content'].innerHTML;assert.ok(html.includes('<strong>0</strong><span>Productos en mi catálogo'));assert.ok(!html.includes('Producto privado Andina'));assert.equal(memory[buyerKey],buyerBefore);
+const shell=fs.readFileSync('assets/js/proveedor/componentes.js','utf8');assert.ok(shell.includes("['productos','Mi catálogo','box']"));assert.ok(shell.includes("['productos','Catálogo','box']"));assert.ok(!shell.includes('Mis precios'));
+const detail=fs.readFileSync('assets/js/proveedor/detalle-oportunidad.js','utf8');assert.ok(detail.includes('productos-ofertas.html?vista=precios'));
+console.log('OK catálogo Dashboard: real counts/empty/private product routes, reload projection, owner isolation, preserved banner/opportunities, sidebar/mobile labels and separate legacy price route');

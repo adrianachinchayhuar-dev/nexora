@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Catálogo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../../assets/css/shared/base.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/tokens.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/componentes.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/dashboard-comprador.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/catalogo.css?v=estable-3c1c3867bc47">
+<script src="../../assets/js/shared/acceso-roles.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/datos-compartidos.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/cuentas.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/utils.js?v=estable-3c1c3867bc47"></script><link rel="stylesheet" href="../../assets/css/comprador/banner.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/menu-lateral.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/app.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/tesis.css?v=estable-3c1c3867bc47">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icono-nexora-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/images/icono-nexora-64.png">
+<link rel="stylesheet" href="../../assets/css/comprador/asistente.css?v=estable-3c1c3867bc47">
+</head>
+<body data-role-access="required" data-page="catalogo">
+<div id="buyer-icons"></div>
+<div class="app"><div id="buyer-sidebar"></div><main class="main">
+ <div id="buyer-header"></div>
+ <div class="nx-layout cp-layout">
+  <div class="nx-stack">
+   <div class="cp-tools">
+    <div class="nx-toolbar"><label class="nx-search"><span class="sr">Buscar producto</span><svg class="ic" aria-hidden="true"><use href="#search"/></svg><input id="catalog-search" type="search" placeholder="Buscar aceite, arroz…"></label></div>
+    <div class="nx-chips" id="cp-categories" role="group" aria-label="Filtrar por categoría"></div>
+   </div>
+   <div class="cp-list-head"><h2 class="nx-h2" id="catalog-heading">Productos</h2><p class="nx-detail" id="catalog-count" role="status"></p></div>
+   <p class="nx-note" id="catalog-notice" role="status" hidden></p>
+   <ul class="cp-grid" id="catalog-list" aria-labelledby="catalog-heading" tabindex="-1"><li class="nx-card nx-empty" role="status"><p>Si no aparecen los productos, recarga la página. Tus datos se conservan.</p><a class="nx-btn nx-btn--secondary" href="catalogo.html">Recargar</a></li></ul>
+  </div>
+  <aside class="nx-aside"><section class="nx-card nx-card--raised cp-list" id="cp-list" aria-labelledby="cp-list-title" tabindex="-1">
+   <h2 class="nx-h3" id="cp-list-title">Mi lista <span id="cp-selection-count"></span></h2>
+   <ul class="cp-items" id="cp-selection-items" aria-label="Productos de tu lista"></ul>
+   <p class="nx-note cp-list-notice" id="cp-selection-notice" role="status"></p>
+   <button class="nx-btn nx-btn--primary nx-btn--block" id="cp-continue" type="button">Guardar mi pedido</button>
+   <p class="nx-detail">Después eliges cantidades y fecha. Guardar no es comprar.</p>
+   <button class="nx-btn nx-btn--tertiary nx-btn--sm" id="cp-discard" type="button">Vaciar lista</button>
+  </section></aside>
+ </div>
+</main></div>
+<div class="cp-bar" id="cp-selection-bar" hidden><strong id="cp-bar-count"></strong><a class="nx-btn nx-btn--secondary nx-btn--sm" href="#cp-list">Ver mi lista</a><button class="nx-btn nx-btn--primary nx-btn--sm" id="cp-bar-continue" type="button">Guardar</button></div>
+<div id="buyer-modals"></div>
+<dialog id="cp-discard-dialog" class="nx-overlay cp-confirm" aria-labelledby="cp-discard-title" aria-describedby="cp-discard-text">
+ <h2 class="nx-h3" id="cp-discard-title">¿Vaciar tu lista?</h2>
+ <p id="cp-discard-text"></p>
+ <div class="cp-confirm__actions"><button class="nx-btn nx-btn--secondary" id="cp-discard-no" type="button">No, mantenerla</button><button class="nx-btn nx-btn--danger-solid" id="cp-discard-yes" type="button">Sí, vaciar</button></div>
+</dialog>
+<script src="../../assets/js/demo-session.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/datos-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/estado-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/componentes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/tesis-ui.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/imagenes-producto.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/catalogo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/catalogo-lista-temporal.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/catalogo-seleccion.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/asistente.js?v=estable-3c1c3867bc47"></script>
+</body>
+</html>

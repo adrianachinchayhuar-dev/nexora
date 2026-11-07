@@ -1,0 +1,14 @@
+# Sistema
+.DS_Store
+
+# Frontend (React)
+frontend/node_modules/
+frontend/dist/
+
+# Backend (Spring Boot)
+backend/target/
+backend/data/
+
+# Variables locales
+.env
+*.local

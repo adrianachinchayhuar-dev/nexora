@@ -1,0 +1,149 @@
+/* NEXORA · Banner único del comprador.
+   El encabezado (.top .hello) se convierte en banner en todas las vistas menos Inicio,
+   que usa la misma receta en su hero (.in-hero). Imagen a la derecha, anclada abajo,
+   fundida hacia la izquierda con mask-image; sin bordes ondulados ni sombras oscuras. */
+
+/* Base compartida: banner de vista y hero del Inicio */
+body:not(.dashboard-inicio) .top .hello,
+.dashboard-inicio .in-hero{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--nx-radius-lg);background:linear-gradient(110deg,var(--nx-lilac) 0%,var(--nx-panel) 38%,var(--nx-cream) 100%);box-shadow:var(--nx-shadow-1);border:0}
+
+/* Banner de vista */
+body:not(.dashboard-inicio) .top .hello{order:2;flex-basis:100%;min-height:160px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:6px;padding:var(--nx-space-5) var(--nx-space-8);padding-right:44%}
+body:not(.dashboard-inicio) .top .hello::before{font:800 var(--nx-fs-label)/1.2 var(--nx-font);letter-spacing:.08em;text-transform:uppercase;color:var(--nx-violet)}
+body:not(.dashboard-inicio) .top .hello::after{content:"";position:absolute;top:0;right:0;bottom:0;width:40%;opacity:.9;z-index:-1;background:no-repeat right bottom/contain;-webkit-mask-image:linear-gradient(to right,transparent,#000 35%);mask-image:linear-gradient(to right,transparent,#000 35%)}
+body:not(.dashboard-inicio) .top .hello h1{margin:0;font-size:32px;line-height:1.15;color:var(--nx-ink)}
+body:not(.dashboard-inicio) .top .hello p{margin:0;max-width:100%;font-size:var(--nx-fs-body);color:var(--nx-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body:not(.dashboard-inicio) .top .hello .nx-crumb{margin-bottom:2px}
+
+/* Barra superior (Modo demo, Nueva necesidad, campana) siempre a la derecha */
+body:not(.dashboard-inicio) .top .tr{margin-left:auto;order:1}
+
+/* Etiqueta e imagen por vista */
+body[data-page="necesidades"] .top .hello::before{content:"Tus pedidos"}
+body[data-page="oportunidades"] .top .hello::before{content:"Compra junto a otros"}
+body[data-page="catalogo"] .top .hello::before{content:"Productos"}
+body[data-page="seguimiento"] .top .hello::before{content:"Tus compras en grupo"}
+body[data-page="perfil"] .top .hello::before{content:"Tu negocio"}
+body[data-page="mensajes"] .top .hello::before{content:"Conversaciones"}
+body[data-page="necesidades"] .top .hello::after,body[data-page="necesidad"] .top .hello::after{background-image:url(../../images/header-necesidades-comprador-web.jpg)}
+body[data-page="oportunidades"] .top .hello::after,body[data-page="detalle-oportunidad"] .top .hello::after{background-image:url(../../images/header-oportunidades-comprador-web.jpg)}
+body[data-page="catalogo"] .top .hello::after{background-image:url(../../images/header-catalogo-comprador-web.jpg)}
+body[data-page="seguimiento"] .top .hello::after,body[data-page="participacion"] .top .hello::after{background-image:url(../../images/header-seguimiento-comprador-web.jpg)}
+body[data-page="perfil"] .top .hello::after{background-image:url(../../images/header-perfil-comprador-web.jpg)}
+
+/* Mensajes: banner compacto sin ilustración */
+body[data-page="mensajes"] .top .hello{min-height:112px;padding-right:var(--nx-space-8)}
+body[data-page="mensajes"] .top .hello::after{content:none}
+
+/* Hero del Inicio */
+.dashboard-inicio .in-hero{display:flex;align-items:center;min-height:250px;padding:0}
+.dashboard-inicio .in-hero__copy{position:relative;z-index:1;max-width:55%;padding:var(--nx-space-6) var(--nx-space-8)}
+.dashboard-inicio .in-hero__figure{font-size:clamp(28px,3vw,40px)}
+.dashboard-inicio .in-hero__figure{color:var(--nx-violet)}
+.dashboard-inicio .in-hero img{position:absolute;top:0;right:0;bottom:0;z-index:0;width:58%;height:100%;max-height:none;object-fit:cover;object-position:right top;-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 40%);mask-image:linear-gradient(to right,transparent 0%,#000 40%)}
+
+/* Ritmo vertical y títulos de sección con ícono */
+.app>.main{gap:var(--nx-space-8)}
+.dashboard-inicio .nx-stack,.dashboard-inicio .nx-aside{gap:var(--nx-space-8)}
+.dt-title{display:flex;align-items:center;gap:var(--nx-space-2)}
+.dt-title>.ic{flex:none;width:32px;height:32px;padding:7px;border-radius:50%;background:var(--nx-lilac);color:var(--nx-violet)}
+
+/* Barra lateral: menú agrupado, opción activa con barra y ayuda pequeña abajo */
+@media (min-width:1025px){.app{grid-template-columns:240px minmax(0,1fr)}}
+.side{padding:22px 14px}
+.nav-label{margin:16px 0 4px 14px;font:800 11px/1 var(--nx-font);letter-spacing:.08em;text-transform:uppercase;color:var(--nx-muted)}
+.nav-label:first-child{margin-top:0}
+.nav a{position:relative;white-space:nowrap;gap:10px;padding:11px 12px}
+.nav-count{flex:none}
+.nav a.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--nx-violet)}
+.nav-count{margin-left:auto;min-width:22px;padding:2px 8px;border-radius:var(--nx-radius-pill);background:var(--nx-panel);color:var(--nx-violet);font:700 12px/1.4 var(--nx-font);font-style:normal;text-align:center}
+.nav-count[hidden]{display:none}
+.nav a.on .nav-count{background:var(--nx-white)}
+.side-help{margin-top:auto;display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:12px;border-radius:var(--nx-radius-md);background:var(--nx-panel);color:var(--nx-ink);text-decoration:none}
+.side-help img{display:block;width:100%;height:110px;object-fit:contain}
+@media (max-height:760px){.side-help img{display:none}}
+.side-help:hover{background:var(--nx-lilac)}
+.side-help:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+.side-help b{display:block;font-size:13px}
+.side-help small{display:block;font-size:12px;color:var(--nx-muted)}
+
+/* Menú de la cuenta (barra superior) */
+.acct{position:relative}
+.acct__btn{display:flex;align-items:center;gap:8px;min-height:44px;padding:3px 12px 3px 3px;border:1px solid var(--nx-line);border-radius:var(--nx-radius-pill);background:var(--nx-white);color:var(--nx-ink);font:600 14px var(--nx-font);cursor:pointer}
+.acct__btn:hover{border-color:var(--nx-violet)}
+.acct__btn:focus-visible,.acct__menu a:focus-visible,.acct__menu button:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+.acct__btn .av{width:36px;height:36px;font-size:13px}
+.acct__chev{width:14px;height:14px;transform:rotate(90deg);transition:transform .15s}
+.acct__btn[aria-expanded="true"] .acct__chev{transform:rotate(-90deg)}
+.acct__menu{position:absolute;right:0;top:calc(100% + 8px);z-index:70;width:min(270px,calc(100vw - 28px));padding:8px;border:1px solid var(--nx-line);border-radius:var(--nx-radius-md);background:var(--nx-white);box-shadow:var(--nx-shadow-2)}
+.acct__menu[hidden]{display:none}
+.acct__head{display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:8px 8px 12px;border-bottom:1px solid var(--nx-line)}
+.acct__head b{display:block;font-size:14px}
+.acct__head small{display:block;font-size:13px;color:var(--nx-muted)}
+.acct__menu a,.acct__menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px;border:0;border-radius:var(--nx-radius-sm);background:none;color:var(--nx-ink);font:600 14px var(--nx-font);text-align:left;text-decoration:none;cursor:pointer}
+.acct__menu a:hover,.acct__menu button:hover{background:var(--nx-panel)}
+.acct__menu .ic{flex:none;color:var(--nx-violet)}
+@media (max-width:640px){.acct__name,.acct__chev{display:none}.acct__btn{padding:3px}}
+
+@media (max-width:640px){
+  body:not(.dashboard-inicio) .top .hello{min-height:115px;padding:var(--nx-space-3) 42% var(--nx-space-3) var(--nx-space-4);gap:3px}
+  body:not(.dashboard-inicio) .top .hello::after{width:40%}
+  body:not(.dashboard-inicio) .top .hello h1{font-size:22px;line-height:1.2}
+  body:not(.dashboard-inicio) .top .hello p{white-space:normal;font-size:var(--nx-fs-detail);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+  body[data-page="mensajes"] .top .hello{min-height:0;padding-right:var(--nx-space-5)}
+  .dashboard-inicio .in-hero{min-height:180px}
+  .dashboard-inicio .in-hero__copy{max-width:72%;padding:var(--nx-space-4) var(--nx-space-5);gap:2px}
+  .dashboard-inicio .in-hero__copy .nx-detail{font-size:var(--nx-fs-detail)}
+  .dashboard-inicio .in-hero__figure{font-size:26px}
+  .dashboard-inicio .in-hero__copy .nx-btn{margin-top:4px;min-height:var(--nx-control-sm)}
+  .dashboard-inicio .in-hero img{width:56%;opacity:.5}
+}
+
+/* Detalle y registro: encabezado limpio, sin caja ni ilustración */
+body[data-parent] .top .hello{min-height:0;padding:0;gap:8px;background:none;box-shadow:none;border-radius:0;overflow:visible;isolation:auto}
+body[data-parent] .top .hello::after{content:none}
+body[data-parent] .top .hello h1{font-size:32px;line-height:1.15}
+body[data-parent] .top .hello p{white-space:normal;overflow:visible;text-overflow:clip}
+@media (max-width:640px){
+  body[data-parent] .top .hello{padding:0;min-height:0}
+  body[data-parent] .top .hello h1{font-size:28px}
+}
+
+/* Colores: verde solo para el ahorro, naranja solo para cierres, un lila de fondo */
+.nx-status--con-coincidencia{background:var(--nx-lilac);color:var(--nx-violet)}
+.nx-status--cierre{background:var(--nx-peach);color:var(--nx-orange-ink)}
+.ms-dot{background:var(--nx-violet)}
+.ms-feedback{color:var(--nx-violet)}
+.cg-card__people{display:inline-flex;align-items:center;gap:6px;font-size:var(--nx-fs-detail);color:var(--nx-muted)}
+.cg-card__people .ic{width:15px;height:15px;color:var(--nx-violet)}
+.dt-trust{display:block;margin-top:2px;font-size:var(--nx-fs-detail);color:var(--nx-muted)}
+.nd-match .dt-trust{margin:0}
+
+/* Tarjetas de números: fondo blanco con el ícono en un círculo suave */
+.in-stat{background:var(--nx-white);border:1px solid var(--nx-line)}
+.in-stat__icon{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:50%;background:var(--nx-lilac);color:var(--nx-violet)}
+.in-stat:nth-child(2) .in-stat__icon{background:var(--nx-info-50);color:var(--nx-info)}
+.in-stat:nth-child(1),.in-stat:nth-child(2),.in-stat:nth-child(3){background:var(--nx-white)}
+.in-stat:nth-child(2) .in-stat__icon{color:var(--nx-info)}
+.in-stat:nth-child(3) .in-stat__icon{color:var(--nx-violet);background:var(--nx-lilac)}
+.in-business{background:var(--nx-panel)}
+
+/* Tipografía contenida y más aire */
+.dt-title,.nx-card__head .nx-h3,.dashboard-inicio .nx-card__head .nx-h3,.cg-list-head .nx-h2,.cp-list-head .nx-h2,.nl-list-head .nx-h2{font-size:20px}
+:is(.dt-product,.dt-steps,.cg-actions,.pa-actions,.nd-action,.dt-provider,.dt-interest,.dt-quote,.dt-strip,.nr-aside__card,.nr-tips,.in-ops,.in-msgs,.pf-panel,.pf-activity){padding:var(--nx-space-6)}
+@media (max-width:640px){:is(.dt-product,.dt-steps,.cg-actions,.pa-actions,.nd-action,.dt-provider,.dt-interest,.dt-quote,.dt-strip,.nr-aside__card,.nr-tips,.in-ops,.in-msgs,.pf-panel,.pf-activity){padding:var(--nx-space-4)}}
+
+/* Estados vacíos y «¡Listo!»: ilustración mediana de la sección arriba del mensaje */
+.nx-empty::before,.nd-empty::before,.tracking-empty::before,.ms-empty::before,.nr-art{content:"";display:block;width:100%;max-width:300px;height:140px;margin:0 auto var(--nx-space-3);background:var(--art,none) no-repeat center/contain;-webkit-mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(to right,transparent,#000 12%,#000 88%,transparent)}
+.nx-empty__icon{display:none}
+body{--art:url(../../images/header-dashboard-hero.png)}
+body[data-page="necesidades"],body[data-page="necesidad"],body[data-page="necesidad-nueva"]{--art:url(../../images/header-necesidades-comprador-web.jpg)}
+body[data-page="oportunidades"],body[data-page="detalle-oportunidad"]{--art:url(../../images/header-oportunidades-comprador-web.jpg)}
+body[data-page="catalogo"]{--art:url(../../images/header-catalogo-comprador-web.jpg)}
+body[data-page="seguimiento"],body[data-page="participacion"]{--art:url(../../images/header-seguimiento-comprador-web.jpg)}
+body[data-page="perfil"]{--art:url(../../images/header-perfil-comprador-web.jpg)}
+body[data-page="mensajes"]{--art:url(../../images/header-mensajes.png)}
+
+/* Subtítulo de una sola línea en los banners de lista */
+body:not(.dashboard-inicio):not([data-parent]) .top .hello #sub{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media (max-width:640px){body:not(.dashboard-inicio):not([data-parent]) .top .hello h1{font-size:20px}}

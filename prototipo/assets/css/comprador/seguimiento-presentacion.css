@@ -1,0 +1,51 @@
+/* Solo la vista previa de Seguimiento. */
+.tracking-preview{background:#fcf9f5}.tracking-preview .main{max-width:1640px;width:100%;margin-inline:auto;padding-top:20px;gap:18px}
+.tracking-preview #side{background:linear-gradient(180deg,#fcf9ff,#fffdfa)}
+
+.tracking-preview .tr>.chip{display:none}
+.tracking-preview .tracking-summary{gap:14px}.tracking-preview .tracking-summary>div.tp-metric{display:flex;gap:14px;align-items:center;padding:16px 20px;border-radius:18px;background:var(--nx-white);border-color:var(--nx-line)}
+.tracking-preview .tracking-summary>div.tp-metric-1,.tracking-preview .tracking-summary>div.tp-metric-2{background:var(--nx-white);border-color:var(--nx-line)}
+.tracking-preview .tp-metric-icon{width:44px;height:44px;flex-shrink:0;border-radius:50%;background:var(--nx-lilac);display:grid;place-items:center;color:var(--nx-violet)}.tracking-preview .tp-metric-icon .ic{width:22px;height:22px}
+.tracking-preview .tp-metric-1 .tp-metric-icon{background:var(--nx-info-50);color:var(--nx-info)}
+.tracking-preview .tp-metric strong{font-size:26px;line-height:1.2;color:var(--ink);display:block}.tracking-preview .tp-metric span:not(.tp-metric-icon){display:block;font-size:12px;margin-top:4px;font-weight:600}
+.tracking-preview .tracking-controls{margin-top:-6px}.tracking-preview #tracking-count{font-size:12px;color:var(--muted)}.tracking-preview #tracking-clear{background:transparent;border:0;font-size:12px;text-decoration:underline;text-underline-offset:3px;padding:4px}
+.tracking-preview .tp-registers{background:white;border:1px solid #e8e0ee;border-radius:20px;overflow:hidden}
+.tracking-preview .tp-columns,.tracking-preview .tracking-card{display:grid;grid-template-columns:minmax(190px,2fr) 85px minmax(110px,1.2fr) 122px 110px 101px;gap:14px;align-items:center;padding:16px 20px}
+.tracking-preview .tp-columns{background:#f5effc;color:#695082;font-size:11px;font-weight:700;padding-top:14px;padding-bottom:14px}
+.tracking-preview .tracking-grid{display:block}.tracking-preview .tracking-card{border:0;border-radius:0;border-bottom:1px solid #eee8f2;background:transparent;box-shadow:none;font-size:12px;line-height:1.6}
+.tracking-preview .tracking-card:last-child{border-bottom:0}.tracking-preview .tracking-card:hover{background:#fdfbff}.tracking-preview .tracking-card.op-target{outline:2px solid #a37bc8;outline-offset:-3px}
+.tracking-preview .tp-record{display:contents}.tracking-preview .tp-product{display:flex;gap:12px;align-items:center;min-width:0}.tracking-preview .tp-product>div{min-width:0}
+.tracking-preview .tp-product strong{display:block;font-size:13px;line-height:1.5;color:var(--ink)}.tracking-preview .tp-product small,.tracking-preview .tp-date small{display:block;color:var(--muted);font-size:11px;line-height:1.5;margin-top:4px}
+.tracking-preview .tp-photo{width:60px;height:68px;flex-shrink:0;display:grid;place-items:center;background:#f7f2fa;border-radius:13px;overflow:hidden}
+.tracking-preview .tp-photo .ic{width:27px;height:27px;color:#9263b4}.tracking-preview .tp-photo img{display:block;width:100%;height:100%;object-fit:contain}.tracking-preview .tp-photo.has-photo>.ic{display:none}
+.tracking-preview .tp-quantity{font-weight:600}.tracking-preview .tp-provider,.tracking-preview .tp-date{color:#746581;overflow-wrap:anywhere}
+.tracking-preview .tp-state{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;line-height:1.4;padding:7px 9px;border-radius:20px;background:#f2edf8;color:#72598b;white-space:normal}
+.tracking-preview .tp-state .ic{width:14px;height:14px;flex-shrink:0}.tracking-preview .tp-confirmed{background:#e4f5ed;color:#277458}.tracking-preview .tp-withdrawn{background:#fff0e5;color:#9a5e38}
+.tracking-preview .tracking-card>.btn{margin:0;min-width:0;padding:8px 10px;font-size:11px;border-width:1px;white-space:normal;border-radius:11px}
+.tracking-preview .tp-cell-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.tracking-preview .tracking-empty{border:0;border-radius:0}.tracking-preview :focus-visible{outline:3px solid #ad84cf;outline-offset:3px}
+
+@media(max-width:1200px){
+ .tracking-preview .tp-columns{display:none}.tracking-preview .tp-registers{border:0;background:transparent;overflow:visible}
+ .tracking-preview .tracking-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+ .tracking-preview .tracking-card{grid-template-columns:repeat(2,minmax(0,1fr));background:#fff;border:1px solid #e8e0ee;border-radius:18px;padding:16px;gap:14px}
+ .tracking-preview .tracking-card:last-child{border-bottom:1px solid #e8e0ee}.tracking-preview .tp-product{grid-column:1/-1}.tracking-preview .tracking-card>.btn{grid-column:1/-1;font-size:12px}
+ .tracking-preview .tp-cell-label{position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip:auto;white-space:normal;display:block;font-size:10px;font-weight:500;color:var(--muted);margin-bottom:4px}
+}
+@media(max-width:760px){
+ .tracking-preview .main{gap:14px;padding-top:16px}
+ .tracking-preview .tracking-summary{grid-template-columns:1fr;gap:8px}.tracking-preview .tracking-summary>div.tp-metric{padding:12px 16px;gap:12px}.tracking-preview .tp-metric strong{font-size:23px}
+ .tracking-preview .tracking-grid{grid-template-columns:1fr}.tracking-preview .tracking-card{padding:14px}
+ .tracking-preview #tracking-detail .mh,.tracking-preview #tracking-detail .mf{padding:14px 16px}.tracking-preview #tracking-detail .mb{padding:4px 16px 16px}
+ .tracking-preview #tracking-detail .mf{justify-content:space-between}.tracking-preview #tracking-detail .mf>.btn{flex:0 1 auto}.tracking-preview #tracking-withdraw-action .btn{font-size:12px;white-space:normal}
+ .tracking-preview .tp-detail-product h3{font-size:19px!important}.tracking-preview .tp-facts{gap:12px;font-size:12px}.tracking-preview .tp-links .btn{flex:1;white-space:normal}
+}
+@media(max-width:390px){.tracking-preview .tp-facts{grid-template-columns:1fr}.tracking-preview .tp-detail-product .tp-photo{width:64px;height:78px}}
+/* Refinamiento exclusivo del modal. La tabla y sus indicadores no cambian. */
+
+@media(max-width:760px){
+ .tracking-preview #tracking-detail{max-height:90vh;max-height:90dvh;margin:auto;border-radius:22px}
+ .tracking-preview #tracking-detail .tp-detail-product .tp-photo{width:58px;height:68px}
+ .tracking-preview #tracking-detail .tp-detail-product h3{font-size:18px!important}
+ .tracking-preview #tracking-detail .tp-primary-facts{gap:10px 14px}
+ .tracking-preview #tracking-detail .tp-secondary-links{gap:10px 16px}
+}

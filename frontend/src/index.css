@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Identidad del perfil comprador: morado NEXORA con acento naranja (manual de marca). */
+@layer base {
+  :root {
+    --background: 27 69% 97%;          /* #FDF8F4 crema */
+    --foreground: 250 50% 24%;         /* #2A1F5C tinta */
+    --card: 0 0% 100%;
+    --card-foreground: 250 50% 24%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 250 50% 24%;
+    --primary: 275 58% 39%;            /* #6B2A9E violeta */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 276 54% 93%;          /* #EFE5F7 lila */
+    --secondary-foreground: 275 58% 30%;
+    --muted: 275 47% 96%;              /* #F5EFFA panel */
+    --muted-foreground: 245 14% 41%;   /* #5B5878 */
+    --accent: 276 54% 93%;
+    --accent-foreground: 275 58% 30%;
+    --destructive: 11 74% 40%;         /* #B3391B */
+    --destructive-foreground: 0 0% 100%;
+    --border: 280 30% 92%;             /* #EBE3F0 */
+    --input: 280 30% 88%;
+    --ring: 275 58% 39%;
+    --radius: 0.9rem;
+    --naranja: 21 84% 59%;             /* #EE7A3C */
+    --naranja-suave: 26 92% 90%;       /* #FDE3CF */
+    --naranja-tinta: 20 84% 36%;       /* #A8410F */
+    --exito: 151 59% 30%;              /* #1F7A4D */
+    --exito-suave: 147 45% 91%;        /* #DDF1E6 */
+    --aviso: 36 90% 40%;
+    --aviso-suave: 42 100% 92%;
+    --info: 232 44% 44%;               /* #3F4FA0 */
+    --info-suave: 228 70% 94%;         /* #E3E8FA */
+    --lila: 276 60% 88%;               /* #E3D0F2 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+}

@@ -1,0 +1,25 @@
+// Inicio (Fase B · claridad). Pure file checks: no browser or storage writes.
+const fs=require('node:fs'),assert=require('node:assert/strict'),path=require('node:path');
+const official=fs.readFileSync('pages/comprador/dashboard.html','utf8'),preview=fs.readFileSync('pages/comprador/dashboard.html','utf8');
+assert.equal(official,preview,'Official Inicio must preserve the approved preview composition');
+assert.ok(official.includes('class="dashboard-inicio"'));
+const scripts=Array.from(official.matchAll(/<script src="([^"]+)"/g),m=>m[1].split('?')[0]);
+assert.equal(scripts.filter(s=>s.endsWith('/dashboard-inicio.js')).length,1);
+assert.ok(!scripts.some(s=>s.endsWith('/dashboard-comprador.js')||s.endsWith('/dashboard-vista-previa.js')));
+assert.equal(scripts.filter(s=>s.endsWith('/flujo-necesidad.js')).length,1);
+assert.ok(scripts.indexOf('../../assets/js/comprador/flujo-necesidad.js')<scripts.indexOf('../../assets/js/comprador/dashboard-inicio.js'));
+const ids=Array.from(official.matchAll(/\bid="([^"]+)"/g),m=>m[1]);assert.equal(new Set(ids).size,ids.length);
+for(const id of ['buyer-icons','buyer-sidebar','buyer-header','buyer-entry','buyer-modals','ops','needs','msgs','kpis','in-saving'])assert.ok(ids.includes(id),id);
+assert.ok(!official.includes('Acciones rápidas')&&!official.includes('<dialog')&&!official.includes('<details'),'Sin accesos duplicados del menú, sin modales ni desplegables');
+for(const file of ['header-dashboard-hero.png','negocio-dashboard.png'])assert.ok(official.includes('assets/images/'+file));
+for(const route of ['necesidades.html','oportunidades.html','catalogo.html','perfil.html','mensajes.html'])assert.ok(official.includes('href="'+route+'"'),route);
+for(const match of official.matchAll(/(?:src|href)="(\.\.\/\.\.\/assets\/[^"?]+)/g))assert.ok(fs.existsSync(path.resolve('pages/comprador',match[1])));
+const source=fs.readFileSync('assets/js/comprador/dashboard-inicio.js','utf8');
+assert.equal((source.match(/NexoraFlow\.init\(/g)||[]).length,1);
+assert.ok(!/sessionStorage|localStorage|\.register\(|\.selectNeed\(|\.reset\(/.test(source));
+for(const api of ['store.buyerActivity()','store.selectedNeed(o)','tx.ahorro(need, o','store.opportunityStatus(o)'])assert.ok(source.includes(api));
+assert.ok(source.includes("'seguimiento.html'"),'El resumen «Te uniste a…» lleva a Seguimiento');
+for(const text of ['Podrías ahorrar ','pedidos guardados','compras en grupo abiertas','Te uniste a ','Ahorro estimado'])assert.ok(source.includes(text),text);
+for(const gone of ['ahorro potencial estimado','Interpretación demostrativa','Ver detalle','Necesidades activas','Participaciones confirmadas'])assert.ok(!source.includes(gone),gone);
+const css=fs.readFileSync('assets/css/comprador/dashboard-inicio.css','utf8');assert.ok(css.includes('.dashboard-inicio'));assert.ok(!css.includes('.dashboard-preview'));
+console.log('OK: Inicio with one key saving figure, plain summary, group purchase cards and the shared order form; read-only presentation using shared rules');

@@ -1,0 +1,74 @@
+/* Mensajes, sobre tokens.css y componentes.css. */
+.ms-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:var(--nx-space-5);align-items:start}
+.ms-inbox__head{display:flex;flex-direction:column;gap:var(--nx-space-3);padding:var(--nx-space-5) var(--nx-space-5) var(--nx-space-3)}
+.ms-inbox__head h2{margin:0}
+.ms-inbox__head h2:focus{outline:none}
+.ms-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--nx-line)}
+.ms-list li+li{border-top:1px solid var(--nx-line)}
+.ms-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:var(--nx-space-3);align-items:center;padding:var(--nx-space-3) var(--nx-space-5);color:inherit;text-decoration:none;transition:background-color var(--nx-ease)}
+.ms-row:hover{background:var(--nx-panel)}
+.ms-row[aria-current="true"]{background:var(--nx-lilac)}
+.ms-row:focus-visible{outline:var(--nx-focus-ring);outline-offset:-3px}
+.ms-row__body{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ms-row__top{display:flex;justify-content:space-between;gap:var(--nx-space-2)}
+.ms-row__top strong{color:var(--nx-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row__top time,.ms-row__product{font-size:var(--nx-fs-detail);color:var(--nx-muted);white-space:nowrap}
+.ms-row__preview{font-size:var(--nx-fs-detail);color:var(--nx-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-row.is-unread .ms-row__preview{font-weight:700}
+.ms-dot{width:10px;height:10px;border-radius:50%;background:var(--nx-orange)}
+.ms-avatar{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--nx-lilac);color:var(--nx-violet);font:800 15px var(--nx-font)}
+.ms-empty{display:flex;flex-direction:column;align-items:flex-start;gap:var(--nx-space-3);padding:var(--nx-space-5)}
+.ms-empty p{margin:0;color:var(--nx-muted)}
+/* conversación */
+.ms-thread{display:flex;flex-direction:column;gap:var(--nx-space-4);min-height:520px}
+.ms-back{display:none;align-self:flex-start}
+.ms-thread__head{display:flex;align-items:center;gap:var(--nx-space-3)}
+.ms-thread__head h2,.ms-thread__head p,.ms-thread__empty h2,.ms-thread__empty p{margin:0}
+.ms-thread h2:focus{outline:none}
+.ms-context{display:flex;align-items:center;gap:var(--nx-space-3);padding:var(--nx-space-3);border-radius:var(--nx-radius-md);background:var(--nx-panel)}
+.ms-context .nx-thumb{width:56px;height:56px}
+.ms-context strong,.ms-context small{display:block}
+.ms-context small{color:var(--nx-muted);font-size:var(--nx-fs-detail)}
+.ms-context__links{display:flex;gap:var(--nx-space-4);flex-wrap:wrap;margin-top:4px}
+.ms-context__links a{font-weight:700;color:var(--nx-violet)}
+.ms-history{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--nx-space-3);flex:1;max-height:420px;overflow:auto}
+.ms-history__empty{color:var(--nx-muted)}
+.ms-bubble{max-width:min(520px,85%);padding:var(--nx-space-3) var(--nx-space-4);border-radius:var(--nx-radius-md);background:var(--nx-layer-2);border:1px solid var(--nx-line)}
+.ms-bubble.is-sent{align-self:flex-end;background:var(--nx-lilac);border-color:var(--nx-lilac-200)}
+.ms-bubble strong{font-size:var(--nx-fs-detail)}
+.ms-bubble p{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ms-bubble small{color:var(--nx-muted);font-size:12.5px}
+.ms-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--nx-space-2) var(--nx-space-3);align-items:end}
+.ms-compose label{grid-column:1/-1;font-weight:700}
+.ms-compose textarea{width:100%;min-height:52px;padding:12px;border:2px solid var(--nx-line);border-radius:var(--nx-radius-sm);font:inherit;resize:vertical;background:var(--nx-layer-1);color:var(--nx-ink)}
+.ms-compose textarea:focus{outline:var(--nx-focus-ring);border-color:var(--nx-violet)}
+.ms-limit{grid-column:1/-1;grid-row:3;color:var(--nx-danger);font-weight:700}
+.ms-limit:empty{display:none}
+.ms-feedback{margin:0;font-weight:600;color:var(--nx-success)}
+.ms-thread__empty{margin:auto;text-align:center}
+/* Pantalla angosta: la lista o la conversación */
+@media (max-width:900px){
+  .ms-layout{grid-template-columns:minmax(0,1fr)}
+  .ms-layout.is-selected .ms-inbox{display:none}
+  .ms-layout:not(.is-selected) .ms-thread{display:none}
+  .ms-back{display:inline-flex}
+  .ms-thread{min-height:0}
+  .ms-history{max-height:none}
+}
+@media (max-width:640px){
+  .ms-row{padding:var(--nx-space-3) var(--nx-space-4)}
+  .ms-inbox__head{padding:var(--nx-space-4) var(--nx-space-4) var(--nx-space-3)}
+  .ms-compose{grid-template-columns:minmax(0,1fr)}
+  .ms-compose .nx-btn{width:100%}
+  .ms-limit{grid-row:auto}
+}
+
+/* Pestañas Avisos / Conversaciones */
+.ms-tabs{display:flex;gap:var(--nx-space-2);margin:var(--nx-space-3) 0}
+.ms-tab{flex:1;min-height:var(--nx-control-sm);padding:0 var(--nx-space-3);border:1.5px solid var(--nx-line);border-radius:var(--nx-radius-pill);background:var(--nx-white);color:var(--nx-muted);font:700 14px var(--nx-font);cursor:pointer}
+.ms-tab[aria-selected="true"]{background:var(--nx-lilac);border-color:var(--nx-violet);color:var(--nx-violet)}
+.ms-tab:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+.ms-avatar--notice{background:var(--nx-lilac);color:var(--nx-violet)}
+.ms-avatar--notice .ic{width:20px;height:20px}
+.ms-private,.ms-readonly{margin:0;padding:var(--nx-space-2) var(--nx-space-4);background:var(--nx-panel);border-radius:var(--nx-radius-sm);color:var(--nx-muted)}
+.ms-readonly{margin-top:var(--nx-space-3)}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Mensajes del comprador</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../../assets/css/shared/base.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/tokens.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/componentes.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/dashboard-comprador.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/mensajes.css?v=estable-3c1c3867bc47">
+<script src="../../assets/js/shared/acceso-roles.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/datos-compartidos.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/cuentas.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/utils.js?v=estable-3c1c3867bc47"></script><link rel="stylesheet" href="../../assets/css/comprador/banner.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/menu-lateral.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/app.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/tesis.css?v=estable-3c1c3867bc47">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icono-nexora-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/images/icono-nexora-64.png">
+<link rel="stylesheet" href="../../assets/css/comprador/asistente.css?v=estable-3c1c3867bc47">
+</head>
+<body data-role-access="required" data-page="mensajes">
+<div id="buyer-icons"></div>
+<div class="app"><div id="buyer-sidebar"></div><main class="main">
+ <div id="buyer-header"></div>
+ <p class="nx-note" id="messages-status" role="status" aria-live="polite" hidden></p>
+ <div class="ms-layout" id="messages-layout">
+  <section class="nx-card nx-card--flush ms-inbox" aria-labelledby="inbox-title">
+   <div class="ms-inbox__head">
+    <h2 class="nx-h3" id="inbox-title" tabindex="-1">Mensajes</h2>
+    <div class="ms-tabs" role="tablist" aria-label="Tipo de mensajes"><button type="button" role="tab" class="ms-tab" id="tab-avisos" data-tab="avisos" aria-selected="false">Avisos</button><button type="button" role="tab" class="ms-tab" id="tab-conversaciones" data-tab="conversaciones" aria-selected="true">Conversaciones</button></div>
+    <div id="messages-tools"><div class="nx-toolbar"><label class="nx-search"><span class="sr">Buscar conversación</span><svg class="ic" aria-hidden="true"><use href="#search"/></svg><input id="messages-search" type="search" placeholder="Buscar proveedor o producto…"></label></div>
+    <div class="nx-chips" id="messages-chips" role="group" aria-label="Filtrar conversaciones"></div></div>
+   </div>
+   <ul class="ms-list" id="conversation-list" aria-labelledby="inbox-title"><li class="ms-empty" role="alert"><p>Si no aparecen las conversaciones, recarga la página.</p><a class="nx-btn nx-btn--secondary" href="mensajes.html">Recargar Mensajes</a></li></ul>
+  </section>
+  <section class="nx-card ms-thread" id="conversation-panel" aria-label="Conversación"><p class="nx-detail">Elige una conversación.</p></section>
+ </div>
+</main></div>
+<div id="buyer-modals"></div>
+<script src="../../assets/js/demo-session.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/datos-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/estado-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/componentes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/tesis-ui.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/mensajeria-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/imagenes-producto.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/mensajes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/asistente.js?v=estable-3c1c3867bc47"></script>
+</body></html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Mis necesidades</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../../assets/css/shared/base.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/tokens.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/componentes.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/dashboard-comprador.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/necesidades.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/necesidades-visual.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/necesidades-paginas.css?v=estable-3c1c3867bc47">
+<script src="../../assets/js/shared/acceso-roles.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/datos-compartidos.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/cuentas.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/utils.js?v=estable-3c1c3867bc47"></script><link rel="stylesheet" href="../../assets/css/comprador/banner.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/menu-lateral.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/app.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/tesis.css?v=estable-3c1c3867bc47">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icono-nexora-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/images/icono-nexora-64.png">
+<link rel="stylesheet" href="../../assets/css/comprador/asistente.css?v=estable-3c1c3867bc47">
+</head>
+<body data-role-access="required" data-page="necesidades" class="needs-preview">
+<div id="buyer-icons"></div>
+<div class="app">
+ <div id="buyer-sidebar"></div>
+ <main class="main">
+  <div id="buyer-header"></div>
+
+  <div class="nx-layout">
+   <section class="nl-page" aria-labelledby="needs-heading">
+    <div class="nx-toolbar">
+     <label class="nx-search"><span class="sr">Buscar producto</span><svg class="ic" aria-hidden="true"><use href="#search"/></svg><input id="needs-search" type="search" placeholder="Buscar aceite, detergente…"></label>
+    </div>
+    <div class="nx-chips" id="needs-status" role="group" aria-label="Filtrar por estado"></div>
+    <div class="nx-card nx-card--flush">
+     <div class="nl-list-head"><h2 class="nx-h2" id="needs-heading">Necesidades registradas</h2><p class="nx-detail" id="needs-count" role="status"></p></div>
+     <ul class="nx-list" id="needs-list" aria-labelledby="needs-heading"></ul>
+    </div>
+   </section>
+   <aside class="nx-aside nx-stack" aria-labelledby="np-help-title">
+    <section class="nx-card nx-card--tint nl-guide">
+     <p class="nx-label">De tu lista a una oportunidad</p>
+     <h2 class="nx-h3" id="np-help-title">Tu guía de compras</h2>
+     <ol aria-label="Registra, encuentra y participa"><li><span>1</span><span><strong>Registra</strong><small>Productos, cantidades y fecha.</small></span></li><li><span>2</span><span><strong>Encuentra</strong><small>Revisa coincidencias compatibles.</small></span></li><li><span>3</span><span><strong>Participa</strong><small>Tú decides, después de ver las condiciones.</small></span></li></ol>
+     <p class="nx-note"><svg class="ic" aria-hidden="true"><use href="#check"/></svg><span>Revisa la fecha y la presentación antes de confirmar tu lista.</span></p>
+    </section>
+   </aside>
+  </div>
+ </main>
+</div>
+<div id="buyer-modals"></div>
+<script src="../../assets/js/demo-session.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/datos-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/estado-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/componentes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/tesis-ui.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/imagenes-producto.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/necesidad-formato.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/necesidades.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/asistente.js?v=estable-3c1c3867bc47"></script>
+</body>
+</html>

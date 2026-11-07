@@ -1,0 +1,31 @@
+/* NEXORA · Tokens de diseño (docs/COMPARACION_COMPRADOR.md, sección 7).
+   Solo definen variables; no pintan nada por sí mismos. Prefijo nx- para no chocar con las variables
+   históricas de base.css (--primary, --line…) que proveedor y administrador redefinen por rol. */
+:root{
+  /* Marca */
+  --nx-violet:#6B2A9E;--nx-violet-600:#5A2186;--nx-violet-700:#4B1C70;
+  --nx-indigo:#2A1F5C;--nx-orange:#EE7A3C;--nx-orange-ink:#A8410F;
+  --nx-lilac:#EFE5F7;--nx-lilac-200:#E3D0F2;--nx-peach:#FDE3CF;--nx-cream:#FDF8F4;--nx-panel:#F5EFFA;
+  --nx-white:#fff;--nx-line:#EBE3F0;--nx-ink:#2A1F5C;--nx-muted:#5B5878;
+  --nx-disabled-bg:#CFC6DA;--nx-disabled-ink:#9C97B0;
+  /* Estados */
+  --nx-danger:#B3391B;--nx-danger-600:#962E15;--nx-danger-700:#7C2511;--nx-danger-50:#FBE0D8;--nx-danger-100:#F6CDBF;
+  --nx-success:#1F7A4D;--nx-success-50:#DDF1E6;--nx-info:#3F4FA0;--nx-info-50:#E3E8FA;
+  /* Capas: 0 lienzo · 1 superficie · 2 elevada · 3 superpuesta */
+  --nx-layer-0:var(--nx-cream);--nx-layer-1:var(--nx-white);--nx-layer-2:var(--nx-white);--nx-layer-3:var(--nx-white);
+  --nx-shadow-1:0 1px 2px rgba(42,31,92,.06),0 1px 3px rgba(42,31,92,.04);
+  --nx-shadow-2:0 6px 16px rgba(42,31,92,.08),0 2px 4px rgba(42,31,92,.05);
+  --nx-shadow-3:0 24px 60px rgba(42,31,92,.22),0 8px 20px rgba(42,31,92,.10);
+  /* Radios */
+  --nx-radius-sm:12px;--nx-radius-md:16px;--nx-radius-lg:22px;--nx-radius-pill:999px;
+  /* Tipografía: 7 niveles */
+  --nx-font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --nx-fs-display:clamp(28px,3.2vw,38px);--nx-fs-title:22px;--nx-fs-subtitle:17px;--nx-fs-figure:30px;
+  --nx-fs-body:15px;--nx-fs-detail:13px;--nx-fs-label:11px;
+  /* Espaciado (múltiplos de 4) */
+  --nx-space-1:4px;--nx-space-2:8px;--nx-space-3:12px;--nx-space-4:16px;--nx-space-5:20px;--nx-space-6:24px;--nx-space-8:32px;
+  /* Controles */
+  --nx-control-md:44px;--nx-control-sm:36px;
+  --nx-focus-ring:3px solid var(--nx-orange);
+  --nx-ease:.15s ease;
+}

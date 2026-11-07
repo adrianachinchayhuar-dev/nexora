@@ -1,0 +1,64 @@
+/* NEXORA · Barra lateral del comprador en 3 modos: expandida (240 px), compacta (72 px) y oculta (panel superpuesto).
+   El modo lo fija componentes.js con data-menu en .app; por debajo de 900 px siempre va oculta (data-narrow). */
+.app{transition:grid-template-columns .2s ease}
+.app.menu-init,.app.menu-init .side{transition:none!important}
+.app[data-menu="expanded"]{grid-template-columns:240px minmax(0,1fr)}
+.app[data-menu="compact"]{grid-template-columns:72px minmax(0,1fr)}
+.app[data-menu="hidden"]{grid-template-columns:minmax(0,1fr)}
+
+/* Expandida y compacta: la barra va fija a la izquierda */
+.app[data-menu="expanded"] .side,.app[data-menu="compact"] .side{position:sticky;top:0;left:auto;height:100vh;width:auto;max-width:none;transform:none;visibility:visible;box-shadow:none;transition:padding .2s ease}
+.app[data-menu="expanded"] .scrim,.app[data-menu="compact"] .scrim{display:none}
+
+/* Oculta: panel superpuesto con fondo oscuro */
+.app[data-menu="hidden"] .side{position:fixed;left:0;top:0;height:100vh;width:290px;max-width:86vw;overflow:auto;transform:translateX(-100%);visibility:hidden;box-shadow:var(--nx-shadow-3);transition:transform .2s ease,visibility 0s .2s}
+.app[data-menu="hidden"] .side.open{transform:none;visibility:visible;transition:transform .2s ease}
+.app[data-menu="hidden"] .scrim{display:block;position:fixed;inset:0;z-index:55;background:rgba(42,31,92,.45)}
+.app[data-menu="hidden"] .scrim[hidden]{display:none}
+
+/* Botón ☰ y logo en la barra superior: solo con la barra oculta */
+.top .mob{display:none}
+.app[data-menu="hidden"] .top .mob{display:flex;align-items:center;gap:10px;order:0}
+.mob .brand img{display:block;width:32px;height:32px}
+
+/* Logo y botones del encabezado de la barra */
+.side .brand{display:flex;align-items:center;gap:10px;min-width:0}
+.side .brand img{display:block;flex:none;width:36px;height:36px}
+.side .brand b{font-size:22px;font-weight:700;letter-spacing:.02em;color:var(--nx-ink)}
+.sh{gap:8px}
+.sh__tools{display:flex;align-items:center;gap:2px}
+.sh .icbtn{width:34px;height:34px}
+.app[data-menu] #side-toggle,.app[data-menu] #side-hide{display:grid}
+.app[data-menu] #sclose{display:none}
+.app[data-menu="hidden"] #sclose{display:grid}
+.app[data-menu="hidden"] #side-hide{display:none}
+.app[data-narrow="true"] #side-toggle{display:none}
+.side-help__ic{display:none}
+.side-help:focus-visible,.sh .icbtn:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+
+/* Compacta: solo íconos centrados */
+.app[data-menu="compact"] .side{padding:22px 12px;overflow:visible;align-items:center}
+.app[data-menu="compact"] .sh{flex-direction:column;gap:10px}
+.app[data-menu="compact"] .sh__tools{flex-direction:column}
+.app[data-menu="compact"] .side .brand b{display:none}
+.app[data-menu="compact"] .side .brand img{width:40px;height:40px}
+.app[data-menu="compact"] .nav{align-items:center}
+.app[data-menu="compact"] .nav a{position:relative;justify-content:center;width:48px;height:48px;padding:0;gap:0;border-radius:14px}
+/* La etiqueta queda disponible para lectores de pantalla; se ve como etiqueta flotante al pasar el mouse o con el foco */
+.app[data-menu="compact"] .nav a>span:not(.sr){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app[data-menu="compact"] .nav a::after,.app[data-menu="compact"] .side-help::after{content:attr(data-tip);position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);z-index:80;padding:6px 10px;border-radius:10px;background:var(--nx-ink);color:var(--nx-white);font:600 13px var(--nx-font);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s}
+.app[data-menu="compact"] .nav a:hover::after,.app[data-menu="compact"] .nav a:focus-visible::after,.app[data-menu="compact"] .side-help:hover::after,.app[data-menu="compact"] .side-help:focus-visible::after{opacity:1}
+/* Contadores: un punto sobre el ícono */
+.app[data-menu="compact"] .nav-count{position:absolute;top:7px;right:7px;min-width:0;width:10px;height:10px;padding:0;border:2px solid var(--nx-white);box-sizing:content-box;border-radius:50%;background:var(--nx-violet);font-size:0;line-height:0}
+/* Etiquetas de grupo: solo queda un divisor fino */
+.app[data-menu="compact"] .nav-label{display:none}
+.app[data-menu="compact"] .nav-label:not(:first-child){display:block;width:32px;height:1px;margin:10px auto;padding:0;overflow:hidden;background:var(--nx-line);font-size:0;color:transparent}
+/* Ayuda: un solo ícono */
+.app[data-menu="compact"] .side-help{position:relative;width:48px;height:48px;padding:0;margin-inline:auto;align-items:center;justify-content:center;border-radius:50%}
+.app[data-menu="compact"] .side-help img,.app[data-menu="compact"] .side-help>span{display:none}
+.app[data-menu="compact"] .side-help__ic{display:block;width:24px;height:24px;color:var(--nx-violet)}
+
+/* Logo horizontal de «¡Listo!» (primer pedido guardado) */
+.nr-logo{display:block;width:min(320px,100%);min-width:200px;margin:0 auto var(--nx-space-3)}
+.nr-logo img{display:block;width:100%;height:auto}
+@media (prefers-reduced-motion:reduce){.app,.app .side{transition:none}}

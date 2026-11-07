@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Inicio del negocio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../../assets/css/shared/base.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/tokens.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/shared/componentes.css?v=estable-3c1c3867bc47"><link rel="stylesheet" href="../../assets/css/dashboard-comprador.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/compra-grupo.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/dashboard-inicio.css?v=estable-3c1c3867bc47">
+<script src="../../assets/js/shared/acceso-roles.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/datos-compartidos.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/cuentas.js?v=estable-3c1c3867bc47"></script><script src="../../assets/js/shared/utils.js?v=estable-3c1c3867bc47"></script><link rel="stylesheet" href="../../assets/css/comprador/banner.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/menu-lateral.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/app.css?v=estable-3c1c3867bc47">
+<link rel="stylesheet" href="../../assets/css/comprador/tesis.css?v=estable-3c1c3867bc47">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/icono-nexora-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/images/icono-nexora-64.png">
+<link rel="stylesheet" href="../../assets/css/comprador/asistente.css?v=estable-3c1c3867bc47">
+</head>
+<body data-role-access="required" data-page="inicio" class="dashboard-inicio">
+<div id="buyer-icons"></div>
+<div class="app"><div id="buyer-sidebar"></div><main class="main">
+ <div id="buyer-header"></div>
+ <div class="nx-layout in-layout">
+  <div class="nx-stack">
+   <section class="nx-card in-hero" aria-labelledby="in-saving">
+    <div class="in-hero__copy"><p class="nx-label">Si te unes a las compras en grupo</p><p class="in-hero__figure" id="in-saving"></p><p class="nx-detail" id="in-saving-text"></p><a class="nx-btn nx-btn--primary" href="oportunidades.html" data-k="oportunidades">Ver compras en grupo</a></div>
+    <img src="../../assets/images/header-dashboard-hero.png" width="570" height="391" alt="">
+   </section>
+   <nav class="in-stats" id="kpis" aria-label="Resumen"></nav>
+   <section class="nx-card in-ops" aria-labelledby="ot">
+    <div class="nx-card__head"><h2 class="nx-h3 dt-title" id="ot"><svg class="ic" aria-hidden="true"><use href="#users"/></svg>Compras en grupo cerca de ti</h2><a class="nx-btn nx-btn--tertiary nx-btn--sm" href="oportunidades.html" data-k="oportunidades">Ver todas</a></div>
+    <ul class="cg-list in-ops__list" id="ops"></ul>
+   </section>
+   <section class="nx-card nx-card--flush in-needs" aria-labelledby="nt">
+    <div class="nx-card__head"><h2 class="nx-h3 dt-title" id="nt"><svg class="ic" aria-hidden="true"><use href="#clip"/></svg>Mis necesidades recientes</h2><a class="nx-btn nx-btn--tertiary nx-btn--sm" href="necesidades.html" data-k="necesidades">Ver todas</a></div>
+    <ul class="nx-list" id="needs"></ul>
+   </section>
+  </div>
+  <aside class="nx-aside">
+   <section class="nx-card nx-card--raised in-ask" aria-label="Registrar necesidad"><div id="buyer-entry"></div><a class="nx-btn nx-btn--tertiary nx-btn--sm" href="catalogo.html" data-k="catalogo">O elígelo en el Catálogo</a></section>
+   <section class="nx-card in-msgs" aria-labelledby="mt">
+    <div class="nx-card__head"><h2 class="nx-h3 dt-title" id="mt"><svg class="ic" aria-hidden="true"><use href="#chat"/></svg>Mensajes recientes</h2><a class="nx-btn nx-btn--tertiary nx-btn--sm" href="mensajes.html" data-k="mensajes">Abrir</a></div>
+    <ul class="in-msgs__list" id="msgs"></ul>
+   </section>
+   <a class="nx-card in-business" href="perfil.html" data-k="perfil"><img src="../../assets/images/negocio-dashboard.png" width="1254" height="1254" alt=""><span><span class="nx-label">Mi negocio</span><strong id="preview-business-name"></strong><small>Ver perfil</small></span></a>
+   <p class="nx-note in-decide"><svg class="ic" aria-hidden="true"><use href="#shield"/></svg><span>Tú decides si te unes. Guardar un pedido no es comprar.</span></p>
+  </aside>
+ </div>
+</main></div>
+<div id="buyer-modals"></div>
+<script src="../../assets/js/demo-session.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/datos-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/estado-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/componentes.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/tesis-ui.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/imagenes-producto.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/flujo-necesidad.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/necesidad-formato.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/mensajeria-demo.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/dashboard-inicio.js?v=estable-3c1c3867bc47"></script>
+<script src="../../assets/js/comprador/asistente.js?v=estable-3c1c3867bc47"></script>
+</body>
+</html>

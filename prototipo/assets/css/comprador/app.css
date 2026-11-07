@@ -1,0 +1,74 @@
+/* NEXORA · Componentes de la aplicación del comprador: panel de notificaciones, avisos (toast), bienvenida,
+   barra inferior móvil y foco visible. */
+
+/* Foco visible en todo lo que se puede pulsar */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+
+/* 1 · Panel de notificaciones: cajón lateral derecho de 380 px */
+.bw .pop{position:fixed;top:0;right:0;bottom:0;left:auto;width:380px;max-width:100vw;height:100vh;height:100dvh;max-height:none;border:0;border-left:1px solid var(--nx-line);border-radius:0;box-shadow:var(--nx-shadow-3);background:var(--nx-white);z-index:90}
+.bw .pop:not([hidden]){display:flex;flex-direction:column;animation:pop-in .2s ease}
+@keyframes pop-in{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+.pop-scrim{position:fixed;inset:0;z-index:85;background:rgba(42,31,92,.35)}
+.pop-scrim[hidden]{display:none}
+.pop .ph{padding:var(--nx-space-5) var(--nx-space-5) var(--nx-space-3)}
+.pop .nl{flex:1;max-height:none;padding:0 0 var(--nx-space-5)}
+.nl li.nl__group{display:block;padding:var(--nx-space-4) var(--nx-space-5) var(--nx-space-2);border:0;font:800 12px/1 var(--nx-font);letter-spacing:.08em;text-transform:uppercase;color:var(--nx-muted)}
+.nl li.nl__group::before{display:none}
+.nl .alert-link{display:flex;gap:var(--nx-space-3);align-items:flex-start;color:inherit;text-decoration:none;border-radius:var(--nx-radius-sm)}
+.nl .alert-link:hover .notification-title{text-decoration:underline}
+.alert-ic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--nx-lilac);color:var(--nx-violet)}
+.alert-ic .ic{width:18px;height:18px}
+.alert-body{display:flex;flex-direction:column;min-width:0}
+.alert-body .notification-title{font-weight:600;color:var(--nx-ink)}
+.nl li.empty{display:flex;flex-direction:column;align-items:center;gap:var(--nx-space-2);padding:var(--nx-space-8) var(--nx-space-5);text-align:center}
+.nl li.empty strong{font-size:var(--nx-fs-subtitle);color:var(--nx-ink)}
+.alert-ic--ok{width:56px;height:56px;background:var(--nx-success-50);color:var(--nx-success)}
+.alert-ic--ok .ic{width:26px;height:26px}
+
+/* 2 · Aviso único (toast): abajo a la derecha; abajo al centro en móvil */
+.toast{position:fixed;left:auto;right:24px;bottom:24px;z-index:120;display:flex;align-items:center;gap:var(--nx-space-3);max-width:min(420px,calc(100vw - 32px));padding:12px 20px;border-radius:var(--nx-radius-pill);background:var(--nx-indigo);color:var(--nx-white);font:600 14px var(--nx-font);text-align:left;opacity:0;pointer-events:none;transform:translateY(16px);transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:none;pointer-events:auto}
+.toast__action{flex:none;padding:4px 12px;border:0;border-radius:var(--nx-radius-pill);background:var(--nx-white);color:var(--nx-violet);font:700 13px var(--nx-font);cursor:pointer}
+
+/* 3 · Bienvenida */
+.welcome{width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 32px);margin:auto;padding:var(--nx-space-8);border:0;border-radius:var(--nx-radius-lg);background:var(--nx-white);color:var(--nx-ink);box-shadow:var(--nx-shadow-3);overflow:auto}
+.welcome::backdrop{background:rgba(42,31,92,.55)}
+.welcome__logo{display:block;width:min(300px,100%);min-width:200px;margin:0 auto var(--nx-space-5)}
+.welcome__logo img{display:block;width:100%;height:auto}
+.welcome h2{margin:0;text-align:center;font:800 32px/1.15 var(--nx-font)}
+.welcome__lead{margin:var(--nx-space-2) 0 var(--nx-space-5);text-align:center;color:var(--nx-muted)}
+.welcome__steps{list-style:none;margin:0 0 var(--nx-space-6);padding:0;display:flex;flex-direction:column;gap:var(--nx-space-3)}
+.welcome__steps li{display:flex;align-items:center;gap:var(--nx-space-4);padding:var(--nx-space-3) var(--nx-space-4);border-radius:var(--nx-radius-md);background:var(--nx-panel)}
+.welcome__ic{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--nx-white);color:var(--nx-violet)}
+.welcome__steps strong{display:block}
+.welcome__steps small{color:var(--nx-muted);font-size:var(--nx-fs-detail)}
+.welcome__actions{display:flex;flex-wrap:wrap;gap:var(--nx-space-3);justify-content:center}
+@media (max-width:640px){.welcome{padding:var(--nx-space-5);margin:auto;border-radius:var(--nx-radius-lg);width:calc(100vw - 24px)}.welcome h2{font-size:26px}.welcome__actions .nx-btn{flex:1 1 100%}}
+
+/* 4 · Barra inferior en móvil (< 900 px) */
+.bot{display:none}
+@media (max-width:899px){
+  .bot{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));background:var(--nx-white);border-top:1px solid var(--nx-line)}
+  .bot a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:12px;color:var(--nx-muted);font:600 11px var(--nx-font);text-decoration:none}
+  .bot a .ic{width:22px;height:22px}
+  .bot a.on{background:var(--nx-lilac);color:var(--nx-violet)}
+  .bot .bot__new{padding:0;background:none}
+  .bot__plus{display:grid;place-items:center;width:52px;height:52px;margin-top:-22px;border-radius:50%;background:var(--nx-violet);color:var(--nx-white);box-shadow:var(--nx-shadow-2);border:4px solid var(--nx-white);box-sizing:content-box}
+  .bot__plus .ic{width:26px;height:26px}
+  .nx-topbar-new{display:none}
+  .app .main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .toast{left:50%;right:auto;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translate(-50%,16px)}
+  .toast.on{transform:translate(-50%,0)}
+  .bw .pop{width:100vw}
+}
+@media (prefers-reduced-motion:reduce){.bw .pop:not([hidden]){animation:none}.toast{transition:none}}
+
+/* El punto y el contador de avisos usan el color principal (el naranja queda para los cierres) */
+.nl li.un::before,.nl li.un:before{background:var(--nx-violet)}
+.badge{background:var(--nx-violet)}
+
+.bot a{position:relative}
+.bot a[data-unread="1"]::after{content:"";position:absolute;top:6px;left:calc(50% + 8px);width:9px;height:9px;border:2px solid var(--nx-white);border-radius:50%;background:var(--nx-violet);box-sizing:content-box}
+
+/* Un solo tamaño de título de página (32 px) también en el Inicio */
+.dashboard-inicio .top .hello h1{font-size:32px}

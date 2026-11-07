@@ -1,0 +1,10 @@
+/* Detalle de participación (página), sobre tokens.css y componentes.css. */
+
+.pa-actions{display:flex;flex-direction:column;gap:var(--nx-space-3)}
+.pa-actions .nx-label{margin:0}
+.hello #sub{display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap}
+/* confirmación corta (capa 3) */
+
+.pa-error{color:var(--nx-danger)!important;font-weight:700}
+/* Pantalla angosta: qué es y cuánto ahorro → qué hago → qué pasa ahora */
+

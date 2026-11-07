@@ -1,0 +1,26 @@
+require('./helpers/utils-compartidas.cjs');
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const {fixture,supplier,buyerKey}=require('./helpers/proveedor-fixture.cjs');
+const memory=fixture(),p=supplier(memory,{page:'mensajes.html',rolePage:'mensajes'}),id='PROV-DEMO-ANDINA';
+p.c.window.NexoraProviderSession.enter(id);p.writes.length=0;
+const store=p.c.window.NexoraProviderMessages,buyerBefore=memory[buyerKey],privateKey='nexora.proveedor.demo.v1';
+assert.equal(store.list().items.length,0);
+for(const text of ['','   \n\t','x'.repeat(1001)])assert.ok(store.send('CONV-DEMO-ACEITE',text).error);
+for(const c of ['UNKNOWN','op3'])assert.ok(store.send(c,'Mensaje válido').error);
+assert.equal(p.writes.length,0);
+const previous={version:1,providers:{[id]:{search:'aceite'}},drafts:{sentinel:{price:6.2}},profiles:{sentinel:{name:'Conservar'}}};memory[privateKey]=JSON.stringify(previous);
+const saved=store.send('CONV-DEMO-ACEITE','  Hola <script>alert(1)</script>  ');assert.ok(saved.message);assert.equal(saved.message.text,'Hola <script>alert(1)</script>');assert.ok(Number.isFinite(Date.parse(saved.message.createdAt)));
+const state=JSON.parse(memory[privateKey]);for(const k of ['providers','drafts','profiles'])assert.deepEqual(state[k],previous[k]);assert.equal(memory[buyerKey],buyerBefore);
+const reload=supplier(memory);assert.equal(reload.c.window.NexoraProviderMessages.list().items.length,1);
+reload.c.window.NexoraProviderSession.enter('PROV-DEMO-LIMA-SUR');assert.equal(reload.c.window.NexoraProviderMessages.list().items.length,0);assert.ok(reload.c.window.NexoraProviderMessages.send('CONV-DEMO-ACEITE','Ajeno').error);
+reload.c.window.NexoraProviderSession.enter(id);
+const ui=p.c.window.NexoraProviderUI;ui.start=render=>render(p.read(id),id);
+vm.runInContext(fs.readFileSync('assets/js/proveedor/mensajes.js','utf8'),p.c);const root=p.nodes['provider-content'];assert.ok(root.innerHTML.includes('Hola &lt;script&gt;'));assert.ok(root.innerHTML.includes('PRIVATE-CONVERSATION'));assert.ok(root.innerHTML.includes('id="ms-send" disabled'));assert.ok(root.innerHTML.includes('Tu negocio'));
+const input=p.c.document.getElementById('ms-message'),send=p.c.document.getElementById('ms-send');input.value='  ';root.oninput({target:{id:'ms-message',value:input.value}});assert.equal(send.disabled,true);
+input.value='Mensaje nuevo';root.oninput({target:{id:'ms-message',value:input.value}});assert.equal(send.disabled,false);
+let prevented=false;root.onsubmit({target:{id:'ms-compose'},preventDefault(){prevented=true;}});assert.ok(prevented);assert.ok(p.nodes['provider-thread'].innerHTML.includes('Mensaje nuevo'));assert.ok(p.nodes['provider-conversation-list'].innerHTML.includes('Mensaje nuevo'));assert.ok(p.nodes['provider-thread'].innerHTML.includes('id="ms-send" disabled'));assert.equal(store.list().items.length,2);
+const snapshot=memory[privateKey],failed=supplier(memory,{failWrite:true});assert.ok(failed.c.window.NexoraProviderMessages.send('CONV-DEMO-ACEITE','No guardar').error);assert.equal(memory[privateKey],snapshot);
+memory[privateKey]='{broken';assert.ok(store.list().error);assert.ok(store.send('CONV-DEMO-ACEITE','No sobrescribir').error);assert.equal(memory[privateKey],'{broken');memory[privateKey]=snapshot;
+// Failed writes keep the typed message and do not add a bubble or preview.
+failed.c.window.NexoraProviderUI.start=render=>render(failed.read(id),id);vm.runInContext(fs.readFileSync('assets/js/proveedor/mensajes.js','utf8'),failed.c);failed.c.document.getElementById('ms-message').value='Reintentar';failed.nodes['provider-content'].onsubmit({target:{id:'ms-compose'},preventDefault(){}});assert.equal(failed.nodes['ms-message'].value,'Reintentar');assert.ok(failed.nodes['ms-error'].textContent.includes('No se pudo guardar'));assert.equal(memory[buyerKey],buyerBefore);
+console.log('OK: local send, trim/length validation, foreign conversation rejection, preserved history/drafts/profile/filters, reload/provider isolation, escaped HTML, disabled empty button, preview update, failed writes retain input and corrupted storage preserved');

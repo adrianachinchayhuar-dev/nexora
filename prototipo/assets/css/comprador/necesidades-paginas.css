@@ -1,0 +1,32 @@
+/* Mis necesidades (lista) y Detalle de necesidad, sobre tokens.css y componentes.css.
+   El encabezado ilustrado de la lista sigue en necesidades-visual.css. */
+
+/* lista */
+.nl-page{display:flex;flex-direction:column;gap:var(--nx-space-5)}
+.nl-list-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--nx-space-3);flex-wrap:wrap;padding:var(--nx-space-5) var(--nx-space-5) var(--nx-space-3);border-bottom:1px solid var(--nx-line)}
+.nl-list-head p{margin:0}
+.nl-guide ol{list-style:none;margin:var(--nx-space-4) 0;padding:0;display:flex;flex-direction:column;gap:var(--nx-space-3)}
+.nl-guide li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:var(--nx-space-3);align-items:start}
+.nl-guide li>span:first-child{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--nx-white);color:var(--nx-violet);font-weight:800;box-shadow:var(--nx-shadow-1)}
+.nl-guide strong{display:block;font-size:15px;color:var(--nx-ink)}
+.nl-guide small{display:block;font-size:var(--nx-fs-detail);color:var(--nx-muted);line-height:1.4}
+
+/* detalle */
+
+.nd-match{display:flex;flex-direction:column;gap:6px}
+.nd-match+.nd-match{margin-top:var(--nx-space-3)}
+.hello #sub{display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap}
+.nd-action{display:flex;flex-direction:column;gap:var(--nx-space-3)}
+.nd-action .nx-label,.nd-action .nx-h3{margin:0}
+.nd-saving{margin:0;font:600 15px/1.45 var(--nx-font);color:var(--nx-ink)}
+.nd-saving strong{color:var(--nx-success);white-space:nowrap}
+.nd-match p{margin:0}
+/* Pantalla angosta: cómo va → qué hago → datos */
+
+@media (max-width:640px){
+  /* Con «Modo demo» la barra no cabe junto al logo: pasa a su propia línea, como en las demás pantallas. */
+  .needs-preview .top .tr{position:static;width:100%;justify-content:flex-end}
+  
+  
+  .nl-list-head{padding:var(--nx-space-4)}
+}

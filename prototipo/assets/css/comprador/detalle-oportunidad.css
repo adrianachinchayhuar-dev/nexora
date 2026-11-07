@@ -1,0 +1,2 @@
+#op-detail{margin-top:18px;min-width:0}#op-detail :focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+@media(max-width:760px){.detail-grid{grid-template-columns:1fr}.detail-panel{padding:18px}.detail-panel dl>div{grid-template-columns:1fr;gap:3px}.detail-product{gap:12px}.detail-product .product-media{width:64px;height:64px}.detail-conditions{grid-column:auto}}

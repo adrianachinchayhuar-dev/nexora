@@ -1,0 +1,29 @@
+(function () {
+  var ui = window.NexoraProviderUI; if (!ui) return;
+  var pictures = { aceite:'producto-aceite.png', vasos:'producto-vasos.png', arroz:'producto-arroz.png', leche:'producto-leche.png', detergente:'producto-detergente.png', fideos:'producto-fideos.png' };
+  ui.start(function (source, providerId) {
+    var root = document.getElementById('provider-content');
+    if (typeof document.querySelector === 'function') {
+      var role = document.querySelector('#provider-side .provider-role'); if (role) role.textContent = 'Portal del proveedor';
+      var business = document.querySelector('#provider-side .biz');
+      if (business && !document.getElementById('dt-sidebar-art')) business.insertAdjacentHTML('beforebegin','<div class="dt-sidebar-art" id="dt-sidebar-art"><img src="../../assets/images/sidebar-proveedor.png" width="1106" height="1422" alt=""><p>Tu negocio, conectado<br>con más posibilidades.</p></div>');
+    }
+    if (!source.ok) { ui.error(root, source.message); return; }
+    var id = new URLSearchParams(location.search).get('id');
+    var o = source.opportunities.find(function (item) { return item.id === id; });
+    var back = '<nav class="dt-crumb" aria-label="Ubicación"><a class="nx-crumb" href="' + ui.href('oportunidades.html') + '">← Compras en grupo</a><span aria-hidden="true">/</span><span aria-current="page">Detalle</span></nav>';
+    if (!o) { root.innerHTML = back + '<section class="nx-card nx-empty"><h2 class="nx-h2">Compra en grupo no disponible</h2><p>Vuelve a tus compras en grupo y elige otra.</p></section>'; return; }
+    function row(label, value, note, cls) { return '<div><dt>' + ui.esc(label) + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + ui.esc(value) + (note ? '<small class="dt-range-note">' + ui.esc(note) + '</small>' : '') + '</dd></div>'; }
+    var identity = window.NexoraProviders.byId(providerId);
+    var ownBusiness = identity && o.providerId === providerId && ui.esc(identity.name) === ui.esc(o.provider);
+    var closed = o.status === 'cerrada', file = pictures[o.product.id];
+    var image = file ? '<img src="../../assets/images/' + file + '" alt="' + ui.esc(o.product.name + ' · ' + o.presentation) + '" width="360" height="360">' : ui.media(o);
+    var unit = ({botellas:'botella',paquetes:'paquete',bolsas:'bolsa'})[o.unit] || o.unit;
+    var history = window.NexoraScenarioRead.conversations(providerId);
+    var hasChat = history.ok && history.items.some(function (c) { return c.opportunityId === o.id; });
+    var price = Number.isFinite(o.precioActual) && o.precioActual > 0 ? ui.esc(ui.money(o.precioActual)) + '<small>Por ' + ui.esc(unit) + '</small>' : '<small>Precio no disponible</small>';
+    var aside = '<aside class="dt-aside" aria-label="Datos de la compra"><section class="dt-seller nx-card"><span class="dt-eyebrow">' + (closed ? 'COMPRA CERRADA' : 'TU VENTA EN GRUPO') + '</span><div class="dt-seller__price"><span>Precio en grupo</span><strong>' + price + '</strong></div><dl class="dt-seller__facts">' + row('Negocios que se unieron', o.negocios) + row('Cantidad reunida', ui.avance(o)) + row('Tramo alcanzado', (o.tramo + 1) + ' de ' + o.tramos.length) + row(closed ? 'Cerró el' : 'Cierra el', ui.date(o.closeDate), '', closed ? '' : 'is-cierre') + row('Entregas', window.NexoraFechas.rango(o)) + '</dl>' + (closed ? '<p class="dt-seller__note">Puedes consultar sus datos.</p>' : '<div class="dt-seller__actions"><a class="nx-btn nx-btn--primary" href="' + ui.href('productos-ofertas.html?vista=precios') + '">Poner mi precio</a>' + (hasChat ? '<a class="nx-btn nx-btn--secondary" href="' + ui.href('mensajes.html') + '">Ver mensajes de esta compra</a>' : '') + '</div><p class="dt-seller__note">Borrador privado: los compradores aún no lo ven.</p>') + '</section></aside>';
+    var main = '<div class="dt-content"><article class="dt-sheet"><div class="dt-image"><span class="dt-eyebrow">EL PRODUCTO DE ESTA COMPRA</span>' + image + '<p>' + ui.esc(o.presentation) + '</p></div><section class="dt-summary"><span class="nx-status' + (closed ? ' nx-status--cerrada' : '') + '">' + ui.stateLabel(o) + '</span><h2>' + ui.esc(o.product.name) + '</h2><p class="dt-presentation">' + ui.esc(o.presentation) + '</p><dl class="dt-data">' + row('Zona', o.zone) + row(ownBusiness ? 'Tu negocio' : 'Proveedor asociado', o.provider) + '</dl></section></article><section class="dt-conditions" aria-labelledby="dt-conditions-heading"><div class="dt-section-head"><span class="dt-eyebrow">LO QUE SABEMOS</span><h2 id="dt-conditions-heading">Condiciones de la compra</h2></div><dl class="dt-condition-grid">' + row('Pedidos desde / hasta', ui.date(o.from) + ' a ' + ui.date(o.until)) + row('Cantidad mínima', Number.isFinite(o.minimo) ? o.minimo + ' ' + o.unit : 'Sin definir') + row('Falta para el mínimo', o.alcanzaMinimo ? 'Ya se alcanzó' : o.faltaMinimo + ' ' + o.unit) + row('Siguiente tramo', o.siguienteTramo ? 'Faltan ' + o.siguienteTramo.faltan + ' ' + o.unit + ' para ' + ui.money(o.siguienteTramo.precio) : 'Ya es el mejor precio') + '</dl><div class="dt-condition-notes"><p>El pago aún no está definido.</p></div><div class="dt-section-head"><span class="dt-eyebrow">NEGOCIOS UNIDOS</span></div><dl class="dt-condition-grid">' + o.cantidades.map(function (x, i) { return row(x.name || 'Negocio ' + (i + 1), x.qty + ' ' + o.unit); }).join('') + '</dl>' + (o.estado.clave === 'confirmada' ? '' : '<div class="dt-condition-notes"><p>Verás los nombres cuando la compra se confirme.</p></div>') + '</section><div class="dt-next">' + ui.next(closed ? ['La compra en grupo cerró','Revisa sus datos','Consulta tus mensajes'] : ['Revisa las condiciones','Pon tu precio (borrador privado)','Los compradores aún no lo ven']) + '</div></div>';
+    root.innerHTML = back + window.NexoraFechas.franja(o, o.hoy, { verbo: 'Entregas' }) + '<div class="dt-grid">' + main + aside + '</div>';
+  });
+})();

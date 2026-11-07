@@ -1,0 +1,8 @@
+# Finales de línea iguales en macOS y Windows
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.webp binary
+*.pdf binary

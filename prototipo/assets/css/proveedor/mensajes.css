@@ -1,0 +1,83 @@
+/* Mensajes: estilos exclusivos de esta pantalla. */
+body[data-role="proveedor"][data-page="mensajes"]{--nx-violet:var(--prov-verde);--nx-violet-600:var(--prov-verde-600);--nx-violet-700:var(--prov-verde-700);--nx-lilac:var(--prov-verde-claro);--nx-lilac-200:#ccebdc;--nx-ink:#123b32;--nx-muted:#667b74;--nx-panel:#eff8f2;--nx-line:#e2ece6;--primary:var(--prov-verde);--ink:#163d34;--muted:#667b74;--line:#e2ece6;--lilac:#e1f4eb;--bg:#f8faf6;background:var(--bg);color:var(--ink)}
+body[data-page="mensajes"] .app{grid-template-columns:232px minmax(0,1fr)}
+body[data-page="mensajes"] .main{padding:22px 26px 28px;margin-left:0;max-width:none}
+body[data-page="mensajes"] .side{width:232px;background:linear-gradient(180deg,#fff 65%,#f3faf5);border-color:#e3ece6;padding:24px 14px 14px}
+body[data-page="mensajes"] .sh{padding:0 10px 5px}body[data-page="mensajes"] .brand b{color:#171b36;font-size:25px}
+body[data-page="mensajes"] .provider-role{display:block;padding:0 10px 20px;color:#087453;font-size:12px;letter-spacing:.02em;text-transform:none}
+body[data-page="mensajes"] .nav{gap:7px}body[data-page="mensajes"] .nav a{min-height:48px;padding:12px 15px;border-radius:15px;color:#374c46;font-weight:600;font-size:14px}body[data-page="mensajes"] .nav a .ic{font-size:20px}body[data-page="mensajes"] .nav a.on{background:linear-gradient(110deg,#166d52,#07503e);color:#fff;box-shadow:0 5px 12px #0d64451a}
+body[data-page="mensajes"] .biz{flex-shrink:0;background:#e9f5ed;border-radius:16px;padding:12px;margin-top:14px}body[data-page="mensajes"] .biz b{font-size:12px}body[data-page="mensajes"] .biz small{font-size:11px}body[data-page="mensajes"] .provider-avatar{background:#176e51}
+body[data-page="mensajes"] .provider-top{margin-bottom:8px;gap:14px}body[data-page="mensajes"] .provider-top h1{font-size:19px;color:#315449;letter-spacing:-.02em}body[data-page="mensajes"] .provider-top .hello p{font-size:12px}body[data-page="mensajes"] .nx-demo{order:0;margin-left:auto}body[data-page="mensajes"] .nx-demo__tip{left:auto;right:0}
+/* Hero horizontal: ilustración completa, sin deformación. */
+body[data-page="mensajes"] .provider-top{position:relative;isolation:isolate;min-height:220px;padding:30px;border:1px solid #e3eee5;border-radius:24px;background:linear-gradient(100deg,#eaf6ed,#fcf8ee);margin-bottom:0}
+body[data-page="mensajes"] .provider-top::after{content:"";position:absolute;z-index:-1;right:0;top:0;width:50%;height:100%;background:url('../../images/header-mensajes-proveedor.png') no-repeat right center/auto 100%;border-radius:0 24px 24px 0;mask-image:linear-gradient(to right,transparent,#000 24%)}
+body[data-page="mensajes"] .provider-top .hello{max-width:52%;position:relative}body[data-page="mensajes"] .provider-top .hello::before{content:"TU NEGOCIO EN NEXORA";display:block;font-size:10px;letter-spacing:.14em;font-weight:800;color:#4e8069;margin-bottom:10px}body[data-page="mensajes"] .provider-top h1{font-size:36px;line-height:1.15;color:#103f30;font-weight:800;letter-spacing:-.035em}body[data-page="mensajes"] .provider-top .hello p{font-size:14px;color:#466957;margin-top:12px;max-width:360px}body[data-page="mensajes"] .provider-top .nx-demo{position:absolute;right:16px;top:14px;z-index:2}.nx-demo__badge{background:#ffffffed}
+.ms-sidebar-art{margin-top:auto;padding:18px 10px 0;text-align:center}.ms-sidebar-art img{display:block;width:160px;height:174px;object-fit:contain;margin:auto}.ms-sidebar-art p{font-size:12px;font-weight:700;line-height:1.5;color:#277258;margin-top:2px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-mailbox{display:grid;grid-template-columns:minmax(0,.35fr) minmax(0,.65fr);gap:18px;align-items:stretch}
+body[data-role="proveedor"][data-page="mensajes"] .provider-inbox,.provider-thread{min-width:0;border:1px solid #e0e9e1;border-radius:22px;background:#fff;box-shadow:0 4px 16px #244f350b;overflow:hidden}
+body[data-role="proveedor"][data-page="mensajes"] .provider-inbox-header{padding:23px 22px 18px;border-bottom:1px solid #e6eee8}
+body[data-role="proveedor"][data-page="mensajes"] .ms-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;color:#6c8274}
+body[data-role="proveedor"][data-page="mensajes"] .provider-inbox h2{font-size:20px;color:#173f32;margin-top:6px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-inbox-header p{color:#698073;font-size:12px;margin-top:6px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation-list{padding:12px;gap:10px;max-height:540px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation{display:flex;align-items:start;gap:12px;padding:16px 12px;border:1px solid transparent;border-radius:16px;background:#fff;color:#234e3d;min-height:116px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation[aria-pressed="true"]{background:#edf7ef;border:1px solid #cee5d5;box-shadow:inset 3px 0 #18815d}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation:hover{background:#f3f8f2;border-color:#d5e6d9}
+body[data-role="proveedor"][data-page="mensajes"] .ms-avatar{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:14px;background:#eee8f6;color:#735e91;font-weight:800;font-size:16px}
+body[data-role="proveedor"][data-page="mensajes"] .ms-conversation-copy{display:grid;gap:5px;min-width:0}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation-title{font-size:14px;color:#214a37;line-height:1.4}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation-ref{font-size:11px;color:#587964;font-weight:600}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation-preview{font-size:12px;color:#687d70;line-height:1.6}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation time{font-size:10px;color:#74877b;margin-top:3px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header{padding:22px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid #e6eee8}
+body[data-role="proveedor"][data-page="mensajes"] .ms-thread-person{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
+body[data-role="proveedor"][data-page="mensajes"] .ms-thread-person>div{min-width:0}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header h2{font-size:20px;color:#194b35}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header p{font-size:12px;color:#617d6a;margin-top:5px;line-height:1.5}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header .nx-btn{font-size:11px;min-height:44px;padding:0 14px}
+body[data-role="proveedor"][data-page="mensajes"] .ms-readonly{font-size:11px;text-align:center;padding:12px 16px;color:#6d806d;background:#f8f7ef;border-bottom:1px solid #eeeee2;line-height:1.5}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-body{padding:26px 24px;min-height:300px;max-height:540px;overflow:auto;background:linear-gradient(160deg,#fcfdfb,#f1f7f1)}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-list{gap:20px;display:flex;flex-direction:column}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-list li{max-width:88%;padding:16px 18px;border:1px solid #e1e8dd;border-radius:4px 18px 18px 18px;background:#fff;align-self:flex-start;box-shadow:0 3px 8px #274e3506}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-list li.ms-message-own{align-self:flex-end;background:#e0f0e4;border-color:#cde5d4;border-radius:18px 4px 18px 18px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-meta{display:flex;flex-direction:row;justify-content:space-between;align-items:baseline;gap:16px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-meta strong{font-size:11px;color:#336148}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-meta time{font-size:10px;color:#69816e;white-space:nowrap}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-text{font-size:13px;line-height:1.75;margin:9px 0 0;color:#335642}
+body[data-role="proveedor"][data-page="mensajes"] .ms-back{display:none}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .provider-next{padding:15px 22px;background:#eff6ed;border:0;box-shadow:none}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-h3{font-size:13px;color:#4f7056}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-steps{margin-top:12px}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-steps li{font-size:11px}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-steps__dot{width:25px;height:25px;background:#dcebdd}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-steps .is-current .nx-steps__dot{box-shadow:none}
+body[data-role="proveedor"][data-page="mensajes"] .ms-next .nx-steps li:not(:last-child)::after{top:12px}
+@media(max-width:1024px){body[data-page="mensajes"] .app{grid-template-columns:1fr}body[data-page="mensajes"] .main{padding:18px 20px}body[data-page="mensajes"] .side{width:232px}body[data-page="mensajes"] .provider-top{padding:26px;gap:12px;min-height:220px}body[data-page="mensajes"] .provider-top .mob{flex-basis:100%}body[data-page="mensajes"] .provider-top .hello{max-width:54%;flex-basis:100%}body[data-page="mensajes"] .provider-top h1{font-size:31px}body[data-page="mensajes"] .provider-top .hello::before{display:none}.ms-sidebar-art img{height:140px}}
+@media(max-width:760px){
+body[data-role="proveedor"][data-page="mensajes"] .provider-mailbox{grid-template-columns:minmax(0,1fr)}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread{display:none}
+body[data-role="proveedor"][data-page="mensajes"] .ms-thread-view .provider-inbox{display:none}
+body[data-role="proveedor"][data-page="mensajes"] .ms-thread-view .provider-thread{display:block}
+body[data-role="proveedor"][data-page="mensajes"] .provider-conversation-list{max-height:none}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header{padding:20px;gap:16px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header .nx-btn{width:100%}
+body[data-role="proveedor"][data-page="mensajes"] .ms-back{display:block;flex-basis:100%;min-height:44px;padding:8px 0;text-align:left;background:transparent;border:0;color:#08674d;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-body{padding:22px 16px;max-height:none;min-height:240px;overflow:visible}
+body[data-role="proveedor"][data-page="mensajes"] .provider-message-list li{max-width:94%;padding:14px}}
+@media(max-width:480px){body[data-page="mensajes"] .main{padding:14px}body[data-page="mensajes"] .provider-top{padding:16px 18px;min-height:225px;border-radius:20px;align-content:start}body[data-page="mensajes"] .provider-top .hello{max-width:100%}body[data-page="mensajes"] .provider-top h1{font-size:26px;margin-top:6px}body[data-page="mensajes"] .provider-top .hello p{font-size:12px;max-width:190px;margin-top:9px}body[data-page="mensajes"] .provider-top::after{top:auto;bottom:0;width:55%;height:100px}body[data-page="mensajes"] .provider-top .nx-demo{right:12px;top:20px}body[data-page="mensajes"] .mob .brand b{font-size:21px}body[data-page="mensajes"] .mob .brand svg{width:28px}body[data-page="mensajes"] .mob{gap:8px}.ms-sidebar-art img{height:130px}}
+@media(max-height:740px){.ms-sidebar-art img{height:100px}.ms-sidebar-art p{display:none}}
+/* El compositor queda fuera del historial desplazable. */
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread{display:flex;flex-direction:column;max-height:660px}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-header,body[data-role="proveedor"][data-page="mensajes"] .ms-readonly{flex-shrink:0}
+body[data-role="proveedor"][data-page="mensajes"] .provider-thread-body{flex:1;min-height:180px;overflow:auto}
+.ms-compose{padding:16px 22px;background:#fff;border-top:1px solid #e0e9e1;flex-shrink:0}
+.ms-compose-label{font-size:12px;font-weight:700;color:#345b46;display:block;margin-bottom:8px}
+.ms-compose-row{display:flex;align-items:end;gap:12px}
+.ms-compose textarea{display:block;resize:vertical;min-height:68px;max-height:130px;width:100%;min-width:0;flex:1;border:1px solid #cbded0;border-radius:14px;padding:12px;font:inherit;font-size:14px;line-height:1.5;color:#234e3d;background:#fafcf9}
+.ms-compose .nx-btn{min-height:44px;gap:10px;padding:0 18px;font-size:13px}
+.ms-compose .nx-btn:disabled{opacity:.45;cursor:not-allowed}
+.ms-compose small{font-size:10px;color:#718173;display:block;margin-top:7px}
+#ms-error:empty,#ms-status:empty{display:none}
+#ms-error{font-size:12px;color:#a13d24;line-height:1.5;margin-top:9px}
+.ms-status{font-size:11px;color:#236b47;margin-top:8px}
+@media(max-width:760px){body[data-role="proveedor"][data-page="mensajes"] .provider-thread{display:none;max-height:none}body[data-role="proveedor"][data-page="mensajes"] .ms-thread-view .provider-thread{display:flex}body[data-role="proveedor"][data-page="mensajes"] .provider-thread-body{height:300px;max-height:45dvh;flex:auto;min-height:160px;overflow:auto}.ms-compose{padding:15px}.ms-compose-row{gap:8px}.ms-compose .nx-btn{padding:0 12px}.ms-compose textarea{font-size:16px}}

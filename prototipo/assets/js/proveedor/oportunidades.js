@@ -1,0 +1,37 @@
+(function () {
+  var ui = window.NexoraProviderUI; if (!ui) return;
+  var pictures = { aceite:'producto-aceite.png', vasos:'producto-vasos.png', arroz:'producto-arroz.png', leche:'producto-leche.png', detergente:'producto-detergente.png', fideos:'producto-fideos.png' };
+  function card(o) {
+    var file = pictures[o.product.id];
+    var image = file ? '<img src="../../assets/images/' + file + '" alt="' + ui.esc(o.product.name) + '" width="110" height="110">' : ui.media(o);
+    var closed = o.status === 'cerrada';
+    return '<article class="pg-card"><div class="pg-photo">' + image + '</div><div class="pg-product">' + window.NexoraFechas.lineaHtml(o, o.hoy, 'Entregas') + '<span class="nx-status' + (closed ? ' nx-status--cerrada' : '') + '">' + ui.stateLabel(o) + '</span><h2>' + ui.esc(o.product.name) + '</h2><p>' + ui.esc(o.presentation) + '</p><span class="pg-zone">' + ui.icon('home') + ui.esc(o.zone) + '</span></div><div class="pg-facts"><div class="pg-price">' + (Number.isFinite(o.precioActual) && o.precioActual > 0 ? '<span>Precio en grupo</span><strong>' + ui.esc(ui.money(o.precioActual)) + '</strong><small>Por ' + ui.esc(({botellas:'botella',paquetes:'paquete',bolsas:'bolsa'})[o.unit] || o.unit) + '</small>' : '<span>Precio no disponible</span>') + '</div><div class="pg-conditions"><p>' + ui.icon('user') + '<span><strong>' + ui.esc(o.negocios) + '</strong> negocios que se unieron · ' + ui.esc(ui.avance(o)) + '</span></p><p>' + ui.icon('truck') + '<span>Entregas <strong>' + ui.esc(window.NexoraFechas.rango(o)) + '</strong></span></p><p>' + '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-12 4h2m3 0h2"/></svg>' + '<span>' + (closed ? 'Cerró el ' : 'Cierra el ') + '<strong class="is-cierre">' + ui.esc(ui.date(o.closeDate)) + '</strong></span></p></div></div><a class="nx-btn nx-btn--primary pg-detail" href="' + ui.esc(ui.href('detalle-oportunidad.html?id=' + encodeURIComponent(o.id))) + '">Ver detalle <span aria-hidden="true">→</span></a></article>';
+  }
+  ui.start(function (source, providerId) {
+    var root = document.getElementById('provider-content'); if (!source.ok) { ui.error(root, source.message); return; }
+    var saved = window.NexoraProviderState.filters(providerId), opportunities = source.opportunities;
+    var zones = []; opportunities.forEach(function (o) { if (!zones.some(function (z) { return z.id === o.zoneId; })) zones.push({ id:o.zoneId, name:o.zone }); });
+    root.innerHTML = '<section class="pg-filters" aria-label="Buscar y filtrar compras en grupo"><div class="pg-search-row"><label class="pg-search" for="provider-search"><span>¿Qué producto buscas?</span><span class="pg-search-field"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" id="provider-search" placeholder="Producto o presentación"></span></label><p class="pg-search-note">Compara precios y revisa las condiciones de cada compra en grupo.</p></div><input type="hidden" id="provider-status"><input type="hidden" id="provider-zone"><div class="pg-filter-row"><fieldset class="provider-filter-group"><legend>Estado</legend><div class="nx-chips">' + [['','Todas'],['reuniendo','Reuniendo negocios'],['esperando_precio','Esperando precio'],['confirmada','Confirmada'],['no_se_concreto','No se concretó']].map(function (item) { return '<button type="button" class="nx-chip" data-status="' + item[0] + '" aria-pressed="false">' + item[1] + '</button>'; }).join('') + '</div></fieldset><fieldset class="provider-filter-group"><legend>Zona</legend><div class="nx-chips"><button type="button" class="nx-chip" data-zone="" aria-pressed="false">Todas las zonas</button>' + zones.map(function (z) { return '<button type="button" class="nx-chip" data-zone="' + ui.esc(z.id) + '" aria-pressed="false">' + ui.esc(z.name) + '</button>'; }).join('') + '</div></fieldset></div><p id="provider-filter-error" role="status"></p></section><div class="pg-results-head"><div><span class="pg-eyebrow">PARA TU NEGOCIO</span><h2>Compras disponibles</h2><p id="provider-count" role="status"></p></div><button class="nx-btn nx-btn--tertiary" type="button" id="provider-clear">Limpiar filtros</button></div><div id="provider-list"></div><div class="pg-next">' + ui.next(['Busca un producto','Revisa la compra en grupo','Pon tu precio (borrador privado)']) + '</div>';
+    if (typeof document.querySelector === 'function') {
+      var role = document.querySelector('#provider-side .provider-role'); if (role) role.textContent = 'Portal del proveedor';
+      var business = document.querySelector('#provider-side .biz');
+      if (business && !document.getElementById('pg-sidebar-art')) business.insertAdjacentHTML('beforebegin','<div class="pg-sidebar-art" id="pg-sidebar-art"><img src="../../assets/images/sidebar-proveedor.png" width="1106" height="1422" alt=""><p>Tu negocio, conectado<br>con más posibilidades.</p></div>');
+    }
+    var search = document.getElementById('provider-search'), status = document.getElementById('provider-status'), zone = document.getElementById('provider-zone');
+    search.value = saved.search; status.value = saved.status; zone.value = saved.zone;
+    var normalized = window.NexoraUtils.normalizar;
+    function render(persist) {
+      root.querySelectorAll('[data-status]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.dataset.status === status.value)); });
+      root.querySelectorAll('[data-zone]').forEach(function (button) { button.setAttribute('aria-pressed', String(button.dataset.zone === zone.value)); });
+      document.getElementById('provider-clear').hidden = !search.value && !status.value && !zone.value;
+      var query = normalized(search.value.trim());
+      var filtered = opportunities.filter(function (o) { return (!query || normalized(o.product.name + ' ' + o.presentation + ' ' + o.id).includes(query)) && (!status.value || status.value === (o.estado ? o.estado.clave : o.status)) && (!zone.value || zone.value === o.zoneId); });
+      document.getElementById('provider-count').textContent = filtered.length + ' de ' + opportunities.length + ' compras en grupo';
+      document.getElementById('provider-list').innerHTML = filtered.length ? '<div class="pg-list">' + filtered.map(card).join('') + '</div>' : '<section class="provider-panel provider-empty"><h2>' + (opportunities.length ? 'Sin resultados para estos filtros' : 'No tienes compras en grupo') + '</h2><p>' + (opportunities.length ? 'Prueba otra búsqueda o utiliza Limpiar filtros.' : 'Aquí verás los productos asociados a tu negocio.') + '</p></section>';
+      document.getElementById('provider-filter-error').textContent = persist ? window.NexoraProviderState.saveFilters(providerId,{ search:search.value, status:status.value, zone:zone.value }) : saved.error;
+    }
+    root.querySelectorAll('[data-status],[data-zone]').forEach(function (button) { button.addEventListener('click', function () { if (button.hasAttribute('data-status')) status.value = button.dataset.status; else zone.value = button.dataset.zone; render(true); }); });
+    search.addEventListener('input', function () { render(true); }); status.addEventListener('change', function () { render(true); }); zone.addEventListener('change', function () { render(true); });
+    document.getElementById('provider-clear').addEventListener('click', function () { search.value='';status.value='';zone.value='';render(true); }); render(false);
+  });
+})();

@@ -1,0 +1,233 @@
+# NEXORA
+
+Plataforma de abastecimiento colaborativo para bodegas de Lima Metropolitana. Las bodegas de una misma zona juntan sus pedidos en **compras conjuntas** para llegar al precio por volumen de un proveedor aprobado. Cada bodega decide si participa, ve su ahorro estimado antes de comprometerse y sigue la entrega hasta recibir su pedido.
+
+Proyecto de fin de carrera · Diseño y Desarrollo de Software · TECSUP.
+Equipo: Adriana Chinchayhuara Chumpitaz y Yakeli Jimenez Villalobos · Asesor: Luis Manuel Sigueñas Siaden.
+
+---
+
+## Contenido del repositorio
+
+| Carpeta | Qué es | Tecnología |
+|---|---|---|
+| `backend/` | API del MVP: perfil comprador (bodeguero) programado | Java 21, Spring Boot 3.3, Spring Security, JPA, Flyway, PostgreSQL |
+| `frontend/` | Aplicación web del bodeguero | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
+| `prototipo/` | Prototipo navegable de los **3 perfiles** (comprador, proveedor y administrador) con datos simulados; es la especificación visual del MVP | HTML, CSS y JavaScript sin dependencias |
+| `docker-compose.yml` | Base de datos PostgreSQL lista para usar | Docker |
+
+```
+NEXORA/
+├── backend/
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/pe/nexora/
+│       │   ├── reglas/        ← reglas de negocio puras (tramos, estados, fechas, ahorro, intérprete de pedidos)
+│       │   ├── dominio/       ← entidades JPA (tablas)
+│       │   ├── repositorio/   ← acceso a datos (Spring Data)
+│       │   ├── servicio/      ← casos de uso (pedidos, compras, notificaciones, demo)
+│       │   ├── web/           ← controladores REST y DTO
+│       │   └── config/        ← seguridad, errores, reloj de Lima, carga de la demo
+│       ├── main/resources/db/migration/V1__esquema.sql   ← modelo de datos
+│       └── test/java/…        ← pruebas de las reglas (JUnit 5)
+├── frontend/
+│   ├── src/
+│   │   ├── components/ui/     ← componentes shadcn/ui (botón, tarjeta, diálogo, pestañas…)
+│   │   ├── components/        ← componentes de NEXORA (estado, tramos, línea de fechas…)
+│   │   ├── pages/             ← pantallas del bodeguero
+│   │   ├── layout/            ← barra lateral, barra superior, navegación móvil
+│   │   └── lib/               ← cliente de la API, sesión, tipos y formatos
+│   └── public/img/            ← logo, ilustraciones y fotos de productos
+└── prototipo/
+    ├── index.html             ← landing del prototipo
+    ├── pages/                 ← comprador/, proveedor/, administrador/
+    ├── assets/                ← CSS, JS e imágenes
+    └── tests/                 ← 49 pruebas en Node
+```
+
+---
+
+## Qué hace el perfil comprador (sistema real)
+
+| Función | Historias | Dónde |
+|---|---|---|
+| Registro libre del negocio e inicio de sesión (sin aprobación del administrador) | HU-01, HU-02 | `/registro`, `/ingresar` |
+| Catálogo de proveedores aprobados que atienden la zona, con precios por tramos, mínimo y unidad de venta | HU-08 | `/catalogo` |
+| Pedido en lenguaje cotidiano («12 botellas de aceite y una caja de leche») que se ordena en productos y cantidades; el bodeguero revisa y confirma (Nexi, por reglas) | HU-12, HU-14, HU-34 (parcial) | `/pedidos/nuevo` |
+| Fecha requerida: lo antes posible, esta semana, próxima semana o una fecha elegida | HU-15 | `/pedidos/nuevo` |
+| Lista de pedidos con su coincidencia: hay compra que llega a tiempo, llega tarde, se puede proponer una compra o no hay oferta; un pedido repetido actualiza el existente; editar y cancelar | HU-16, HU-17, HU-18 | `/pedidos` |
+| Compras conjuntas de la zona con las 4 etiquetas visibles: Reuniendo negocios, Esperando confirmación del proveedor, Confirmada y No se concretó | HU-19 | `/compras` |
+| Detalle con línea de fechas (Hoy → Cierra → Entrega) y aviso «Llega a tiempo / Llega tarde», tramos de precio, avance hacia el mínimo y ahorro estimado (referencial, preliminar o confirmado) | HU-20, HU-21 | `/compras/:id` |
+| «Si te unes con…»: simulación antes de decidir; unirse de forma voluntaria y retirarse con recálculo de cantidad, tramo y ahorro | HU-22, HU-24 | `/compras/:id` |
+| Precio final: se acepta solo si no sube; si sube (o ya no llega a tiempo), el bodeguero acepta o se retira | HU-27 | `/compras/:id` |
+| Seguimiento de la entrega (en preparación, en camino, entregada o retrasada), compromiso de compensación y puntualidad del proveedor; «Recibí mi pedido» | HU-28, HU-29 | `/compras/:id`, `/seguimiento` |
+| Reporte de incidencias (no llegó, incompleto, dañado, tarde o precio distinto) | HU-38 (lado del bodeguero) | `/compras/:id` |
+| Avisos del proveedor dentro de cada compra | HU-31 (lado del bodeguero) | `/compras/:id` |
+| Navegación común: barra lateral, campana, menú de cuenta y barra inferior en el celular | HU-43 | todo |
+| Notificaciones con enlace, hora y «Marcar todo como leído» | HU-33 | campana |
+| Privacidad: las otras bodegas aparecen solo como un número; nadie ve tu nombre ni tu cantidad | HU-42 | todo |
+| Perfil del negocio con datos opcionales (RUC, horario, descripción) | HU-07 | `/perfil` |
+
+**Simular proveedor** (`/demo`, HU-45): en el V ciclo el perfil proveedor aún no está programado, así que sus acciones se simulan desde este panel, como indica el apartado 1.3.5 de la tesis. Puedes sumar otra bodega, confirmar la compra con el mismo precio o con uno mayor, avanzar la entrega, cerrar una compra sin confirmar, publicar avisos y restablecer toda la demo.
+
+---
+
+## Cómo ejecutarlo en tu computadora (macOS)
+
+### 1. Instala las herramientas (una sola vez)
+
+Con [Homebrew](https://brew.sh):
+
+```bash
+brew install openjdk@21 maven node
+```
+
+Para la base de datos elige **una** opción:
+
+- **Docker Desktop** (recomendado): instálalo y luego usa `docker compose` (paso 2A).
+- **Postgres.app**: descárgalo de postgresapp.com, ábrelo y pulsa *Initialize* (paso 2B).
+
+Comprueba las versiones:
+
+```bash
+java -version    # 21
+mvn -v           # 3.9 o superior
+node -v          # 18 o superior
+```
+
+> Si `java -version` no muestra 21, ejecuta: `export JAVA_HOME=$(/usr/libexec/java_home -v 21)`.
+
+### 2A. Base de datos con Docker
+
+Desde la carpeta `NEXORA/`:
+
+```bash
+docker compose up -d
+```
+
+### 2B. Base de datos con Postgres.app
+
+```bash
+psql postgres -c "CREATE USER nexora WITH PASSWORD 'nexora';"
+psql postgres -c "CREATE DATABASE nexora OWNER nexora;"
+```
+
+### 3. Backend (terminal 1)
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+La primera vez descarga las librerías (unos minutos). Está listo cuando aparece `Started NexoraApplication` y `Datos de demostración cargados`. Flyway crea las tablas solo.
+
+Prueba rápida: abre http://localhost:8080/api/salud → `{"estado":"ok"}`.
+
+### 4. Frontend (terminal 2)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Abre **http://localhost:5173** y pulsa **«Entrar con la cuenta demo»**:
+
+- Correo: `ana@nexora.pe`
+- Contraseña: `nexora123`
+
+### 5. Prototipo de los 3 perfiles (opcional)
+
+```bash
+cd prototipo
+python3 -m http.server 8000
+```
+
+Abre http://localhost:8000.
+
+---
+
+## Recorrido sugerido para la demostración (5 minutos)
+
+1. **Inicio**: saludo, pedidos activos, ahorro estimado y próximas fechas. El pedido de aceite ya tiene compra conjunta.
+2. **Nuevo pedido**: escribe «2 fardos de fideos y 20 bolsas de detergente» → **Ordenar mi pedido**. El sistema convierte 2 fardos en 40 paquetes; revisa, elige «Esta semana» y confirma.
+3. **Resultado**: los fideos no tienen compra → **Proponer compra conjunta**. El detergente muestra si llega a tiempo o no.
+4. **Compras conjuntas → Aceite vegetal**: línea de fechas con «Llega a tiempo», tramos, avance 38/50 y la simulación «Si te unes con 12…». Únete: el grupo llega a 50, el precio baja a S/ 7.00 y la compra pasa a **Esperando confirmación del proveedor**.
+5. **Simular proveedor**: en el aceite pulsa **Confirmar con precio mayor**. Vuelve a la compra: aparece «El proveedor confirmó con otro precio» con **Acepto** o **Me retiro**.
+6. **Vasos descartables** (compra confirmada): en Simular proveedor marca **En camino**. En la compra pulsa **Recibí mi pedido** y luego **Reportar un problema**.
+7. **Campana**: llegan las notificaciones de cada paso.
+8. **Restablecer demo** (en Simular proveedor) para empezar de nuevo; las fechas se recalculan desde hoy.
+
+---
+
+## Pruebas
+
+```bash
+cd backend && mvn test           # reglas de compra e intérprete de pedidos (JUnit 5)
+cd frontend && npm run build     # verificación de tipos y compilación
+cd prototipo && for t in tests/*.test.cjs; do node "$t" >/dev/null && echo "PASS $t" || echo "FAIL $t"; done
+```
+
+---
+
+## API (resumen)
+
+Todas las rutas empiezan con `/api`. Salvo registro, inicio de sesión, zonas y salud, requieren `Authorization: Bearer <token>`.
+
+| Método | Ruta | Uso |
+|---|---|---|
+| POST | `/auth/registro`, `/auth/login`, `/auth/salir` | Cuenta y sesión |
+| GET | `/auth/yo` · PUT `/perfil` | Datos de la cuenta y del negocio |
+| GET | `/zonas`, `/categorias`, `/catalogo?categoria=&q=` | Datos de referencia y catálogo |
+| GET | `/inicio` | Resumen de la pantalla de inicio |
+| POST | `/necesidades/interpretar` | Ordena un pedido escrito en lenguaje cotidiano |
+| GET/POST | `/necesidades` · PUT/DELETE `/necesidades/{id}` | Pedidos del bodeguero |
+| POST | `/necesidades/{id}/proponer` | Crea una compra conjunta a partir de un pedido |
+| GET | `/compras?filtro=` · `/compras/{id}?cantidad=&necesidadId=` | Compras de la zona y detalle con simulación |
+| POST | `/compras/{id}/unirse`, `/retirarse`, `/aceptar-precio`, `/recibido`, `/incidencias` | Acciones del bodeguero |
+| GET | `/participaciones`, `/incidencias` | Seguimiento |
+| GET/POST | `/notificaciones`, `/notificaciones/{id}/leer`, `/notificaciones/leer-todas` | Notificaciones |
+| POST | `/demo/restablecer`, `/demo/compras/{id}/sumar-bodega`, `/confirmar`, `/entrega`, `/vencer`, `/aviso` | Acciones simuladas del proveedor |
+
+---
+
+## Reglas de negocio implementadas
+
+Están en `backend/src/main/java/pe/nexora/reglas/ReglasCompra.java` y tienen pruebas en `ReglasCompraTest.java`.
+
+- **Tramo de precio**: el que alcanza la cantidad total del grupo.
+- **Estado**: al llegar al mínimo, la compra pasa a «Esperando confirmación del proveedor»; si un retiro la deja por debajo, vuelve a «Reuniendo negocios». Unirse nunca confirma la compra. Si vence el cierre sin confirmar, queda en «No se concretó».
+- **Llega a tiempo**: el último día de la entrega debe ser igual o anterior a la fecha requerida.
+- **Precio final**: se acepta solo si no supera el precio con el que te uniste; si lo supera, decides tú.
+- **Ahorro neto estimado** = cantidad × (precio de referencia − precio de la compra) − costo de entrega conocido. Es **referencial** sin precio individual, **preliminar** con precio individual y **confirmado** cuando el proveedor confirmó precio y costo de entrega.
+- **Compra propuesta**: cierra a más tardar en 5 días y antes de que la entrega deje de llegar a tiempo.
+- **Unidad de venta**: «2 cajas de aceite» se convierte en 24 botellas (1 caja = 12).
+
+## Configuración
+
+`backend/src/main/resources/application.properties` acepta variables de entorno:
+
+| Variable | Por defecto |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/nexora` |
+| `DB_USER` / `DB_PASSWORD` | `nexora` / `nexora` |
+| `FRONTEND_URL` | `http://localhost:5173` |
+
+## Problemas frecuentes
+
+| Síntoma | Solución |
+|---|---|
+| `Connection refused` al iniciar el backend | La base de datos no está encendida: `docker compose up -d` o abre Postgres.app. |
+| `password authentication failed for user "nexora"` | Crea el usuario y la base (paso 2B) o revisa `DB_USER` y `DB_PASSWORD`. |
+| `release version 21 not supported` | Maven usa otro Java: `export JAVA_HOME=$(/usr/libexec/java_home -v 21)`. |
+| El frontend dice «No pudimos conectar con el servidor» | El backend no está corriendo en el puerto 8080. |
+| Quiero empezar de cero | En la app: Simular proveedor → Restablecer demo. O borra la base: `docker compose down -v`. |
+| `Port 8080 already in use` | Cierra el otro proceso (`lsof -i :8080`) o usa `mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081` y `VITE_API_URL=http://localhost:8081 npm run dev`. |
+
+## Próximos pasos (VI ciclo)
+
+- Perfiles proveedor y administrador sobre esta misma API (hoy existen en el prototipo).
+- Normalización con embeddings Sentence-BERT y pgvector (hoy: reglas).
+- Asistente conversacional con un LLM (hoy: el intérprete por reglas).
+- Chat privado comprador–proveedor y preguntas anónimas.
+- Aplicación móvil en Flutter con las funciones esenciales del bodeguero.

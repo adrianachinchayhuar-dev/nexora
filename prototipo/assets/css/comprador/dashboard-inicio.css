@@ -1,0 +1,88 @@
+/* Inicio, sobre tokens.css, componentes.css y compra-grupo.css (tarjetas de compra en grupo). */
+.dashboard-inicio .in-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,42%);align-items:center;gap:var(--nx-space-5);padding:0;overflow:hidden;background:linear-gradient(115deg,var(--nx-lilac),var(--nx-layer-1) 75%)}
+.in-hero__copy{display:flex;flex-direction:column;align-items:flex-start;gap:var(--nx-space-2);padding:var(--nx-space-6)}
+.in-hero__copy p{margin:0}
+.in-hero__figure{font:800 clamp(26px,3vw,36px)/1.15 var(--nx-font);color:var(--nx-success);letter-spacing:-.02em}
+.in-hero__copy .nx-btn{margin-top:var(--nx-space-2)}
+.in-hero img{display:block;width:100%;height:100%;max-height:230px;object-fit:cover;object-position:right center;-webkit-mask-image:linear-gradient(90deg,transparent,#000 40%);mask-image:linear-gradient(90deg,transparent,#000 40%)}
+.in-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--nx-space-3)}
+.in-stat{display:flex;align-items:center;gap:var(--nx-space-3);padding:var(--nx-space-4);color:var(--nx-ink);text-decoration:none;font-size:var(--nx-fs-detail);line-height:1.35;transition:box-shadow var(--nx-ease)}
+.in-stat:hover{box-shadow:var(--nx-shadow-2)}
+.in-stat:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+.in-stat strong{font:800 22px/1 var(--nx-font)}
+.in-stat__icon{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:var(--nx-radius-sm);background:var(--nx-lilac);color:var(--nx-violet)}
+.in-ops__list{grid-template-columns:minmax(0,1fr)}
+.in-ops__list .cg-card{box-shadow:none}
+.in-needs .nx-card__head{padding:var(--nx-space-5) var(--nx-space-5) 0}
+.in-need{grid-template-columns:64px minmax(0,1fr) auto 20px}
+.nx-empty p{margin:0;color:var(--nx-muted)}
+/* «¿Qué necesitas comprar?» */
+.in-ask{display:flex;flex-direction:column;gap:var(--nx-space-2)}
+.in-ask .ask{padding:0;border:0;box-shadow:none;background:none;border-radius:0}
+.in-ask .ask label{padding-right:0;font-size:var(--nx-fs-detail);margin-bottom:var(--nx-space-3)}
+.in-ask .ask label strong{display:block;margin-bottom:4px;font:700 var(--nx-fs-subtitle)/1.3 var(--nx-font)}
+.in-ask .arow{grid-template-columns:minmax(0,1fr);gap:var(--nx-space-3)}
+.in-ask textarea{width:100%;min-height:96px;resize:vertical}
+.in-ask>.nx-btn--tertiary{align-self:flex-start}
+/* Mensajes */
+.in-msgs__list{list-style:none;margin:0;padding:0}
+.in-msgs__list li+li{border-top:1px solid var(--nx-line)}
+.in-msgs__list a{display:flex;flex-direction:column;gap:2px;padding:var(--nx-space-3) 0;color:inherit;text-decoration:none}
+.in-msgs__list a:hover .in-msgs__who{text-decoration:underline}
+.in-msgs__who{display:flex;align-items:center;gap:var(--nx-space-2);flex-wrap:wrap;font-weight:700;color:var(--nx-ink)}
+.in-msgs__list small,.in-msgs__empty{color:var(--nx-muted);font-size:var(--nx-fs-detail)}
+.in-msgs__text{color:var(--nx-ink);font-size:var(--nx-fs-detail);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Mi negocio */
+.in-business{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:var(--nx-space-4);color:inherit;text-decoration:none;background:var(--nx-peach)}
+.in-business img{width:72px;height:72px;border-radius:var(--nx-radius-sm);object-fit:cover}
+.in-business span{display:flex;flex-direction:column;gap:2px}
+.in-business small{color:var(--nx-violet);font-weight:700;text-decoration:underline}
+.in-business:focus-visible{outline:var(--nx-focus-ring);outline-offset:2px}
+.in-decide{margin:0}
+/* Pantalla angosta: cuánto ahorro → qué hago → compras en grupo → resumen → lo demás */
+@media (max-width:1200px){
+  .in-layout{display:flex;flex-direction:column;align-items:stretch}
+  .in-layout>.nx-stack,.in-layout>.nx-aside{display:contents}
+  .in-hero{order:1}.in-ask{order:2}.in-ops{order:3}.in-stats{order:4}.in-needs{order:5}.in-msgs{order:6}.in-business{order:7}.in-decide{order:8}
+}
+@media (max-width:640px){
+  .dashboard-inicio .in-hero{grid-template-columns:minmax(0,1fr)}
+  .in-hero img{order:-1;max-height:150px}
+  .in-hero__copy{padding:var(--nx-space-5)}
+  .in-stats{grid-template-columns:minmax(0,1fr)}
+  .in-need{grid-template-columns:56px minmax(0,1fr) 18px}
+  .in-need .nx-status{grid-column:2;justify-self:start}
+}
+/* Tarjetas de números: fondo suave distinto e ícono en círculo */
+.in-stat{border:0}
+.in-stat:nth-child(1){background:var(--nx-lilac)}
+.in-stat:nth-child(2){background:var(--nx-peach)}
+.in-stat:nth-child(3){background:var(--nx-info-50)}
+.in-stat__icon{border-radius:50%;background:var(--nx-white)}
+.in-stat:nth-child(2) .in-stat__icon{color:var(--nx-orange-ink)}
+.in-stat:nth-child(3) .in-stat__icon{color:var(--nx-info)}
+/* Panel «¿Qué necesitas comprar?» */
+.in-ask{padding:var(--nx-space-6);gap:var(--nx-space-3)}
+.in-ask .ask{display:flex;flex-direction:column;gap:var(--nx-space-3)}
+.in-ask .ask label{margin-bottom:0}
+.in-ask .note{display:none}
+.in-ask .ex{margin-top:0;gap:var(--nx-space-2)}
+.in-ask .ex button{font-size:14px;padding:3px 10px}
+.in-ask>.nx-btn--tertiary{padding-left:0;justify-content:flex-start}
+/* Escala ~10 % menor, separación de 24 px y columna lateral de 340 px */
+.dashboard-inicio .in-layout{grid-template-columns:minmax(0,1fr) 340px;gap:var(--nx-space-6)}
+@media (min-width:1201px){.dashboard-inicio .nx-aside{display:flex;flex-direction:column}}
+.dashboard-inicio .nx-stack,.dashboard-inicio .nx-aside{gap:var(--nx-space-6)}
+.dashboard-inicio .nx-card__head .nx-h3{font-size:16px}
+.in-msgs .nx-card__head .nx-h3{white-space:nowrap}
+.in-stats{gap:var(--nx-space-4)}
+.in-stat{min-height:76px;padding:var(--nx-space-3) var(--nx-space-4);font-size:12.5px;align-items:center}
+.in-stat strong{font-size:20px}
+.in-stat__icon{width:36px;height:36px}
+.in-ask .ask label strong{font-size:16px}
+.in-ask .ex{gap:var(--nx-space-2)}
+.in-ask .ex button{font-size:13px;padding:6px 12px}
+.in-ask>.nx-btn--tertiary{margin-left:0;padding-inline:0}
+.in-msgs__who{flex-wrap:nowrap;white-space:nowrap;font-size:14px}
+.in-business{padding:var(--nx-space-4)}
+@media (max-width:1200px){.dashboard-inicio .nx-stack,.dashboard-inicio .nx-aside{gap:0}.in-layout{gap:var(--nx-space-6)}}

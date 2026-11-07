@@ -1,0 +1,9 @@
+/* Registro de proveedores: el mismo estilo del registro de compradores con la identidad verde del proveedor. */
+body[data-role="proveedor"]{--primary:#08674d;--lilac:#e1f4eb;--accent:#08674d;--line:#e2ece6;--ink:#123b32}
+body[data-role="proveedor"] .organic-card{border-color:#e2ece6;box-shadow:0 18px 55px rgba(8,103,77,.08)}
+body[data-role="proveedor"] .btn.p:hover{background:#06533f}
+body[data-role="proveedor"] .organic-story .hw{color:#08674d}
+.reg-zonas{border:0;margin:14px 0 0;padding:0}
+.reg-zonas legend{font-weight:700;padding:0;margin-bottom:6px}
+.reg-zonas label{display:flex;align-items:center;gap:10px;font-weight:400;margin:6px 0}
+.reg-zonas input{width:auto;height:auto}

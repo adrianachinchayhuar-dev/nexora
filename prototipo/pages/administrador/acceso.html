@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>NEXORA · Administrador demo</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"><link rel="stylesheet" href="../../assets/css/shared/base.css?v=admin-a4-aadf23180361"><link rel="stylesheet" href="../../assets/css/administrador/administrador.css?v=admin-a4-aadf23180361"><script src="../../assets/js/shared/acceso-roles.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/shared/datos-compartidos.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/shared/cuentas.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/shared/utils.js?v=admin-a4-aadf23180361"></script></head><body data-role-access="required" data-role="administrador" data-page="acceso"><main class="admin-access admin-login">
+  <a id="admin-brand" href="../../index.html" aria-label="NEXORA, inicio">NEXORA</a>
+  <div class="admin-access-layout">
+    <section class="admin-login-intro" aria-labelledby="admin-login-title">
+      <span class="chip"><svg class="admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></svg>Panel administrativo</span>
+      <h1 id="admin-login-title">Gestión y supervisión de NEXORA</h1>
+      <p>Administra usuarios, compras en grupo y la actividad del sistema.</p>
+      <img class="admin-login-art" src="../../assets/images/login-admin-ilustracion.png?v=admin-a4-aadf23180361" width="1677" height="938" alt="Administradora trabajando en una laptop, acompañada de gráficos y plantas.">
+    </section>
+    <section class="admin-panel admin-login-card" aria-labelledby="admin-form-title">
+      <span class="admin-login-eyebrow">ACCESO ADMINISTRADOR</span>
+      <h2 id="admin-form-title">Inicia sesión</h2>
+      <p class="admin-login-subtitle">Ingresa con tu cuenta de administrador.</p>
+      <form id="admin-access-form" class="admin-form" novalidate>
+        <label for="admin-email"><svg class="admin-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>Correo electrónico</label>
+        <input id="admin-email" type="email" required autocomplete="off" placeholder="admin@nexora.example" inputmode="email" autocapitalize="none" spellcheck="false">
+        <label for="admin-password"><svg class="admin-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg>Contraseña</label>
+        <div class="admin-password-wrap"><input id="admin-password" type="password" required autocomplete="off" placeholder="Ingresa tu contraseña"><button id="admin-password-toggle" type="button" aria-label="Mostrar contraseña" aria-pressed="false" aria-controls="admin-password"><svg class="admin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        <p id="admin-access-error" role="alert" tabindex="-1"></p>
+        <button class="btn p admin-login-submit" type="submit">Entrar</button>
+      </form>
+      <div class="admin-demo-credentials"><span class="admin-credentials-icon" aria-hidden="true">i</span><div><h3>Credenciales de demostración</h3><p>Correo: <span>admin@nexora.example</span><br>Contraseña: <span>NexoraAdminDemo</span></p></div></div>
+      <p class="admin-login-disclaimer">Acceso de demostración, sin autenticación real. Las decisiones son simuladas y no modifican cuentas de otros roles. El escenario se conserva en esta pestaña.</p>
+      <div class="admin-login-links"><a class="link" href="../../index.html"><span aria-hidden="true">←</span> Volver al inicio</a><a class="link" href="../login.html?revision=acceso-roles-2">Elegir otro acceso</a></div>
+      <noscript>Activa JavaScript para utilizar el prototipo.</noscript>
+    </section>
+  </div>
+</main><script src="../../assets/js/shared/proveedores-demo.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/comprador/datos-demo.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/shared/escenario-lectura.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/administrador/sesion-demo.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/administrador/escenario-lectura.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/administrador/componentes.js?v=admin-a4-aadf23180361"></script><script src="../../assets/js/administrador/acceso.js?v=admin-a4-aadf23180361"></script></body></html>

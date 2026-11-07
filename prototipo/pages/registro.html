@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA · Pequeños negocios, grandes oportunidades</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="../assets/css/styles.css">
+<link rel="stylesheet" href="../assets/css/acceso-organico.css?v=2f1d465e44">
+<style>
+/* Distrito y Zona con la misma altura, borde y radio que los demás campos. */
+#reg-form input:not([type=checkbox]),#reg-form select{height:48px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);box-sizing:border-box}
+#reg-form select{appearance:none;-webkit-appearance:none;padding-right:40px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235B5878' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 9l7 7 7-7'/%3E%3C/svg%3E") no-repeat right 16px center}
+#reg-form input[aria-invalid=true],#reg-form select[aria-invalid=true]{border-color:#B3391B}
+.fld-err{display:block;min-height:0;color:#B3391B;font:600 12.5px/1.3 'Plus Jakarta Sans',sans-serif;margin-top:4px}
+.fld-err:empty{display:none}
+.reg-demo{margin:0 0 6px;font:600 12px 'Plus Jakarta Sans',sans-serif;color:var(--muted)}
+.pw{position:relative}.pw input{padding-right:92px}
+.pw__t{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--primary);font:700 13px 'Plus Jakarta Sans',sans-serif;cursor:pointer;padding:8px}
+#reg-submit:disabled{opacity:.55;cursor:not-allowed}
+</style>
+</head>
+<body class="organic-preview registro-preview">
+<svg width="0" height="0" id="prototype-style-1"><defs>
+<linearGradient id="gN" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#EE7A3C"/><stop offset=".5" stop-color="#C0408A"/><stop offset="1" stop-color="#5B2BA0"/></linearGradient>
+<symbol id="N" viewBox="0 0 48 48"><path d="M8 42V8h8l16 20V8h8v34h-8L16 22v20z" fill="url(#gN)" stroke="url(#gN)" stroke-width="3" stroke-linejoin="round"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.5 0 4 1.8 4 4.5"/></symbol>
+<symbol id="db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+<symbol id="truck" viewBox="0 0 24 24"><path d="M2 6h11v10H2zM13 9h4l4 4v3h-8"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+<symbol id="ai" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/></symbol>
+<symbol id="store" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3M5 12v8h14v-8M10 20v-5h4v5"/></symbol>
+<symbol id="clip" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h6"/></symbol>
+<symbol id="cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11L21 7H6"/></symbol>
+<symbol id="drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+<symbol id="box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8"/></symbol>
+<symbol id="cup" viewBox="0 0 24 24"><path d="M6 4h12l-1.5 16h-9z"/><path d="M7 9h10"/></symbol>
+<symbol id="arr" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="hands" viewBox="0 0 24 24"><path d="M3 12l4-4 4 2 3-2 4 3 3-1M7 8l-4 4 6 6 2-1 2 1 3-3M11 10l3 3"/></symbol>
+</defs></svg>
+
+<header><div class="w nav">
+ <a class="brand" href="../index.html#inicio" aria-label="NEXORA"><svg width="44" height="44"><use href="#N"/></svg><b>NEXORA</b><small>Juntos compramos más y mejor</small></a>
+ <nav class="menu" aria-label="Principal"><a class="" href="../index.html#inicio">Inicio</a><a href="../index.html#beneficios">Beneficios</a><a href="../index.html#como">Cómo funciona</a><a href="../index.html#contacto">Contacto</a></nav>
+ <div class="acts"><a class="btn o" href="login.html?revision=acceso-roles-2">Iniciar sesión</a><a class="btn p" href="registro.html">Registrarse</a></div>
+</div></header>
+
+<svg class="organic-defs" width="0" height="0" aria-hidden="true"><defs><clipPath id="organic-edge" clipPathUnits="objectBoundingBox"><path d="M0,0 H1 V.88 C1,.95 .9,.99 .76,.97 C.56,.94 .48,.89 .3,.94 C.16,.98 .07,1 0,.96 Z"/></clipPath></defs></svg>
+<main id="v-register"><div class="au"><div class="af"><div class="fc organic-card">
+ <span class="chip">Crea tu cuenta</span><h2>Registra tu negocio</h2><p class="sub">Es gratis y sin compromiso. El resto lo completas después en tu perfil.</p>
+ <form id="reg-form" novalidate>
+  <p class="reg-demo">Demo: tus datos se guardan solo en este navegador.</p>
+  <label for="rn">Nombre del negocio</label><input id="rn" type="text" autocomplete="organization" placeholder="Bodega Rosita"><small class="fld-err" id="err-rn" role="alert"></small>
+  <label for="rp">Tu nombre</label><input id="rp" type="text" autocomplete="name" placeholder="Nombre y apellido"><small class="fld-err" id="err-rp" role="alert"></small>
+  <label for="rc">Celular</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" placeholder="9XX XXX XXX"><small class="fld-err" id="err-rc" role="alert"></small>
+  <label for="re">Correo</label><input id="re" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com"><small class="fld-err" id="err-re" role="alert"></small>
+  <label for="rw">Contraseña</label><div class="pw"><input id="rw" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"><button type="button" class="pw__t" id="pw-toggle" aria-pressed="false" aria-label="Mostrar contraseña">Mostrar</button></div><small class="fld-err" id="err-rw" role="alert"></small>
+  <label for="rw2">Confirmar contraseña</label><input id="rw2" type="password" autocomplete="new-password" placeholder="Repite tu contraseña"><small class="fld-err" id="err-rw2" role="alert"></small>
+  <div class="r2"><div><label for="rd">Distrito</label><select id="rd"><option value="">Elige tu distrito</option><option value="Santa Anita">Santa Anita</option><option value="Villa El Salvador">Villa El Salvador</option></select><small class="fld-err" id="err-rd" role="alert"></small></div>
+  <div><label for="rz">Zona</label><select id="rz"><option value="">Elige primero el distrito</option></select><small class="fld-err" id="err-rz" role="alert"></small></div></div>
+  <label for="ra">Dirección</label><input id="ra" type="text" autocomplete="street-address" placeholder="Av. Los Ficus 123"><small class="fld-err" id="err-ra" role="alert"></small>
+  <label class="chk"><input id="rt" type="checkbox"> Acepto los términos y entiendo que mi participación en las compras conjuntas es voluntaria.</label><small class="fld-err" id="err-rt" role="alert"></small>
+  <button class="btn p" id="reg-submit" type="submit" disabled>Crear cuenta</button><div class="msg" id="reg-msg" role="status"></div>
+ </form>
+ <p class="alt">¿Ya tienes cuenta? <a class="lnk" href="login.html?revision=acceso-roles-2">Inicia sesión</a></p>
+</div></div><aside class="ai organic-art"><div class="organic-picture"><img src="../assets/images/registro-ilustracion.png" width="1672" height="941" alt="Dos comerciantes con una libreta y una caja de productos"></div><div class="organic-story"><span class="hw">Tu negocio, no estás solo</span><h2>Juntos compramos<br>más y mejor.</h2><ul><li>✓ Agrupa tus pedidos con los de negocios cercanos</li><li>✓ Ve el ahorro estimado antes de decidir</li><li>✓ Participas solo si te conviene</li></ul></div></aside></div></main>
+<script src="../assets/js/prototype.js"></script>
+<script src="../assets/js/shared/acceso-roles.js?v=acceso-roles-88840c99e6f0"></script><script src="../assets/js/shared/datos-compartidos.js?v=acceso-roles-88840c99e6f0"></script><script src="../assets/js/shared/cuentas.js?v=acceso-roles-88840c99e6f0"></script>
+<script src="../assets/js/comprador/datos-demo.js?v=hoy-88840c99e6f0"></script>
+<script src="../assets/js/demo-session.js?v=acceso-roles-88840c99e6f0"></script>
+<script src="../assets/js/registro-comprador.js?v=registro-88840c99e6f0"></script>
+</body>
+</html>

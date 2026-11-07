@@ -1,0 +1,4 @@
+.participation-record{background:var(--lilac);border-radius:14px;padding:14px;margin:12px 0;font-size:14px;line-height:1.6}.participation-record p{margin:8px 0!important}
+@media(max-width:640px){#participation-review dl{grid-template-columns:1fr;gap:4px}#participation-review dd{margin-bottom:10px}#participation-dialog .mf .btn{font-size:14px;white-space:normal}#participation-dialog .mh h2{font-size:18px}}
+
+.participation-statuses{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}.participation-statuses .chip{white-space:normal}

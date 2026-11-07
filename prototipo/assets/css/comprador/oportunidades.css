@@ -1,0 +1,23 @@
+
+
+.op-compatibility{font-size:12px;font-weight:700;color:var(--primary)}
+
+.op-reference-label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0}
+.op-reference-label select{width:100%;min-width:0;padding:10px;border:1.5px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font-size:14px}
+.op-reference-note{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+
+.op-lot{padding:12px;background:var(--panel);border-radius:14px;font-size:14px}
+.op-businesses,.op-dates{color:var(--muted)}
+
+.op-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.op-filters label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;min-width:0}
+.op-filters input,.op-filters select{width:100%;min-width:0;border:1.5px solid var(--line);border-radius:14px;padding:11px;background:var(--surface);color:var(--ink);font-size:15px}
+.op-filter-controls{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.op-only{display:flex;gap:8px;align-items:center;font-size:14px}
+.op-only input{width:18px;height:18px;accent-color:var(--primary)}
+.op-scenario{background:var(--lilac);border-radius:18px;padding:14px 18px;font-size:14px;color:var(--muted)}
+.op-empty{grid-column:1/-1;border:1px solid var(--line);border-radius:22px;padding:30px;background:var(--surface);text-align:center;color:var(--muted)}
+.op-empty h2{color:var(--ink);font-size:22px;margin-bottom:12px}
+.op-empty .btn{margin-top:16px}
+@media(max-width:1000px){.op-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.opportunity-grid,.op-filters{grid-template-columns:1fr}.op-reference-label select,.op-filters input,.op-filters select{font-size:16px}.opportunity-grid .op{flex:initial}.opportunity-card .btn{width:100%}}
