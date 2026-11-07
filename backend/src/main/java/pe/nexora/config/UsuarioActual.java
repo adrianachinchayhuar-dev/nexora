@@ -5,15 +5,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import pe.nexora.dominio.Negocio;
+import pe.nexora.dominio.Proveedor;
 import pe.nexora.repositorio.NegocioRepositorio;
+import pe.nexora.repositorio.ProveedorRepositorio;
 
 /** Datos de quien hace la petición. */
 @Component
 public class UsuarioActual {
     private final NegocioRepositorio negocios;
+    private final ProveedorRepositorio proveedores;
 
-    public UsuarioActual(NegocioRepositorio negocios) {
+    public UsuarioActual(NegocioRepositorio negocios, ProveedorRepositorio proveedores) {
         this.negocios = negocios;
+        this.proveedores = proveedores;
     }
 
     public Long id() {
@@ -27,5 +31,10 @@ public class UsuarioActual {
     public Negocio negocio() {
         return negocios.findByUsuarioId(id())
                 .orElseThrow(() -> ApiException.noEncontrado("No encontramos el negocio de tu cuenta."));
+    }
+
+    public Proveedor proveedor() {
+        return proveedores.findByUsuarioId(id())
+                .orElseThrow(() -> ApiException.noEncontrado("No encontramos el proveedor de tu cuenta."));
     }
 }

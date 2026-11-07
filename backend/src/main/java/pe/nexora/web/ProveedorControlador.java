@@ -1,0 +1,79 @@
+package pe.nexora.web;
+
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import pe.nexora.config.UsuarioActual;
+import pe.nexora.servicio.DemoServicio;
+import pe.nexora.servicio.ProveedorServicio;
+
+/** Panel del proveedor (perfil PROVEEDOR). Cada acción verifica que la compra sea suya. */
+@RestController
+@RequestMapping("/api/proveedor")
+public class ProveedorControlador {
+    private final ProveedorServicio proveedor;
+    private final DemoServicio demo;
+    private final UsuarioActual actual;
+
+    public ProveedorControlador(ProveedorServicio proveedor, DemoServicio demo, UsuarioActual actual) {
+        this.proveedor = proveedor;
+        this.demo = demo;
+        this.actual = actual;
+    }
+
+    @GetMapping("/panel")
+    public Dto.PanelProveedorVista panel() {
+        return proveedor.panel(actual.proveedor());
+    }
+
+    @PostMapping("/compras/{id}/confirmar")
+    public Dto.MensajeVista confirmar(@PathVariable Long id, @Valid @RequestBody Dto.ConfirmarRequest req) {
+        proveedor.confirmar(actual.proveedor(), id, req);
+        return new Dto.MensajeVista("Confirmaste la compra. Los negocios ya fueron avisados.");
+    }
+
+    @PostMapping("/compras/{id}/entrega")
+    public Dto.MensajeVista entrega(@PathVariable Long id, @Valid @RequestBody Dto.EntregaRequest req) {
+        proveedor.entrega(actual.proveedor(), id, req.estado());
+        return new Dto.MensajeVista("Entrega actualizada. Los negocios ya fueron avisados.");
+    }
+
+    @PostMapping("/compras/{id}/aviso")
+    public Dto.MensajeVista aviso(@PathVariable Long id, @Valid @RequestBody Dto.AvisoRequest req) {
+        proveedor.publicarAviso(actual.proveedor(), id, req.texto());
+        return new Dto.MensajeVista("Aviso publicado.");
+    }
+
+    @PostMapping("/incidencias/{id}/responder")
+    public Dto.MensajeVista responder(@PathVariable Long id, @Valid @RequestBody Dto.RespuestaIncidenciaRequest req) {
+        proveedor.responderIncidencia(actual.proveedor(), id, req);
+        return new Dto.MensajeVista("Respuesta enviada al negocio.");
+    }
+
+    // ---------- Datos de prueba (solo para la sustentación) ----------
+
+    @PostMapping("/prueba/restablecer")
+    public Dto.MensajeVista restablecer() {
+        actual.proveedor();
+        demo.restablecer();
+        return new Dto.MensajeVista("Datos de prueba restablecidos. Vuelve a ingresar en ambas ventanas.");
+    }
+
+    @PostMapping("/prueba/compras/{id}/sumar-bodega")
+    public Dto.MensajeVista sumarBodega(@PathVariable Long id, @Valid @RequestBody Dto.SumarBodegaRequest req) {
+        proveedor.propia(actual.proveedor(), id);
+        demo.sumarBodega(id, req.cantidad());
+        return new Dto.MensajeVista("Se sumó una bodega de prueba.");
+    }
+
+    @PostMapping("/prueba/compras/{id}/cerrar")
+    public Dto.MensajeVista cerrar(@PathVariable Long id) {
+        proveedor.propia(actual.proveedor(), id);
+        demo.vencer(id);
+        return new Dto.MensajeVista("La compra cerró sin confirmarse.");
+    }
+}

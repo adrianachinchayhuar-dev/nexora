@@ -12,6 +12,7 @@ import pe.nexora.dominio.Sesion;
 import pe.nexora.dominio.Usuario;
 import pe.nexora.dominio.Zona;
 import pe.nexora.repositorio.NegocioRepositorio;
+import pe.nexora.repositorio.ProveedorRepositorio;
 import pe.nexora.repositorio.SesionRepositorio;
 import pe.nexora.repositorio.UsuarioRepositorio;
 import pe.nexora.repositorio.ZonaRepositorio;
@@ -29,6 +30,7 @@ public class CuentaServicio {
 
     private final UsuarioRepositorio usuarios;
     private final NegocioRepositorio negocios;
+    private final ProveedorRepositorio proveedores;
     private final SesionRepositorio sesiones;
     private final ZonaRepositorio zonas;
     private final PasswordEncoder codificador;
@@ -37,11 +39,13 @@ public class CuentaServicio {
     private final Reloj reloj;
     private final int horasSesion;
 
-    public CuentaServicio(UsuarioRepositorio usuarios, NegocioRepositorio negocios, SesionRepositorio sesiones,
+    public CuentaServicio(UsuarioRepositorio usuarios, NegocioRepositorio negocios, ProveedorRepositorio proveedores,
+                          SesionRepositorio sesiones,
                           ZonaRepositorio zonas, PasswordEncoder codificador, NotificacionServicio notificaciones,
                           Vistas vistas, Reloj reloj, @Value("${nexora.sesion.horas:12}") int horasSesion) {
         this.usuarios = usuarios;
         this.negocios = negocios;
+        this.proveedores = proveedores;
         this.sesiones = sesiones;
         this.zonas = zonas;
         this.codificador = codificador;
@@ -94,8 +98,9 @@ public class CuentaServicio {
         if (!"ACTIVO".equals(u.estado)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Tu cuenta está suspendida. Escríbenos para revisarla.");
         }
-        if (!Usuario.Rol.COMPRADOR.name().equals(u.rol)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "Esta aplicación es para bodegueros. Usa el acceso de tu perfil.");
+        // El administrador aún no tiene pantalla (VI ciclo); comprador y proveedor sí.
+        if (Usuario.Rol.ADMIN.name().equals(u.rol)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "El panel de administración todavía no está disponible.");
         }
         return new Dto.SesionVista(nuevaSesion(u.id), cuenta(u));
     }
@@ -114,7 +119,8 @@ public class CuentaServicio {
 
     private Dto.CuentaVista cuenta(Usuario u) {
         Negocio n = negocios.findByUsuarioId(u.id).orElse(null);
-        return new Dto.CuentaVista(u.id, u.email, u.rol, n == null ? null : vistas.negocio(n));
+        String proveedor = proveedores.findByUsuarioId(u.id).map(p -> p.razonSocial).orElse(null);
+        return new Dto.CuentaVista(u.id, u.email, u.rol, n == null ? null : vistas.negocio(n), proveedor);
     }
 
     @Transactional

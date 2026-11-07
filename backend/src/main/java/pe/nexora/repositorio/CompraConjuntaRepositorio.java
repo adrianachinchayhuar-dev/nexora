@@ -9,4 +9,6 @@ public interface CompraConjuntaRepositorio extends JpaRepository<CompraConjunta,
     List<CompraConjunta> findByZonaIdOrderByFechaCierreAsc(String zonaId);
 
     List<CompraConjunta> findByZonaIdAndProductoId(String zonaId, Long productoId);
+
+    List<CompraConjunta> findByProveedorIdOrderByFechaCierreAsc(Long proveedorId);
 }

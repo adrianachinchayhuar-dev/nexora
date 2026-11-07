@@ -41,14 +41,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Datos de demostración y acciones simuladas del proveedor.
- * En el MVP del V ciclo solo el perfil comprador está programado; las acciones del proveedor se simulan aquí,
- * como indica el apartado 1.3.5 de la tesis. Las fechas se calculan desde «hoy» para que la demo nunca quede vieja.
+ * Datos de prueba para la sustentación: zonas, catálogo, la cuenta de Bodega Rosita y la del proveedor
+ * Distribuidora Andina. Las otras bodegas de la zona no tienen cuenta (solo suman cantidades).
+ * Las fechas se calculan desde «hoy» para que los datos nunca queden viejos.
  */
 @Service
 public class DemoServicio {
     public static final String CORREO_DEMO = "ana@nexora.pe";
     public static final String CLAVE_DEMO = "nexora123";
+    public static final String CORREO_PROVEEDOR = "andina@nexora.pe";
+    public static final String CLAVE_PROVEEDOR = "proveedor123";
 
     private final ZonaRepositorio zonas;
     private final UsuarioRepositorio usuarios;
@@ -151,10 +153,12 @@ public class DemoServicio {
         Proveedor norte = proveedor("Comercial Norte (demo, en revisión)", "20456789012", "EN_REVISION", 0, 0);
         String todas = "sa-centro,sa-norte,ves-1,ves-2";
 
+        cuentaProveedor(andina, ahora.minusDays(60));
+
         Producto aceite = producto(andina, "abarrotes", "Aceite vegetal", "Girasol Andino", "Botella 1 L", "botellas",
                 "caja de 12", 12, "aceite,aceite vegetal", 50, 2, todas, "aceite.webp",
                 tramo(1, 49, "7.80"), tramo(50, 99, "7.00"), tramo(100, null, "6.40"));
-        Producto detergente = producto(limaSur, "limpieza", "Detergente en polvo", "Espuma Plus", "Bolsa 800 g", "bolsas",
+        Producto detergente = producto(andina, "limpieza", "Detergente en polvo", "Espuma Plus", "Bolsa 800 g", "bolsas",
                 "fardo de 12", 12, "detergente,jabon en polvo,ace", 30, 3, todas, "detergente.webp",
                 tramo(1, 29, "12.50"), tramo(30, 59, "11.40"), tramo(60, null, "10.60"));
         Producto vasos = producto(andina, "descartables", "Vasos descartables", "Descartex", "Paquete x 50", "paquetes",
@@ -240,6 +244,33 @@ public class DemoServicio {
         notificacion(ana.id, "COMPRA", "¡Compra de vasos descartables confirmada! Precio final S/ 7.48.", "/compras/" + cVasos.id, false, ahora.minusDays(1));
         notificacion(ana.id, "PEDIDO", "Tu pedido de aceite coincide con una compra conjunta. Revísala.", "/pedidos", false, ahora.minusHours(20));
         notificacion(ana.id, "BIENVENIDA", "Bienvenida a NEXORA. Tú decides si participas en cada compra conjunta.", "/", true, ahora.minusDays(20));
+    }
+
+    /** Agrega la cuenta del proveedor de prueba a una base cargada antes de que existiera ese perfil. */
+    @Transactional
+    public boolean asegurarProveedorDemo() {
+        if (usuarios.existsByEmailIgnoreCase(CORREO_PROVEEDOR)) {
+            return false;
+        }
+        return proveedores.findFirstByRazonSocialStartingWith("Distribuidora Andina")
+                .filter(p -> p.usuarioId == null)
+                .map(p -> {
+                    cuentaProveedor(p, reloj.ahora());
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    private void cuentaProveedor(Proveedor p, LocalDateTime creado) {
+        Usuario u = new Usuario();
+        u.email = CORREO_PROVEEDOR;
+        u.passwordHash = codificador.encode(CLAVE_PROVEEDOR);
+        u.rol = Usuario.Rol.PROVEEDOR.name();
+        u.estado = "ACTIVO";
+        u.creadoEn = creado;
+        usuarios.save(u);
+        p.usuarioId = u.id;
+        proveedores.save(p);
     }
 
     // ---------- Constructores pequeños ----------
@@ -366,7 +397,7 @@ public class DemoServicio {
     }
 
     // ======================================================================
-    // Acciones simuladas del proveedor
+    // Herramientas de prueba (se usan desde el panel del proveedor, sección «Datos de prueba»)
     // ======================================================================
 
     /** Otra bodega de la zona se une (para mostrar en vivo el cambio de tramo). */
@@ -387,93 +418,6 @@ public class DemoServicio {
         compraServicio.refrescar(c);
     }
 
-    /**
-     * El proveedor confirma stock, precio final y entrega (decisión D3).
-     * Cada negocio acepta solo si el precio no sube y la entrega le sigue llegando a tiempo; si no, debe decidir.
-     */
-    @Transactional
-    public void confirmarProveedor(Long compraId, Dto.ConfirmarRequest req) {
-        CompraConjunta c = compraServicio.refrescar(compraServicio.cargar(compraId));
-        if (c.estado != Estado.EN_COTIZACION) {
-            throw ApiException.conflicto("Solo se confirma una compra que ya alcanzó el mínimo y espera al proveedor.");
-        }
-        Producto p = productos.findById(c.productoId).orElseThrow();
-        BigDecimal actual = ReglasCompra.resumen(vistas.tramosDe(p.id), vistas.total(c.id), p.minimo).precioActual();
-        c.precioFinal = req.precioFinal() != null ? req.precioFinal() : actual;
-        if (req.entregaHasta() != null) {
-            c.entregaHasta = req.entregaHasta();
-            c.entregaDesde = req.entregaDesde() != null ? req.entregaDesde() : req.entregaHasta();
-        }
-        c.costoTransporte = req.costoTransporte() != null ? req.costoTransporte()
-                : c.costoTransporte != null ? c.costoTransporte : BigDecimal.ZERO;
-        c.compensacion = req.compensacion() == null || req.compensacion().isBlank() ? c.compensacion : req.compensacion().trim();
-
-        boolean todos = true;
-        for (Participacion part : participaciones.findByCompraIdAndEstado(c.id, Participacion.Estado.ACTIVA)) {
-            LocalDate requerida = part.necesidadId == null ? null
-                    : necesidades.findById(part.necesidadId).map(n -> n.fechaRequerida).orElse(null);
-            boolean acepta = ReglasCompra.aceptaSolo(c.precioFinal, part.precioEstimado)
-                    && ReglasCompra.llegaATiempo(c.entregaHasta, requerida);
-            // Las bodegas simuladas aceptan siempre para no bloquear la demo.
-            boolean simulada = negocios.findById(part.negocioId).map(n -> n.usuarioId == null).orElse(true);
-            part.precioAceptado = acepta || simulada;
-            participaciones.save(part);
-            if (!part.precioAceptado) {
-                todos = false;
-                notificaciones.avisarNegocio(part.negocioId, "PRECIO", "El proveedor confirmó la compra de "
-                        + p.nombre.toLowerCase() + " a S/ " + c.precioFinal + ", llega " + CompraServicio.entregaTexto(c)
-                        + ". Revisa si continúas o te retiras.", "/compras/" + c.id);
-            }
-        }
-        if (todos) {
-            compraServicio.confirmar(c);
-        } else {
-            c.estado = Estado.PRECIO_POR_ACEPTAR;
-            c.estadoDesde = reloj.ahora();
-            compras.save(c);
-        }
-        aviso(c, "Confirmamos stock y precio final de S/ " + c.precioFinal + ". Entrega " + CompraServicio.entregaTexto(c) + ".", reloj.ahora());
-    }
-
-    /** Avanza la entrega: EN_CAMINO, ENTREGADA o RETRASADA. */
-    @Transactional
-    public void entrega(Long compraId, String estadoTexto) {
-        CompraConjunta c = compraServicio.cargar(compraId);
-        if (c.estado != Estado.CONFIRMADA) {
-            throw ApiException.conflicto("La entrega solo avanza en compras confirmadas.");
-        }
-        CompraConjunta.EntregaEstado estado;
-        try {
-            estado = CompraConjunta.EntregaEstado.valueOf(estadoTexto);
-        } catch (IllegalArgumentException e) {
-            throw ApiException.invalido("Estado de entrega no válido.");
-        }
-        Producto p = productos.findById(c.productoId).orElseThrow();
-        if (estado == CompraConjunta.EntregaEstado.ENTREGADA && c.entregaEstado != CompraConjunta.EntregaEstado.ENTREGADA) {
-            Proveedor prov = proveedores.findById(c.proveedorId).orElseThrow();
-            prov.entregasTotal++;
-            if (!reloj.hoy().isAfter(c.entregaHasta) && c.entregaEstado != CompraConjunta.EntregaEstado.RETRASADA) {
-                prov.entregasATiempo++;
-            }
-            proveedores.save(prov);
-        }
-        c.entregaEstado = estado;
-        compras.save(c);
-        String producto = p.nombre.toLowerCase();
-        String texto;
-        if (estado == CompraConjunta.EntregaEstado.EN_PREPARACION) {
-            texto = "El proveedor está preparando tu pedido de " + producto + ".";
-        } else if (estado == CompraConjunta.EntregaEstado.EN_CAMINO) {
-            texto = "Tu pedido de " + producto + " está en camino. Confirma cuando lo recibas.";
-        } else if (estado == CompraConjunta.EntregaEstado.ENTREGADA) {
-            texto = "El proveedor registró la entrega de " + producto + ". ¿Lo recibiste? Confírmalo.";
-        } else {
-            texto = "La entrega de " + producto + " está retrasada."
-                    + (c.compensacion == null ? "" : " Compromiso del proveedor: " + c.compensacion + ".");
-        }
-        notificaciones.avisarParticipantes(c.id, null, "ENTREGA", texto);
-    }
-
     /** Cierra la compra ya (fecha de cierre = ayer) para mostrar «No se concretó». */
     @Transactional
     public void vencer(Long compraId) {
@@ -484,12 +428,5 @@ public class DemoServicio {
         c.fechaCierre = reloj.hoy().minusDays(1);
         compras.save(c);
         compraServicio.refrescar(c);
-    }
-
-    @Transactional
-    public void avisoProveedor(Long compraId, String texto) {
-        CompraConjunta c = compraServicio.cargar(compraId);
-        aviso(c, texto, reloj.ahora());
-        notificaciones.avisarParticipantes(c.id, null, "AVISO", "Aviso del proveedor: " + texto);
     }
 }

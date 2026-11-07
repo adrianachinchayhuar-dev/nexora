@@ -9,4 +9,6 @@ public interface IncidenciaRepositorio extends JpaRepository<Incidencia, Long> {
     List<Incidencia> findByNegocioIdOrderByCreadaEnDesc(Long negocioId);
 
     List<Incidencia> findByCompraIdAndNegocioIdOrderByCreadaEnDesc(Long compraId, Long negocioId);
+
+    List<Incidencia> findByCompraIdOrderByCreadaEnDesc(Long compraId);
 }

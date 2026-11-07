@@ -45,7 +45,8 @@ public final class Dto {
                                ZonaVista zona, String direccion, String ruc, String descripcion, String horario) {
     }
 
-    public record CuentaVista(Long usuarioId, String email, String rol, NegocioVista negocio) {
+    /** proveedor: razón social, solo para cuentas con perfil PROVEEDOR. */
+    public record CuentaVista(Long usuarioId, String email, String rol, NegocioVista negocio, String proveedor) {
     }
 
     public record SesionVista(String token, CuentaVista cuenta) {
@@ -199,7 +200,40 @@ public final class Dto {
     public record NotificacionesVista(long sinLeer, List<NotificacionVista> lista) {
     }
 
-    // ---------- Demo: acciones simuladas del proveedor ----------
+    // ---------- Perfil proveedor ----------
+
+    /** Negocio que participa; sus datos solo se muestran cuando la compra está confirmada (privacidad). */
+    public record ParticipanteVista(String negocio, String direccion, String celular, int cantidad, boolean recibido) {
+    }
+
+    public record IncidenciaProveedorVista(Long id, String negocio, String motivo, String descripcion, String estado,
+                                           String respuesta, LocalDateTime creadaEn) {
+    }
+
+    public record CompraProveedorVista(Long id, String producto, String presentacion, String unidad, String imagen,
+                                       ZonaVista zona, String estado, EstadoVisible estadoVisible, String tuTurno,
+                                       LocalDate fechaCierre, LocalDate entregaDesde, LocalDate entregaHasta,
+                                       int total, int minimo, int negocios, BigDecimal precioActual,
+                                       List<TramoVista> tramos, BigDecimal precioFinal, BigDecimal costoTransporte,
+                                       String compensacion, String entregaEstado, boolean puedeConfirmar,
+                                       boolean puedeAvanzarEntrega, int aceptaronPrecio,
+                                       List<ParticipanteVista> participantes, List<AvisoVista> avisos,
+                                       List<IncidenciaProveedorVista> incidencias) {
+    }
+
+    public record PanelProveedorVista(String razonSocial, String ruc, Integer puntualidad, int entregasATiempo,
+                                      int entregasTotal, int porConfirmar, int enCurso, int incidenciasAbiertas,
+                                      List<CompraProveedorVista> compras) {
+    }
+
+    public record AvisoRequest(@NotBlank(message = "Escribe el aviso.") @Size(max = 300) String texto) {
+    }
+
+    public record RespuestaIncidenciaRequest(@NotBlank(message = "Escribe tu respuesta.") @Size(max = 500) String respuesta,
+                                             @NotBlank String estado) {
+    }
+
+    // ---------- Acciones del proveedor y datos de prueba ----------
 
     public record ConfirmarRequest(@Positive BigDecimal precioFinal, LocalDate entregaDesde, LocalDate entregaHasta,
                                    @Min(0) BigDecimal costoTransporte, @Size(max = 160) String compensacion) {

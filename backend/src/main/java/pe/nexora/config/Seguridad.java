@@ -33,6 +33,8 @@ public class Seguridad {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/registro", "/api/auth/login", "/api/zonas", "/api/salud").permitAll()
+                        .requestMatchers("/api/auth/yo", "/api/auth/salir").authenticated()
+                        .requestMatchers("/api/proveedor/**").hasRole("PROVEEDOR")
                         .requestMatchers("/api/**").hasRole("COMPRADOR")
                         .anyRequest().permitAll())
                 .exceptionHandling(e -> e

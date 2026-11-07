@@ -22,8 +22,15 @@ public class CargaDemo implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (activa && demo.cargarSiVacia()) {
-            LOG.info("Datos de demostración cargados. Ingresa con {} / {}", DemoServicio.CORREO_DEMO, DemoServicio.CLAVE_DEMO);
+        if (!activa) {
+            return;
+        }
+        if (demo.cargarSiVacia()) {
+            LOG.info("Datos de prueba cargados. Bodeguero: {} / {}", DemoServicio.CORREO_DEMO, DemoServicio.CLAVE_DEMO);
+        }
+        // Bases creadas antes del perfil proveedor: se le agrega su cuenta sin borrar nada.
+        if (demo.asegurarProveedorDemo()) {
+            LOG.info("Cuenta de proveedor de prueba lista: {} / {}", DemoServicio.CORREO_PROVEEDOR, DemoServicio.CLAVE_PROVEEDOR);
         }
     }
 }

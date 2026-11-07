@@ -25,4 +25,7 @@ public class Proveedor {
     public int entregasATiempo;
     @Column(name = "entregas_total")
     public int entregasTotal;
+    /** Cuenta con la que el proveedor ingresa a su panel. */
+    @Column(name = "usuario_id")
+    public Long usuarioId;
 }
