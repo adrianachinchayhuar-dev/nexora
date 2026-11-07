@@ -55,7 +55,7 @@ export default function Perfil() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Encabezado titulo="Mi negocio" descripcion={cuenta?.email} />
+      <Encabezado titulo="Mi perfil" etiqueta="Tu negocio" imagen="/img/cabeceras/perfil.webp" descripcion="La información de tu negocio, siempre a mano." />
       <form onSubmit={guardar} className="space-y-6">
         {error && <Alert variant="destructive">{error}</Alert>}
         <Card>

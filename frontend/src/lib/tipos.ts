@@ -7,7 +7,8 @@ export interface Negocio {
   direccion: string; ruc: string | null; descripcion: string | null; horario: string | null;
 }
 
-export interface Cuenta { usuarioId: number; email: string; rol: string; negocio: Negocio | null }
+export type Rol = "COMPRADOR" | "PROVEEDOR";
+export interface Cuenta { usuarioId: number; email: string; rol: Rol; negocio: Negocio | null; proveedor: string | null }
 export interface Sesion { token: string; cuenta: Cuenta }
 
 export interface Tramo { desde: number; hasta: number | null; precio: number }
@@ -87,3 +88,22 @@ export interface Inicio {
 
 export interface Notificacion { id: number; tipo: string; texto: string; enlace: string | null; leida: boolean; creadaEn: string }
 export interface Notificaciones { sinLeer: number; lista: Notificacion[] }
+
+// ---------- Perfil proveedor ----------
+
+export interface Participante { negocio: string; direccion: string; celular: string; cantidad: number; recibido: boolean }
+export interface IncidenciaProveedor {
+  id: number; negocio: string; motivo: string; descripcion: string; estado: string; respuesta: string | null; creadaEn: string;
+}
+export interface CompraProveedor {
+  id: number; producto: string; presentacion: string; unidad: string; imagen: string | null; zona: Zona; estado: string;
+  estadoVisible: EstadoVisible; tuTurno: string; fechaCierre: string; entregaDesde: string; entregaHasta: string;
+  total: number; minimo: number; negocios: number; precioActual: number; tramos: Tramo[]; precioFinal: number | null;
+  costoTransporte: number | null; compensacion: string | null; entregaEstado: EntregaEstado | null;
+  puedeConfirmar: boolean; puedeAvanzarEntrega: boolean; aceptaronPrecio: number; participantes: Participante[];
+  avisos: { texto: string; creadoEn: string }[]; incidencias: IncidenciaProveedor[];
+}
+export interface PanelProveedor {
+  razonSocial: string; ruc: string; puntualidad: number | null; entregasATiempo: number; entregasTotal: number;
+  porConfirmar: number; enCurso: number; incidenciasAbiertas: number; compras: CompraProveedor[];
+}

@@ -21,17 +21,22 @@ export default function Seguimiento() {
 
   return (
     <div>
-      <Encabezado titulo="Seguimiento" descripcion="Las compras en las que participas: su estado, la entrega y lo que tienes que hacer." />
+      <Encabezado
+        titulo="Seguimiento"
+        etiqueta="Tus compras en grupo"
+        imagen="/img/cabeceras/seguimiento.webp"
+        descripcion="Revisa tus participaciones: su estado, la entrega y lo que tienes que hacer."
+      />
       {error && <ErrorCarga mensaje={error} reintentar={recargar} />}
       {cargando && !datos && <CargandoLista />}
       {datos?.length === 0 && (
         <Vacio
           icono={<Truck />}
           titulo="Aún no participas en compras"
-          texto="Cuando te unas a una compra conjunta, aquí verás su estado y la entrega."
+          texto="Cuando te unas a una compra en grupo, aquí verás su estado y la entrega."
           accion={
             <Button asChild>
-              <Link to="/compras">Ver compras de mi zona</Link>
+              <Link to="/compras">Ver compras en grupo</Link>
             </Button>
           }
         />

@@ -162,7 +162,7 @@ export default function CompraDetalle() {
   };
 
   const unirse = async () => {
-    const ok = await accion("unirse", { cantidad: Number(cantidad), necesidadId: necesidadId ? Number(necesidadId) : null }, "¡Te uniste a la compra conjunta!");
+    const ok = await accion("unirse", { cantidad: Number(cantidad), necesidadId: necesidadId ? Number(necesidadId) : null }, "¡Te uniste a la compra en grupo!");
     if (ok) setConfirmarUnion(false);
   };
 
@@ -200,7 +200,7 @@ export default function CompraDetalle() {
   return (
     <div className="space-y-6">
       <Link to="/compras" className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Compras conjuntas
+        <ArrowLeft className="size-4" /> Compras en grupo
       </Link>
 
       {/* Cabecera */}

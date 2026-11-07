@@ -1,13 +1,16 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, ClipboardList, PiggyBank, Plus, ShoppingBasket, Truck } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, CalendarDays, ClipboardList, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { CargandoLista, ErrorCarga, Vacio } from "@/components/comun";
 import { ImagenProducto, TarjetaCompra } from "@/components/compra";
+import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
-import { fechaConDia, relativo, soles } from "@/lib/formato";
-import type { Inicio as TInicio } from "@/lib/tipos";
+import { fechaConDia, fechaCorta, relativo, soles } from "@/lib/formato";
+import type { Compra, Inicio as TInicio, Necesidad } from "@/lib/tipos";
 import { cn } from "@/lib/utils";
 
 const TIPO_FECHA = {
@@ -16,85 +19,155 @@ const TIPO_FECHA = {
   REQUERIDA: { texto: "Lo necesitas", clase: "bg-secondary text-secondary-foreground" },
 };
 
+const EJEMPLOS = ["12 aceites y 8 detergentes", "6 paquetes de vasos", "20 kilos de arroz"];
+
+const ESTADO_NECESIDAD: Record<string, { texto: string; variante: "secondary" | "info" | "exito" | "muted" }> = {
+  ACTIVA: { texto: "Guardada", variante: "secondary" },
+  EN_COMPRA: { texto: "En compra en grupo", variante: "info" },
+  ATENDIDA: { texto: "Recibida", variante: "exito" },
+  CANCELADA: { texto: "Cancelada", variante: "muted" },
+};
+
+function QueNecesitas() {
+  const navegar = useNavigate();
+  const [texto, setTexto] = useState("");
+  const enviar = (e?: FormEvent, valor?: string) => {
+    e?.preventDefault();
+    const t = (valor ?? texto).trim();
+    navegar(t ? `/pedidos/nuevo?texto=${encodeURIComponent(t)}` : "/pedidos/nuevo");
+  };
+  return (
+    <Card className="p-5">
+      <form onSubmit={enviar} className="space-y-3">
+        <div>
+          <label htmlFor="que-necesitas" className="font-bold">
+            ¿Qué necesitas comprar?
+          </label>
+          <p className="text-xs text-muted-foreground">Escríbelo como lo dirías, nosotros lo ordenamos.</p>
+        </div>
+        <Textarea
+          id="que-necesitas"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="Ej: necesito 12 botellas de aceite y 8 bolsas de detergente para esta semana"
+          className="min-h-[84px]"
+        />
+        <Button type="submit" className="w-full">
+          Ordenar mi pedido <ArrowRight />
+        </Button>
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          Prueba con:
+          {EJEMPLOS.map((t) => (
+            <button key={t} type="button" onClick={() => enviar(undefined, t)} className="rounded-full bg-secondary px-2.5 py-1 font-semibold text-secondary-foreground hover:bg-lila">
+              {t}
+            </button>
+          ))}
+        </div>
+        <Link to="/catalogo" className="inline-block text-sm font-semibold text-primary hover:underline">
+          O elígelo en el Catálogo
+        </Link>
+      </form>
+    </Card>
+  );
+}
+
 export default function Inicio() {
+  const { cuenta } = useAuth();
   const { datos, error, cargando, recargar } = useApi<TInicio>("/inicio");
+  const { datos: compras } = useApi<Compra[]>("/compras");
+  const { datos: necesidades } = useApi<Necesidad[]>("/necesidades");
 
   if (error) return <ErrorCarga mensaje={error} reintentar={recargar} />;
   if (cargando && !datos) return <CargandoLista filas={4} />;
   if (!datos) return null;
-  const hoy = datos.comprasCercanas[0]?.hoy ?? new Date().toISOString().slice(0, 10);
+  const hoy = datos.comprasCercanas[0]?.hoy ?? compras?.[0]?.hoy ?? new Date().toISOString().slice(0, 10);
+  const nombre = cuenta?.negocio?.responsable?.split(/\s+/)[0] ?? "";
+
+  // «Podrías ahorrar»: lo que ya ahorras donde participas + lo que ahorrarías con los pedidos que guardaste.
+  const abiertas = (compras ?? []).filter((c) => c.puedeUnirse);
+  const ahorroSiTeUnes = abiertas.reduce((s, c) => s + Math.max(0, c.simulacion?.ahorro.monto ?? 0), 0);
+  const ahorroTotal = ahorroSiTeUnes + Number(datos.ahorroEstimado);
+  const recientes = (necesidades ?? []).filter((n) => n.estado !== "CANCELADA").slice(0, 4);
 
   return (
-    <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-[#4B1C70] text-primary-foreground">
-        <img src="/img/inicio.webp" alt="" className="absolute inset-y-0 right-0 hidden h-full w-[45%] object-cover opacity-95 md:block [mask-image:linear-gradient(to_right,transparent,black_35%)]" />
-        <div className="relative max-w-xl p-6 sm:p-8">
-          <p className="text-sm font-semibold text-white/80">{datos.saludo}</p>
-          <h1 className="mt-1 text-2xl font-extrabold leading-tight sm:text-3xl">¿Qué necesita tu bodega esta semana?</h1>
-          <p className="mt-2 text-white/85">Escríbelo como lo dirías: te mostramos si otras bodegas de tu zona ya están comprando lo mismo.</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <Button asChild variant="naranja" size="lg">
-              <Link to="/pedidos/nuevo">
-                <Plus /> Registrar pedido
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" size="lg">
-              <Link to="/compras">Ver compras de mi zona</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-extrabold">
+          ¡Hola, <span className="text-primary">{nombre || "bienvenida"}</span>!
+        </h1>
+        <p className="text-muted-foreground">
+          {abiertas.length === 1 ? "Hay 1 compra en grupo cerca de ti." : `Hay ${abiertas.length} compras en grupo cerca de ti.`}
+        </p>
+      </div>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[
-          { icono: ClipboardList, valor: datos.pedidosActivos, texto: "pedidos activos", a: "/pedidos" },
-          { icono: ShoppingBasket, valor: datos.comprasActivas, texto: "compras en las que participas", a: "/seguimiento" },
-          { icono: PiggyBank, valor: soles(datos.ahorroEstimado), texto: "ahorro estimado en tus compras", a: "/seguimiento" },
-        ].map(({ icono: Icono, valor, texto, a }) => (
-          <Link key={texto} to={a}>
-            <Card className="flex items-center gap-4 p-4 transition-shadow hover:shadow-md">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-secondary text-primary">
-                <Icono className="size-5" />
-              </div>
-              <div>
-                <div className="text-2xl font-extrabold">{valor}</div>
-                <div className="text-sm text-muted-foreground">{texto}</div>
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </section>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_330px]">
         <div className="min-w-0 space-y-6">
-          {datos.pedidosConCompra.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-lg font-bold">Tus pedidos ya tienen compra conjunta</h2>
-              <div className="space-y-3">
-                {datos.pedidosConCompra.map((n) => (
-                  <Card key={n.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-                    <ImagenProducto nombre={n.producto.nombre} imagen={n.producto.imagen} className="size-14" />
-                    <div className="flex-1">
-                      <div className="font-bold">
-                        {n.producto.nombre} · {n.cantidad} {n.producto.unidad}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{n.coincidencia.mensaje}</p>
-                    </div>
-                    <Button asChild>
-                      <Link to={`/compras/${n.coincidencia.compraId}?pedido=${n.id}`}>
-                        Ver y unirme <ArrowRight />
-                      </Link>
-                    </Button>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Hero: cuánto podría ahorrar */}
+          <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-r from-secondary via-secondary/80 to-muted">
+            <img
+              src="/img/inicio.webp"
+              alt=""
+              className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover sm:block [mask-image:linear-gradient(to_right,transparent,black_30%)]"
+            />
+            <div className="relative max-w-[60%] p-6 max-sm:max-w-none sm:p-7">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">Si te unes a las compras en grupo</p>
+              {ahorroTotal > 0 ? (
+                <>
+                  <p className="mt-1 text-3xl font-extrabold leading-tight text-primary sm:text-4xl">
+                    Podrías ahorrar
+                    <br />
+                    {soles(ahorroTotal)}
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Ahorro estimado con los pedidos que ya guardaste.</p>
+                </>
+              ) : (
+                <>
+                  <p className="mt-1 text-3xl font-extrabold leading-tight text-primary">Compra junto a tu zona</p>
+                  <p className="mt-2 text-sm text-muted-foreground">Registra lo que necesitas y te mostramos cuánto podrías ahorrar.</p>
+                </>
+              )}
+              <Button asChild className="mt-4">
+                <Link to="/compras">Ver compras en grupo</Link>
+              </Button>
+            </div>
+          </section>
 
-          <section>
+          {/* Indicadores */}
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {[
+              { icono: ClipboardList, valor: datos.pedidosActivos, texto: "pedidos guardados", a: "/pedidos" },
+              { icono: Sparkles, valor: abiertas.length, texto: "compras en grupo abiertas", a: "/compras" },
+              {
+                icono: Users,
+                valor: datos.comprasActivas || null,
+                texto: datos.comprasActivas ? (datos.comprasActivas === 1 ? "compra en la que participas" : "compras en las que participas") : "Aún no te unes a ninguna",
+                a: "/seguimiento",
+              },
+            ].map(({ icono: Icono, valor, texto, a }) => (
+              <Link key={a} to={a}>
+                <Card className="flex h-full items-center gap-3 p-3.5 transition-shadow hover:shadow-md">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-primary">
+                    <Icono className="size-4" />
+                  </div>
+                  <div className="text-sm leading-tight">
+                    {valor !== null && <span className="mr-1 text-xl font-extrabold">{valor}</span>}
+                    <span className="text-muted-foreground">{texto}</span>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </section>
+
+          {/* Compras en grupo cerca de ti */}
+          <Card className="p-4 sm:p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold">Compras abiertas en tu zona</h2>
-              <Link to="/compras" className="text-sm font-semibold text-primary hover:underline">
+              <h2 className="flex items-center gap-2 text-lg font-bold">
+                <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-primary">
+                  <Users className="size-4" />
+                </span>
+                Compras en grupo cerca de ti
+              </h2>
+              <Link to="/compras" className="shrink-0 whitespace-nowrap text-sm font-semibold text-primary hover:underline">
                 Ver todas
               </Link>
             </div>
@@ -105,33 +178,69 @@ export default function Inicio() {
                 ))}
               </div>
             ) : (
-              <Vacio icono={<ShoppingBasket />} titulo="No hay compras abiertas por ahora" texto="Registra tu pedido: si no hay compra, puedes proponerla para que otras bodegas se sumen." />
+              <Vacio icono={<Sparkles />} titulo="No hay compras abiertas por ahora" texto="Registra tu necesidad: si no hay compra, puedes proponerla para que otras bodegas se sumen." />
             )}
-          </section>
+          </Card>
+
+          {/* Mis necesidades recientes */}
+          <Card className="p-4 sm:p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-bold">
+                <span className="flex size-8 items-center justify-center rounded-full bg-secondary text-primary">
+                  <ClipboardList className="size-4" />
+                </span>
+                Mis necesidades recientes
+              </h2>
+              <Link to="/pedidos" className="shrink-0 whitespace-nowrap text-sm font-semibold text-primary hover:underline">
+                Ver todas
+              </Link>
+            </div>
+            {recientes.length ? (
+              <ul className="divide-y">
+                {recientes.map((n) => (
+                  <li key={n.id}>
+                    <Link to={n.coincidencia.compraId ? `/compras/${n.coincidencia.compraId}?pedido=${n.id}` : "/pedidos"} className="flex items-center gap-3 rounded-xl px-1 py-3 hover:bg-muted">
+                      <ImagenProducto nombre={n.producto.nombre} imagen={n.producto.imagen} className="size-11 bg-secondary" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold">{n.producto.nombre}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {n.cantidad} {n.producto.unidad} · Para el {fechaConDia(n.fechaRequerida)}
+                        </p>
+                        {n.coincidencia.tipo === "COMPRA" && <p className="text-xs font-semibold text-naranja-tinta">Hay una compra en grupo</p>}
+                      </div>
+                      <Badge variant={ESTADO_NECESIDAD[n.estado]?.variante ?? "secondary"}>{ESTADO_NECESIDAD[n.estado]?.texto ?? n.estado}</Badge>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">Todavía no guardas necesidades.</p>
+            )}
+          </Card>
         </div>
 
-        <Card className="h-fit min-w-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        {/* Columna derecha */}
+        <div className="min-w-0 space-y-4">
+          <QueNecesitas />
+
+          <Card className="p-5">
+            <h2 className="mb-3 flex items-center gap-2 font-bold">
               <CalendarDays className="size-5 text-primary" /> Próximas fechas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+            </h2>
             {datos.proximasFechas.length ? (
-              <ol className="space-y-3">
+              <ol className="space-y-2">
                 {datos.proximasFechas.map((f, i) => {
                   const contenido = (
                     <div className="flex items-start gap-3">
-                      <div className="w-14 shrink-0 text-center">
-                        <div className="text-xs font-semibold uppercase text-muted-foreground">{fechaConDia(f.fecha).split(" ")[0]}</div>
-                        <div className="text-xl font-extrabold leading-none">{fechaConDia(f.fecha).split(" ")[1]}</div>
-                        <div className="text-xs text-muted-foreground">{fechaConDia(f.fecha).split(" ")[2]}</div>
+                      <div className="w-11 shrink-0 rounded-xl bg-muted py-1 text-center">
+                        <div className="text-lg font-extrabold leading-none">{fechaCorta(f.fecha).split(" ")[0]}</div>
+                        <div className="text-[11px] text-muted-foreground">{fechaCorta(f.fecha).split(" ")[1]}</div>
                       </div>
-                      <div className="flex-1 border-l pl-3">
+                      <div className="flex-1">
                         <Badge className={cn("border-transparent", TIPO_FECHA[f.tipo].clase)}>
                           {f.tipo === "ENTREGA" ? <Truck /> : null} {TIPO_FECHA[f.tipo].texto}
                         </Badge>
-                        <div className="mt-1 text-sm font-semibold">{f.texto}</div>
+                        <div className="mt-0.5 text-sm font-semibold leading-snug">{f.texto}</div>
                         <div className="text-xs text-muted-foreground">{relativo(f.fecha, hoy)}</div>
                       </div>
                     </div>
@@ -139,11 +248,11 @@ export default function Inicio() {
                   return (
                     <li key={i}>
                       {f.compraId ? (
-                        <Link to={`/compras/${f.compraId}`} className="block rounded-xl p-1 hover:bg-muted">
+                        <Link to={`/compras/${f.compraId}`} className="block rounded-xl p-1.5 hover:bg-muted">
                           {contenido}
                         </Link>
                       ) : (
-                        <div className="p-1">{contenido}</div>
+                        <div className="p-1.5">{contenido}</div>
                       )}
                     </li>
                   );
@@ -152,8 +261,23 @@ export default function Inicio() {
             ) : (
               <p className="text-sm text-muted-foreground">Cuando participes en compras verás aquí sus cierres y entregas.</p>
             )}
-          </CardContent>
-        </Card>
+          </Card>
+
+          <Link to="/perfil" className="block">
+            <Card className="flex items-center gap-3 bg-secondary/60 p-4 transition-shadow hover:shadow-md">
+              <img src="/img/negocio.webp" alt="" className="size-16 rounded-xl object-cover" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Mi negocio</p>
+                <p className="truncate font-bold">{cuenta?.negocio?.nombre}</p>
+                <p className="text-sm font-semibold text-primary underline">Ver perfil</p>
+              </div>
+            </Card>
+          </Link>
+
+          <p className="flex items-start gap-2 rounded-2xl bg-muted p-3 text-xs text-muted-foreground">
+            <ShieldCheck className="size-4 shrink-0 text-primary" /> Tú decides si te unes. Guardar un pedido no es comprar.
+          </p>
+        </div>
       </div>
     </div>
   );

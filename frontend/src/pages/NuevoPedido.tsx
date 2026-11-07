@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, CheckCircle2, CircleHelp, Plus, Sparkles, Trash2, Wand2 } from "lucide-react";
@@ -59,7 +59,7 @@ export default function NuevoPedido() {
   const navegar = useNavigate();
   const { datos: catalogo } = useApi<Producto[]>("/catalogo");
   const [paso, setPaso] = useState<1 | 2 | 3>(params.get("producto") ? 2 : 1);
-  const [texto, setTexto] = useState("");
+  const [texto, setTexto] = useState(params.get("texto") ?? "");
   const [filas, setFilas] = useState<Fila[]>(() => (params.get("producto") ? [filaVacia(params.get("producto")!)] : []));
   const [interpretando, setInterpretando] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -106,6 +106,16 @@ export default function NuevoPedido() {
       setInterpretando(false);
     }
   };
+
+  // Si viene del inicio («¿Qué necesitas comprar?»), se ordena de inmediato.
+  const yaOrdenado = useRef(false);
+  useEffect(() => {
+    if (params.get("texto") && !yaOrdenado.current) {
+      yaOrdenado.current = true;
+      interpretar();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cambiar = (clave: number, cambio: Partial<Fila>) => setFilas((fs) => fs.map((f) => (f.clave === clave ? { ...f, ...cambio } : f)));
 
@@ -155,7 +165,7 @@ export default function NuevoPedido() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Encabezado titulo="Nuevo pedido" descripcion="Cuéntanos qué necesitas. Tú revisas y confirmas antes de guardar." />
+      <Encabezado titulo="Registrar necesidad" volver={{ a: "/pedidos", texto: "Mis necesidades" }} descripcion="Escribe, revisa y guarda tu pedido. Guardar no es comprar." />
       <ol className="mb-6 flex items-center gap-2 text-sm font-semibold" aria-label="Pasos">
         {["Escribe", "Revisa", "Listo"].map((t, i) => (
           <li key={t} className="flex items-center gap-2">

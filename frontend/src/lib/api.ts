@@ -1,6 +1,14 @@
 // Cliente de la API. En desarrollo Vite envía /api al backend (vite.config.ts).
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
-const CLAVE_TOKEN = "nexora.token";
+
+/**
+ * El comprador y el proveedor guardan su sesión por separado: así se pueden abrir las dos
+ * ventanas lado a lado (por ejemplo, para la sustentación) sin que una cierre la otra.
+ */
+export function areaActual(): "proveedor" | "comprador" {
+  return window.location.pathname.startsWith("/proveedor") ? "proveedor" : "comprador";
+}
+const claveToken = () => (areaActual() === "proveedor" ? "nexora.token.proveedor" : "nexora.token");
 
 export class ErrorApi extends Error {
   constructor(public estado: number, mensaje: string) {
@@ -10,7 +18,7 @@ export class ErrorApi extends Error {
 
 export function leerToken(): string | null {
   try {
-    return localStorage.getItem(CLAVE_TOKEN);
+    return localStorage.getItem(claveToken());
   } catch {
     return null;
   }
@@ -18,8 +26,8 @@ export function leerToken(): string | null {
 
 export function guardarToken(token: string | null) {
   try {
-    if (token) localStorage.setItem(CLAVE_TOKEN, token);
-    else localStorage.removeItem(CLAVE_TOKEN);
+    if (token) localStorage.setItem(claveToken(), token);
+    else localStorage.removeItem(claveToken());
   } catch {
     /* el navegador no permite guardar: la sesión dura lo que dure la pestaña */
   }

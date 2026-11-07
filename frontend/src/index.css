@@ -49,3 +49,24 @@
     @apply tracking-tight;
   }
 }
+
+/* Identidad del perfil proveedor: verde (se activa en <html> dentro de /proveedor). */
+@layer base {
+  .tema-proveedor {
+    --background: 140 25% 97%;         /* #F5FAF6 */
+    --foreground: 162 45% 14%;         /* #13342B */
+    --card-foreground: 162 45% 14%;
+    --popover-foreground: 162 45% 14%;
+    --primary: 161 70% 24%;            /* #125F48 verde */
+    --secondary: 145 40% 92%;          /* #E3F2E8 */
+    --secondary-foreground: 161 70% 20%;
+    --muted: 140 30% 95%;
+    --muted-foreground: 160 10% 38%;
+    --accent: 145 40% 92%;
+    --accent-foreground: 161 70% 20%;
+    --border: 140 20% 89%;
+    --input: 140 20% 84%;
+    --ring: 161 70% 24%;
+    --lila: 145 35% 85%;
+  }
+}

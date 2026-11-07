@@ -25,9 +25,9 @@ NEXORA/
 │       │   ├── reglas/        ← reglas de negocio puras (tramos, estados, fechas, ahorro, intérprete de pedidos)
 │       │   ├── dominio/       ← entidades JPA (tablas)
 │       │   ├── repositorio/   ← acceso a datos (Spring Data)
-│       │   ├── servicio/      ← casos de uso (pedidos, compras, notificaciones, demo)
+│       │   ├── servicio/      ← casos de uso (pedidos, compras, proveedor, notificaciones, datos de prueba)
 │       │   ├── web/           ← controladores REST y DTO
-│       │   └── config/        ← seguridad, errores, reloj de Lima, carga de la demo
+│       │   └── config/        ← seguridad, errores, reloj de Lima, carga de los datos de prueba
 │       ├── main/resources/db/migration/V1__esquema.sql   ← modelo de datos
 │       └── test/java/…        ← pruebas de las reglas (JUnit 5)
 ├── frontend/
@@ -68,7 +68,7 @@ NEXORA/
 | Privacidad: las otras bodegas aparecen solo como un número; nadie ve tu nombre ni tu cantidad | HU-42 | todo |
 | Perfil del negocio con datos opcionales (RUC, horario, descripción) | HU-07 | `/perfil` |
 
-**Simular proveedor** (`/demo`, HU-45): en el V ciclo el perfil proveedor aún no está programado, así que sus acciones se simulan desde este panel, como indica el apartado 1.3.5 de la tesis. Puedes sumar otra bodega, confirmar la compra con el mismo precio o con uno mayor, avanzar la entrega, cerrar una compra sin confirmar, publicar avisos y restablecer toda la demo.
+**Perfil proveedor mínimo** (`/proveedor`, con su propio acceso y color verde): el proveedor ingresa con su cuenta y solo ve **sus** compras en grupo. Confirma stock, precio final, fecha de entrega, costo de entrega y compromiso por retraso; avanza la entrega (en preparación → en camino → entregada, o retrasada); publica avisos y responde incidencias. Por privacidad, ve los nombres de los negocios solo cuando la compra ya está confirmada. La sección **Datos de prueba** permite sumar una bodega simulada, cerrar una compra sin confirmar y restablecer todo para la sustentación. El catálogo propio del proveedor y el perfil administrador quedan para el VI ciclo.
 
 ---
 
@@ -119,7 +119,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-La primera vez descarga las librerías (unos minutos). Está listo cuando aparece `Started NexoraApplication` y `Datos de demostración cargados`. Flyway crea las tablas solo.
+La primera vez descarga las librerías (unos minutos). Está listo cuando aparece `Started NexoraApplication` y `Datos de prueba cargados`. Flyway crea las tablas solo.
 
 Prueba rápida: abre http://localhost:8080/api/salud → `{"estado":"ok"}`.
 
@@ -131,10 +131,16 @@ npm install
 npm run dev
 ```
 
-Abre **http://localhost:5173** y pulsa **«Entrar con la cuenta demo»**:
+Abre dos ventanas del navegador, una al lado de la otra (cada perfil guarda su sesión por separado):
 
-- Correo: `ana@nexora.pe`
-- Contraseña: `nexora123`
+| Ventana | Dirección | Correo | Contraseña |
+|---|---|---|---|
+| Bodeguero (Bodega Rosita) | http://localhost:5173 | `ana@nexora.pe` | `nexora123` |
+| Proveedor (Distribuidora Andina) | http://localhost:5173/proveedor | `andina@nexora.pe` | `proveedor123` |
+
+En cada acceso también está el botón **«Entrar con datos de prueba»**.
+
+> Si tu base se creó antes del perfil proveedor, al arrancar se agrega sola la cuenta `andina@nexora.pe`. Para que el detergente aparezca entre las compras del proveedor, entra como proveedor y usa **Datos de prueba → Restablecer** una vez (o `docker compose down -v`).
 
 ### 5. Prototipo de los 3 perfiles (opcional)
 
@@ -149,14 +155,13 @@ Abre http://localhost:8000.
 
 ## Recorrido sugerido para la demostración (5 minutos)
 
-1. **Inicio**: saludo, pedidos activos, ahorro estimado y próximas fechas. El pedido de aceite ya tiene compra conjunta.
-2. **Nuevo pedido**: escribe «2 fardos de fideos y 20 bolsas de detergente» → **Ordenar mi pedido**. El sistema convierte 2 fardos en 40 paquetes; revisa, elige «Esta semana» y confirma.
-3. **Resultado**: los fideos no tienen compra → **Proponer compra conjunta**. El detergente muestra si llega a tiempo o no.
-4. **Compras conjuntas → Aceite vegetal**: línea de fechas con «Llega a tiempo», tramos, avance 38/50 y la simulación «Si te unes con 12…». Únete: el grupo llega a 50, el precio baja a S/ 7.00 y la compra pasa a **Esperando confirmación del proveedor**.
-5. **Simular proveedor**: en el aceite pulsa **Confirmar con precio mayor**. Vuelve a la compra: aparece «El proveedor confirmó con otro precio» con **Acepto** o **Me retiro**.
-6. **Vasos descartables** (compra confirmada): en Simular proveedor marca **En camino**. En la compra pulsa **Recibí mi pedido** y luego **Reportar un problema**.
-7. **Campana**: llegan las notificaciones de cada paso.
-8. **Restablecer demo** (en Simular proveedor) para empezar de nuevo; las fechas se recalculan desde hoy.
+1. **Bodeguero → Inicio**: «Podrías ahorrar», compras en grupo cerca, próximas fechas y «¿Qué necesitas comprar?».
+2. **Registrar necesidad**: escribe «2 fardos de fideos y 20 bolsas de detergente» → **Ordenar mi pedido**. El sistema convierte 2 fardos en 40 paquetes; revisa, elige «Esta semana» y confirma. Los fideos no tienen compra → **Proponer compra en grupo**.
+3. **Compras en grupo → Aceite vegetal**: fechas con «Llega a tiempo», tramos, avance 38/50 y «Si te unes con 12…». Únete: el grupo llega a 50, el precio baja a S/ 7.00 y pasa a **Esperando confirmación del proveedor**.
+4. **Proveedor** (otra ventana, se actualiza sola): el aceite aparece con **Te toca confirmar**. Confirma con un precio mayor o una fecha más tarde: en la ventana del bodeguero llega la notificación con **Acepto** o **Me retiro**.
+5. **Proveedor → Detergente**: confírmalo con el precio del tramo; queda **Confirmada** de inmediato.
+6. **Proveedor → Vasos** (confirmada): **Marcar en camino**. El bodeguero pulsa **Recibí mi pedido** y **Reportar un problema**; la incidencia aparece al proveedor, que la responde.
+7. **Proveedor → Datos de prueba → Restablecer** para empezar de nuevo; las fechas se recalculan desde hoy.
 
 ---
 
@@ -187,7 +192,9 @@ Todas las rutas empiezan con `/api`. Salvo registro, inicio de sesión, zonas y 
 | POST | `/compras/{id}/unirse`, `/retirarse`, `/aceptar-precio`, `/recibido`, `/incidencias` | Acciones del bodeguero |
 | GET | `/participaciones`, `/incidencias` | Seguimiento |
 | GET/POST | `/notificaciones`, `/notificaciones/{id}/leer`, `/notificaciones/leer-todas` | Notificaciones |
-| POST | `/demo/restablecer`, `/demo/compras/{id}/sumar-bodega`, `/confirmar`, `/entrega`, `/vencer`, `/aviso` | Acciones simuladas del proveedor |
+| GET | `/proveedor/panel` | Panel del proveedor: sus compras, avisos e incidencias (perfil PROVEEDOR) |
+| POST | `/proveedor/compras/{id}/confirmar`, `/entrega`, `/aviso` · `/proveedor/incidencias/{id}/responder` | Acciones del proveedor |
+| POST | `/proveedor/prueba/restablecer`, `/proveedor/prueba/compras/{id}/sumar-bodega`, `/cerrar` | Datos de prueba para la sustentación |
 
 ---
 
@@ -221,12 +228,12 @@ Están en `backend/src/main/java/pe/nexora/reglas/ReglasCompra.java` y tienen pr
 | `password authentication failed for user "nexora"` | Crea el usuario y la base (paso 2B) o revisa `DB_USER` y `DB_PASSWORD`. |
 | `release version 21 not supported` | Maven usa otro Java: `export JAVA_HOME=$(/usr/libexec/java_home -v 21)`. |
 | El frontend dice «No pudimos conectar con el servidor» | El backend no está corriendo en el puerto 8080. |
-| Quiero empezar de cero | En la app: Simular proveedor → Restablecer demo. O borra la base: `docker compose down -v`. |
+| Quiero empezar de cero | En el portal del proveedor: Datos de prueba → Restablecer. O borra la base: `docker compose down -v`. |
 | `Port 8080 already in use` | Cierra el otro proceso (`lsof -i :8080`) o usa `mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8081` y `VITE_API_URL=http://localhost:8081 npm run dev`. |
 
 ## Próximos pasos (VI ciclo)
 
-- Perfiles proveedor y administrador sobre esta misma API (hoy existen en el prototipo).
+- Perfil proveedor completo (catálogo propio, ofertas, registro y aprobación) y perfil administrador (hoy existen en el prototipo).
 - Normalización con embeddings Sentence-BERT y pgvector (hoy: reglas).
 - Asistente conversacional con un LLM (hoy: el intérprete por reglas).
 - Chat privado comprador–proveedor y preguntas anónimas.

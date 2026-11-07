@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { CalendarClock, CheckCircle2, Clock3, PackageCheck, Truck, TriangleAlert, Users, XCircle } from "lucide-react";
+import { CalendarClock, CheckCircle2, ChevronRight, Clock3, PackageCheck, Truck, TriangleAlert, Users, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { diasEntre, entregaTexto, fechaConDia, fechaCorta, imagenProducto, relativo, soles } from "@/lib/formato";
+import { ETIQUETA_AHORRO, diasEntre, fechaConDia, fechaCorta, imagenProducto, rangoCorto, relativo, singular, soles } from "@/lib/formato";
 import type { ClaveVisible, Compra, EntregaEstado, Tramo } from "@/lib/tipos";
 
 // ---------- Estado visible (las 4 etiquetas de la tesis) ----------
@@ -176,56 +176,117 @@ export function LineaFechas({ compra, requerida }: { compra: Compra; requerida?:
   );
 }
 
-// ---------- Tarjeta de compra ----------
+// ---------- Tarjeta de compra (como en el prototipo) ----------
+
+function ChipFechas({ compra }: { compra: Compra }) {
+  const pendiente = compra.estadoVisible.clave === "REUNIENDO" || compra.estadoVisible.clave === "ESPERANDO_PROVEEDOR";
+  const abierta = compra.fechaCierre >= compra.hoy;
+  const partes = [
+    pendiente && abierta ? `Cierra ${relativo(compra.fechaCierre, compra.hoy)}` : `Cerró ${relativo(compra.fechaCierre, compra.hoy)}`,
+    compra.estadoVisible.clave !== "NO_SE_CONCRETO" ? `Llega ${rangoCorto(compra.entregaDesde, compra.entregaHasta)}` : null,
+  ].filter(Boolean);
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
+      <span className="size-1.5 rounded-full bg-foreground" /> {partes.join(" · ")}
+    </span>
+  );
+}
+
+function EtiquetaAhorro({ etiqueta }: { etiqueta: string }) {
+  return <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold text-muted-foreground">{ETIQUETA_AHORRO[etiqueta]?.texto ?? etiqueta.toLowerCase()}</span>;
+}
 
 export function TarjetaCompra({ compra }: { compra: Compra }) {
   const { producto, estadoVisible, resumen } = compra;
-  const pendiente = estadoVisible.clave === "REUNIENDO" || estadoVisible.clave === "ESPERANDO_PROVEEDOR";
+  const clave = estadoVisible.clave;
+  const pendiente = clave === "REUNIENDO" || clave === "ESPERANDO_PROVEEDOR";
   const mia = compra.miParticipacion;
+  const sim = compra.simulacion;
+  const u = producto.unidad;
+  const llega = mia ? (mia.fechaRequerida ? mia.llegaATiempo : null) : sim ? sim.llegaATiempo : null;
+
+  let avance: string;
+  if (clave === "NO_SE_CONCRETO") avance = `${compra.total} / ${compra.minimo} · no llegó al mínimo`;
+  else if (resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null && pendiente)
+    avance = `${compra.total} / ${compra.minimo} · faltan ${resumen.faltanSiguiente} para ${soles(resumen.precioSiguiente)}`;
+  else if (!resumen.alcanzaMinimo) avance = `${compra.total} / ${compra.minimo} · faltan ${resumen.faltaMinimo} para el mínimo`;
+  else avance = `${compra.total} ${u} · mejor precio ${soles(compra.precioFinal ?? resumen.precioActual)}`;
+
   return (
     <Link to={`/compras/${compra.id}`} className="group block focus-visible:outline-none">
-      <Card className="h-full p-4 transition-shadow group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring">
-        <div className="flex gap-3">
-          <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="size-16" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <EstadoBadge clave={estadoVisible.clave} texto={estadoVisible.texto} />
-              {mia && <Badge variant="naranja">Participas · {mia.cantidad} {producto.unidad}</Badge>}
+      <Card className="h-full p-4 transition-shadow group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring sm:p-5">
+        <div className="flex gap-4">
+          <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="mt-7 size-14 bg-secondary sm:size-16" />
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <ChipFechas compra={compra} />
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-bold leading-snug">{producto.nombre}</h3>
+              {pendiente && compra.fechaCierre >= compra.hoy ? (
+                <Badge variant="naranja" className="shrink-0">Cierra el {fechaCorta(compra.fechaCierre)}.</Badge>
+              ) : clave === "NO_SE_CONCRETO" ? (
+                <Badge variant="muted" className="shrink-0">Cerró el {fechaCorta(compra.fechaCierre)}.</Badge>
+              ) : null}
             </div>
-            <h3 className="mt-1 truncate font-bold">{producto.nombre}</h3>
             <p className="truncate text-sm text-muted-foreground">
-              {producto.marca} · {producto.presentacion} · {compra.proveedor.razonSocial}
+              {producto.presentacion} · {compra.proveedor.razonSocial}
             </p>
+            <div className="flex flex-wrap gap-1.5">
+              <EstadoBadge clave={clave} texto={estadoVisible.texto} />
+              {llega !== null && clave !== "NO_SE_CONCRETO" && (
+                <Badge variant={llega ? "exito" : "destructive"}>
+                  {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega tarde para tu fecha"}
+                </Badge>
+              )}
+              {mia && <Badge variant="naranja">Participas · {mia.cantidad} {u}</Badge>}
+              {compra.entregaEstado && (
+                <Badge variant={compra.entregaEstado === "RETRASADA" ? "destructive" : "secondary"}>
+                  <PackageCheck /> {TEXTO_ENTREGA[compra.entregaEstado]}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+              <span className="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-lila">
+                <span
+                  className={cn("block h-full rounded-full", resumen.alcanzaMinimo ? "bg-exito" : "bg-primary")}
+                  style={{ width: `${Math.min(100, (compra.total / Math.max(1, compra.minimo)) * 100)}%` }}
+                />
+              </span>
+              {avance}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              <Users className="mr-1 inline size-3.5" />
+              {compra.negocios} {compra.negocios === 1 ? "negocio" : "negocios"}
+            </p>
+            <p className="text-sm">
+              {clave === "NO_SE_CONCRETO" ? (
+                <>Precio en grupo: {soles(resumen.precioActual)} por {singular(u)}</>
+              ) : (
+                <>
+                  {compra.precioFinal ? "Precio final" : "Precio en grupo hoy"}: {soles(compra.precioFinal ?? resumen.precioActual)}
+                  {sim && (
+                    <>
+                      {" "}· Si te unes: {soles(sim.precioConmigo)} · Ahorro estimado{" "}
+                      <b className="text-exito">{soles(sim.ahorro.monto)}</b>
+                      <EtiquetaAhorro etiqueta={sim.ahorro.etiqueta} />
+                    </>
+                  )}
+                  {mia && mia.ahorro.monto > 0 && (
+                    <>
+                      {" "}· Tu ahorro {mia.ahorro.etiqueta === "CONFIRMADO" ? "confirmado" : "estimado"}{" "}
+                      <b className="text-exito">{soles(mia.ahorro.monto)}</b>
+                      {mia.ahorro.etiqueta !== "CONFIRMADO" && <EtiquetaAhorro etiqueta={mia.ahorro.etiqueta} />}
+                    </>
+                  )}
+                </>
+              )}
+            </p>
+            {(sim || mia) && (
+              <p className="text-xs text-muted-foreground">
+                Tu pedido: {mia ? mia.cantidad : sim!.cantidad} {u}
+              </p>
+            )}
           </div>
-          <div className="text-right">
-            <div className="text-xs text-muted-foreground">{compra.precioFinal ? "Precio final" : "Precio ahora"}</div>
-            <div className="text-lg font-extrabold text-primary">{soles(compra.precioFinal ?? resumen.precioActual)}</div>
-            <div className="text-xs text-muted-foreground">por {producto.unidad.replace(/s$/, "")}</div>
-          </div>
-        </div>
-        {pendiente && (
-          <div className="mt-3">
-            <AvanceMinimo compra={compra} compacto />
-          </div>
-        )}
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-          {pendiente ? (
-            <span className={cn("font-semibold", diasEntre(compra.hoy, compra.fechaCierre) <= 1 && "text-naranja-tinta")}>
-              <Clock3 className="mr-1 inline size-4" />
-              Cierra {relativo(compra.fechaCierre, compra.hoy)} ({fechaCorta(compra.fechaCierre)})
-            </span>
-          ) : null}
-          {estadoVisible.clave !== "NO_SE_CONCRETO" && (
-            <span className="text-muted-foreground">
-              <Truck className="mr-1 inline size-4" />
-              Llega {entregaTexto(compra.entregaDesde, compra.entregaHasta)}
-            </span>
-          )}
-          {compra.entregaEstado && (
-            <Badge variant={compra.entregaEstado === "RETRASADA" ? "destructive" : "secondary"}>
-              <PackageCheck /> {TEXTO_ENTREGA[compra.entregaEstado]}
-            </Badge>
-          )}
+          <ChevronRight className="mt-8 size-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </div>
       </Card>
     </Link>

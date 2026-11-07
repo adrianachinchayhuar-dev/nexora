@@ -60,6 +60,19 @@ export function entregaTexto(desde: string, hasta: string): string {
   return `entre el ${mismoMes ? a.split(" ")[0] : a} y el ${b}`;
 }
 
+/** «14–15 nov.» o «15 nov.» */
+export function rangoCorto(desde: string, hasta: string): string {
+  if (!desde || desde === hasta) return fechaCorta(hasta) + ".";
+  if (desde.slice(0, 7) === hasta.slice(0, 7)) return `${fechaCorta(desde).split(" ")[0]}–${fechaCorta(hasta)}.`;
+  return `${fechaCorta(desde)} – ${fechaCorta(hasta)}.`;
+}
+
+/** «botellas» → «botella» (para «por botella»). */
+export function singular(unidad: string): string {
+  if (unidad === "kg") return "kilo";
+  return unidad.replace(/es$/, "").replace(/s$/, "");
+}
+
 export function haceTiempo(isoFechaHora: string): string {
   const t = new Date(isoFechaHora).getTime();
   const min = Math.round((Date.now() - t) / 60000);

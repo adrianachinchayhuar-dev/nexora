@@ -24,7 +24,9 @@ export default function Catalogo() {
     <div>
       <Encabezado
         titulo="Catálogo"
-        descripcion="Productos de proveedores aprobados que entregan en tu zona. El precio baja por tramos cuando varias bodegas compran juntas."
+        etiqueta="Productos"
+        imagen="/img/cabeceras/catalogo.webp"
+        descripcion="Encuentra lo que necesita tu negocio. El precio baja por tramos cuando varias bodegas compran juntas."
       />
       <form
         className="mb-4 flex gap-2"

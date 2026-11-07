@@ -12,22 +12,37 @@ import { useAuth } from "@/lib/auth";
 import { get } from "@/lib/api";
 import type { Zona } from "@/lib/tipos";
 
-function Marco({ imagen, titulo, subtitulo, children }: { imagen: string; titulo: string; subtitulo: string; children: ReactNode }) {
+export function Marco({
+  imagen,
+  titulo,
+  subtitulo,
+  children,
+  lema = "Juntos compramos más y mejor.",
+  texto = "Une tu pedido con otras bodegas de tu zona, accede al precio por volumen y decide tú si participas.",
+  etiqueta,
+}: {
+  imagen: string;
+  titulo: string;
+  subtitulo: string;
+  children: ReactNode;
+  lema?: string;
+  texto?: string;
+  etiqueta?: string;
+}) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       <div className="relative hidden overflow-hidden bg-secondary lg:block">
         <img src={imagen} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#2A1F5C]/80 via-[#2A1F5C]/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/10 to-transparent" />
         <div className="absolute bottom-0 p-10 text-white">
-          <p className="text-3xl font-extrabold leading-tight">Juntos compramos más y mejor.</p>
-          <p className="mt-2 max-w-md text-white/85">
-            Une tu pedido con otras bodegas de tu zona, accede al precio por volumen y decide tú si participas.
-          </p>
+          <p className="text-3xl font-extrabold leading-tight">{lema}</p>
+          <p className="mt-2 max-w-md text-white/85">{texto}</p>
         </div>
       </div>
       <div className="flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-md">
           <img src="/img/logo.png" alt="NEXORA" className="mb-8 h-12 w-auto" />
+          {etiqueta && <p className="mb-1 text-sm font-bold text-primary">{etiqueta}</p>}
           <h1 className="text-2xl font-extrabold">{titulo}</h1>
           <p className="mb-6 mt-1 text-muted-foreground">{subtitulo}</p>
           {children}
@@ -60,7 +75,7 @@ export function Ingresar() {
   };
 
   return (
-    <Marco imagen="/img/acceso.webp" titulo="Ingresa a tu bodega" subtitulo="Revisa tus pedidos y las compras conjuntas de tu zona.">
+    <Marco imagen="/img/acceso.webp" titulo="Ingresa a tu bodega" subtitulo="Revisa tus necesidades y las compras en grupo de tu zona.">
       <form onSubmit={enviar} className="space-y-4" noValidate>
         {error && <Alert variant="destructive">{error}</Alert>}
         <div className="space-y-2">
@@ -74,13 +89,19 @@ export function Ingresar() {
         <Button type="submit" size="lg" className="w-full" disabled={enviando || !email || !password}>
           {enviando ? <Girando /> : <ArrowRight />} Ingresar
         </Button>
-        <Button type="button" variant="outline" size="lg" className="w-full" disabled={enviando} onClick={() => enviar(undefined, true)}>
-          <Sparkles /> Entrar con la cuenta demo (Bodega Rosita)
+        <Button type="button" variant="outline" size="lg" className="h-auto min-h-12 w-full whitespace-normal py-2" disabled={enviando} onClick={() => enviar(undefined, true)}>
+          <Sparkles /> Entrar con datos de prueba (Bodega Rosita)
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           ¿Aún no tienes cuenta?{" "}
           <Link to="/registro" className="font-semibold text-primary hover:underline">
             Registra tu negocio
+          </Link>
+        </p>
+        <p className="border-t pt-4 text-center text-sm text-muted-foreground">
+          ¿Eres proveedor?{" "}
+          <Link to="/proveedor/ingresar" className="font-semibold text-primary hover:underline">
+            Ingresa al portal del proveedor
           </Link>
         </p>
       </form>

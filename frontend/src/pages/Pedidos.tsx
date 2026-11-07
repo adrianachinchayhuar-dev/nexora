@@ -17,7 +17,7 @@ import type { Compra, Necesidad } from "@/lib/tipos";
 
 const ESTADO: Record<string, { texto: string; variante: "info" | "exito" | "muted" | "naranja" | "secondary" }> = {
   ACTIVA: { texto: "Activo", variante: "secondary" },
-  EN_COMPRA: { texto: "En compra conjunta", variante: "info" },
+  EN_COMPRA: { texto: "En compra en grupo", variante: "info" },
   ATENDIDA: { texto: "Recibido", variante: "exito" },
   CANCELADA: { texto: "Cancelado", variante: "muted" },
 };
@@ -48,7 +48,7 @@ export function AccionCoincidencia({ n, alProponer }: { n: Necesidad; alProponer
     case "PROPONER":
       return (
         <Button size="sm" variant="naranja" onClick={() => alProponer(n)}>
-          <Plus /> Proponer compra conjunta
+          <Plus /> Proponer compra en grupo
         </Button>
       );
     default:
@@ -67,7 +67,7 @@ export default function Pedidos() {
   const proponer = async (n: Necesidad) => {
     try {
       const c = await post<Compra>(`/necesidades/${n.id}/proponer`);
-      toast.success("Propusiste una compra conjunta. Únete con tu pedido.");
+      toast.success("Propusiste una compra en grupo. Únete con tu pedido.");
       navegar(`/compras/${c.id}?pedido=${n.id}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "No se pudo proponer.");
@@ -115,8 +115,10 @@ export default function Pedidos() {
   return (
     <div>
       <Encabezado
-        titulo="Mis pedidos"
-        descripcion="Lo que necesita tu bodega. Te avisamos si hay una compra conjunta que llegue a tiempo."
+        titulo="Mis necesidades"
+        etiqueta="Tus pedidos"
+        imagen="/img/cabeceras/necesidades.webp"
+        descripcion="Revisa qué necesitas y encuentra compras en grupo que lleguen a tiempo."
         accion={
           <Button asChild variant="naranja" size="lg">
             <Link to="/pedidos/nuevo">

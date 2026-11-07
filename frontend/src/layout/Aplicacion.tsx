@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Bell, ClipboardList, FlaskConical, Home, LogOut, PackageSearch, ShoppingBasket, Truck, UserRound } from "lucide-react";
+import { Bell, ChevronDown, ClipboardList, Home, LineChart, LogOut, Plus, Sparkles, Store, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,16 +13,26 @@ import {
 import { useAuth } from "@/lib/auth";
 import { get, post } from "@/lib/api";
 import { haceTiempo } from "@/lib/formato";
-import type { Notificaciones } from "@/lib/tipos";
+import type { Compra, Notificaciones } from "@/lib/tipos";
+import { GuiaNexora } from "@/components/guia";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { a: "/", texto: "Inicio", icono: Home, fin: true },
-  { a: "/catalogo", texto: "Catálogo", icono: PackageSearch },
-  { a: "/pedidos", texto: "Mis pedidos", icono: ClipboardList },
-  { a: "/compras", texto: "Compras conjuntas", icono: ShoppingBasket },
-  { a: "/seguimiento", texto: "Seguimiento", icono: Truck },
+type Cuenta = "compras" | "seguimiento";
+interface ItemNav { a: string; texto: string; corto: string; icono: typeof Home; fin?: boolean; cuenta?: Cuenta }
+
+const SECCIONES: { titulo: string; items: ItemNav[] }[] = [
+  {
+    titulo: "Comprar",
+    items: [
+      { a: "/", texto: "Inicio", corto: "Inicio", icono: Home, fin: true },
+      { a: "/pedidos", texto: "Mis necesidades", corto: "Necesidades", icono: ClipboardList },
+      { a: "/compras", texto: "Compras en grupo", corto: "En grupo", icono: Sparkles, cuenta: "compras" },
+      { a: "/catalogo", texto: "Catálogo", corto: "Catálogo", icono: Store },
+    ],
+  },
+  { titulo: "Mi actividad", items: [{ a: "/seguimiento", texto: "Seguimiento", corto: "Seguimiento", icono: LineChart, cuenta: "seguimiento" }] },
 ];
+const NAV = SECCIONES.flatMap((s) => s.items);
 
 function Campana() {
   const [datos, setDatos] = useState<Notificaciones | null>(null);
@@ -93,83 +103,134 @@ function Campana() {
 export default function Aplicacion() {
   const { cuenta, salir } = useAuth();
   const navegar = useNavigate();
+  const ubicacion = useLocation();
   const negocio = cuenta?.negocio;
-  const iniciales = (negocio?.responsable ?? "N").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+  const iniciales = (negocio?.nombre ?? "N").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+  const [cuentas, setCuentas] = useState<Record<Cuenta, number>>({ compras: 0, seguimiento: 0 });
+  const [guia, setGuia] = useState(false);
+  const [bienvenida, setBienvenida] = useState(false);
+  const claveBienvenida = `nexora.bienvenida.${cuenta?.usuarioId}`;
+
+  // Contadores de la barra lateral: compras abiertas de la zona y compras en las que participa.
+  useEffect(() => {
+    get<Compra[]>("/compras")
+      .then((lista) =>
+        setCuentas({
+          compras: lista.filter((c) => c.puedeUnirse || (c.miParticipacion && ["REUNIENDO", "ESPERANDO_PROVEEDOR"].includes(c.estadoVisible.clave))).length,
+          seguimiento: lista.filter((c) => c.miParticipacion && c.estadoVisible.clave !== "NO_SE_CONCRETO" && !c.miParticipacion.recibido).length,
+        }),
+      )
+      .catch(() => undefined);
+  }, [ubicacion.pathname]);
+
+  // La guía se muestra sola la primera vez que la cuenta entra en este navegador.
+  useEffect(() => {
+    try {
+      if (cuenta && !localStorage.getItem(claveBienvenida)) {
+        setBienvenida(true);
+        setGuia(true);
+        localStorage.setItem(claveBienvenida, "1");
+      }
+    } catch {
+      /* sin almacenamiento: no se muestra la bienvenida */
+    }
+  }, [cuenta, claveBienvenida]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [ubicacion.pathname]);
 
   const cerrar = async () => {
     await salir();
     navegar("/ingresar");
+  };
+  const abrirGuia = () => {
+    setBienvenida(false);
+    setGuia(true);
   };
 
   return (
     <div className="min-h-screen lg:pl-64">
       {/* Barra lateral (escritorio) */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-card lg:flex">
-        <Link to="/" className="flex h-20 items-center px-5" aria-label="NEXORA, ir al inicio">
-          <img src="/img/logo.png" alt="NEXORA" className="h-11 w-auto" />
+        <Link to="/" className="flex h-[72px] items-center px-5" aria-label="NEXORA, ir al inicio">
+          <img src="/img/logo.png" alt="NEXORA" className="h-10 w-auto" />
         </Link>
-        <nav className="flex-1 space-y-1 px-3" aria-label="Principal">
-          {NAV.map(({ a, texto, icono: Icono, fin }) => (
-            <NavLink
-              key={a}
-              to={a}
-              end={fin}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
-                  isActive ? "bg-secondary text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )
-              }
-            >
-              <Icono className="size-5" /> {texto}
-            </NavLink>
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 pt-2" aria-label="Principal">
+          {SECCIONES.map((sec) => (
+            <div key={sec.titulo}>
+              <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground/70">{sec.titulo}</p>
+              <div className="space-y-1">
+                {sec.items.map(({ a, texto, icono: Icono, fin, cuenta: c }) => (
+                  <NavLink
+                    key={a}
+                    to={a}
+                    end={fin}
+                    className={({ isActive }) =>
+                      cn(
+                        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                        isActive
+                          ? "bg-secondary text-primary before:absolute before:inset-y-2 before:-left-3 before:w-1 before:rounded-r-full before:bg-primary"
+                          : "text-foreground/80 hover:bg-muted hover:text-foreground",
+                      )
+                    }
+                  >
+                    <Icono className="size-[18px]" /> <span className="flex-1">{texto}</span>
+                    {c && cuentas[c] > 0 && (
+                      <span className="rounded-full bg-muted px-2 text-[11px] font-bold text-muted-foreground">{cuentas[c]}</span>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
-        <div className="space-y-2 p-3">
-          <NavLink
-            to="/demo"
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 rounded-xl border border-dashed px-3 py-2.5 text-sm font-semibold",
-                isActive ? "border-naranja bg-naranja-suave text-naranja-tinta" : "text-muted-foreground hover:bg-muted",
-              )
-            }
-          >
-            <FlaskConical className="size-5" /> Simular proveedor
-          </NavLink>
-          <div className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">{negocio?.nombre}</span>
-            <br />
-            {negocio?.zona.nombre}
-          </div>
-        </div>
+        <button
+          onClick={abrirGuia}
+          className="m-3 rounded-2xl bg-secondary p-3 text-left transition-colors hover:bg-lila focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <img src="/img/sidebar.webp" alt="" className="mx-auto h-28 w-auto" />
+          <span className="mt-2 block text-sm font-bold">¿Cómo funciona NEXORA?</span>
+          <span className="block text-xs text-muted-foreground">Te lo contamos en 3 pasos</span>
+        </button>
       </aside>
 
       {/* Barra superior */}
-      <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
+      <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur sm:gap-3 sm:px-6 lg:border-transparent">
         <Link to="/" className="lg:hidden" aria-label="NEXORA, ir al inicio">
           <img src="/img/logo.png" alt="NEXORA" className="h-8 w-auto" />
         </Link>
         <div className="flex-1" />
+        {cuenta?.email === "ana@nexora.pe" && (
+          <span className="hidden items-center gap-1.5 rounded-full border border-dashed border-naranja/60 px-3 py-1 text-xs font-semibold text-muted-foreground md:inline-flex" title="Cuenta con datos de prueba para la sustentación">
+            <span className="size-1.5 rounded-full bg-naranja" /> Datos de prueba
+          </span>
+        )}
+        <Button asChild className="hidden sm:inline-flex">
+          <Link to="/pedidos/nuevo">
+            <Plus /> Nueva necesidad
+          </Link>
+        </Button>
         <Campana />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-full p-1 pr-3 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <span className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">{iniciales}</span>
-              <span className="hidden text-left text-sm leading-tight sm:block">
-                <span className="block font-semibold">{negocio?.responsable}</span>
-                <span className="block text-xs text-muted-foreground">{negocio?.nombre}</span>
-              </span>
+            <button className="flex items-center gap-2 rounded-full border bg-card p-1 pr-3 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-[#B0456B] to-primary text-xs font-bold text-white">{iniciales}</span>
+              <span className="hidden text-sm font-semibold sm:block">{negocio?.nombre}</span>
+              <ChevronDown className="hidden size-4 text-muted-foreground sm:block" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{cuenta?.email}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {negocio?.responsable}
+              <span className="block text-xs font-normal text-muted-foreground">{cuenta?.email}</span>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => navegar("/perfil")}>
-              <UserRound /> Mi negocio
+              <UserRound /> Mi perfil
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => navegar("/demo")}>
-              <FlaskConical /> Simular proveedor (demo)
+            <DropdownMenuItem onSelect={abrirGuia}>
+              <Sparkles /> ¿Cómo funciona NEXORA?
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={cerrar} className="text-destructive focus:text-destructive">
@@ -179,13 +240,23 @@ export default function Aplicacion() {
         </DropdownMenu>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12">
+      <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-4 sm:px-6 lg:pb-12">
         <Outlet />
       </main>
 
+      {/* Nexi: abre la guía */}
+      <button
+        onClick={abrirGuia}
+        className="fixed bottom-20 right-4 z-30 size-14 overflow-hidden rounded-full border-4 border-card bg-secondary shadow-lg transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:bottom-6 lg:right-6"
+        aria-label="Nexi: ¿cómo funciona NEXORA?"
+      >
+        <img src="/img/nexi.webp" alt="" className="h-full w-full object-cover" />
+      </button>
+      <GuiaNexora abierta={guia} onCambio={setGuia} bienvenida={bienvenida} />
+
       {/* Navegación inferior (celular) */}
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Principal">
-        {NAV.map(({ a, texto, icono: Icono, fin }) => (
+        {NAV.map(({ a, corto, icono: Icono, fin }) => (
           <NavLink
             key={a}
             to={a}
@@ -195,7 +266,7 @@ export default function Aplicacion() {
             }
           >
             <Icono className="size-5" />
-            <span className="max-w-full truncate px-1">{texto.replace("Compras conjuntas", "Compras").replace("Mis pedidos", "Pedidos")}</span>
+            <span className="max-w-full truncate px-1">{corto}</span>
           </NavLink>
         ))}
       </nav>
