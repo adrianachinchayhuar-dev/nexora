@@ -459,13 +459,18 @@ public class DemoServicio {
         }
         c.entregaEstado = estado;
         compras.save(c);
-        String texto = switch (estado) {
-            case EN_PREPARACION -> "El proveedor está preparando tu pedido de " + p.nombre.toLowerCase() + ".";
-            case EN_CAMINO -> "Tu pedido de " + p.nombre.toLowerCase() + " está en camino. Confirma cuando lo recibas.";
-            case ENTREGADA -> "El proveedor registró la entrega de " + p.nombre.toLowerCase() + ". ¿Lo recibiste? Confírmalo.";
-            case RETRASADA -> "La entrega de " + p.nombre.toLowerCase() + " está retrasada."
+        String producto = p.nombre.toLowerCase();
+        String texto;
+        if (estado == CompraConjunta.EntregaEstado.EN_PREPARACION) {
+            texto = "El proveedor está preparando tu pedido de " + producto + ".";
+        } else if (estado == CompraConjunta.EntregaEstado.EN_CAMINO) {
+            texto = "Tu pedido de " + producto + " está en camino. Confirma cuando lo recibas.";
+        } else if (estado == CompraConjunta.EntregaEstado.ENTREGADA) {
+            texto = "El proveedor registró la entrega de " + producto + ". ¿Lo recibiste? Confírmalo.";
+        } else {
+            texto = "La entrega de " + producto + " está retrasada."
                     + (c.compensacion == null ? "" : " Compromiso del proveedor: " + c.compensacion + ".");
-        };
+        }
         notificaciones.avisarParticipantes(c.id, null, "ENTREGA", texto);
     }
 

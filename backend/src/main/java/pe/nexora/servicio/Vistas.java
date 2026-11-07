@@ -182,11 +182,14 @@ public class Vistas {
         if (mia != null) {
             motivo = "Ya participas en esta compra.";
         } else if (!c.estado.permiteUnirse()) {
-            motivo = switch (ReglasCompra.visible(c.estado)) {
-                case CONFIRMADA -> "La compra ya fue confirmada por el proveedor.";
-                case NO_SE_CONCRETO -> "Esta compra no se concretó.";
-                default -> "El proveedor está revisando el precio final; espera su respuesta.";
-            };
+            ReglasCompra.Visible visible = ReglasCompra.visible(c.estado);
+            if (visible == ReglasCompra.Visible.CONFIRMADA) {
+                motivo = "La compra ya fue confirmada por el proveedor.";
+            } else if (visible == ReglasCompra.Visible.NO_SE_CONCRETO) {
+                motivo = "Esta compra no se concretó.";
+            } else {
+                motivo = "El proveedor está revisando el precio final; espera su respuesta.";
+            }
         } else if (!abierta) {
             motivo = "La compra ya cerró.";
         } else if (!c.zonaId.equals(yo.zonaId)) {
