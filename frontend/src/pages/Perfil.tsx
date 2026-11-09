@@ -37,7 +37,9 @@ export default function Perfil() {
   const { datos: participaciones } = useApi<Compra[]>("/participaciones");
 
   useEffect(() => {
-    get<Zona[]>("/zonas").then(setZonas).catch(() => undefined);
+    get<Zona[]>("/zonas")
+      .then(setZonas)
+      .catch(() => undefined);
   }, []);
 
   const cambiar = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
@@ -84,7 +86,7 @@ export default function Perfil() {
       { icono: Clock, texto: "Horario", valor: f.horario || "Sin indicar" },
     ];
     return (
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <Encabezado titulo="Mi perfil" etiqueta="Tu negocio" imagen="/img/cabeceras/perfil.webp" descripcion="La información de tu negocio, siempre a mano." />
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-5">
@@ -92,7 +94,12 @@ export default function Perfil() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="flex size-14 items-center justify-center rounded-2xl bg-primary text-xl font-extrabold text-primary-foreground">
-                    {f.nombre.split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase()}
+                    {f.nombre
+                      .split(/\s+/)
+                      .map((x) => x[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()}
                   </span>
                   <div>
                     <h2 className="text-xl font-bold leading-tight">{f.nombre}</h2>
@@ -119,15 +126,18 @@ export default function Perfil() {
             <Alert variant="lila">
               <ShieldCheck />
               <div>
-                Otras bodegas te ven solo como «Una bodega de {n?.zona.nombre}». El proveedor ve tu nombre y dirección únicamente cuando una compra en la que participas se
-                confirma.
+                Otras bodegas te ven solo como «Una bodega de {n?.zona.nombre}». El proveedor ve tu nombre y dirección únicamente cuando una compra en la que
+                participas se confirma.
               </div>
             </Alert>
           </div>
           <div className="space-y-5">
             <Card className="p-5">
               <h2 className="font-bold">
-                Completa tu perfil <span className="font-normal text-muted-foreground">({hechos} de {pasos.length})</span>
+                Completa tu perfil{" "}
+                <span className="font-normal text-muted-foreground">
+                  ({hechos} de {pasos.length})
+                </span>
               </h2>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
                 <div className="h-full rounded-full bg-primary" style={{ width: `${(hechos / pasos.length) * 100}%` }} />
@@ -166,7 +176,7 @@ export default function Perfil() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <Encabezado titulo="Mi perfil" etiqueta="Tu negocio" imagen="/img/cabeceras/perfil.webp" descripcion="La información de tu negocio, siempre a mano." />
       <form onSubmit={guardar} className="space-y-6">
         {error && <Alert variant="destructive">{error}</Alert>}
@@ -227,8 +237,8 @@ export default function Perfil() {
         <Alert variant="lila">
           <ShieldCheck />
           <div>
-            Otras bodegas te ven solo como «Una bodega de {n?.zona.nombre}». El proveedor ve tu nombre y dirección únicamente cuando una compra en la que participas se
-            confirma.
+            Otras bodegas te ven solo como «Una bodega de {n?.zona.nombre}». El proveedor ve tu nombre y dirección únicamente cuando una compra en la que
+            participas se confirma.
           </div>
         </Alert>
 

@@ -106,9 +106,7 @@ export default function Catalogo() {
                     <p className="text-sm text-muted-foreground">
                       {p.marca} · {p.presentacion}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      Se vende por {p.unidadVenta} ({p.equivalencia} {p.unidad})
-                    </p>
+                    <p className="text-xs text-muted-foreground">Viene en {p.unidadVenta}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -119,27 +117,53 @@ export default function Catalogo() {
                     </span>
                   )}
                 </div>
-                <div className="mt-3 grid grid-cols-3 gap-1.5">
-                  {p.tramos.map((t, i) => (
-                    <div key={t.desde} className={cn("rounded-lg bg-muted px-2 py-1.5 text-center", i === p.tramos.length - 1 && "bg-secondary")}>
-                      <div className="text-sm font-bold">{soles(t.precio)}</div>
-                      <div className="text-[11px] text-muted-foreground">{t.hasta === null ? `${t.desde}+` : `${t.desde}–${t.hasta}`}</div>
+                {(() => {
+                  const orden = [...p.tramos].sort((x, y) => x.desde - y.desde);
+                  const solo = orden[0];
+                  const mejor = orden[orden.length - 1];
+                  const u = p.unidad.replace(/s$/, "");
+                  return (
+                    <div className="mt-3 rounded-xl bg-muted/70 p-3">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="text-sm text-muted-foreground">Precio por {u}</span>
+                        <span className="whitespace-nowrap text-lg font-extrabold">{soles(solo.precio)}</span>
+                      </div>
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="text-sm font-semibold text-exito">En grupo, desde</span>
+                        <span className="whitespace-nowrap text-lg font-extrabold text-exito">{soles(mejor.precio)}</span>
+                      </div>
+                      <details className="mt-1 text-xs text-muted-foreground">
+                        <summary className="cursor-pointer font-semibold text-primary">Ver todos los precios</summary>
+                        <ul className="mt-1.5 space-y-0.5">
+                          {orden.map((t) => (
+                            <li key={t.desde} className="flex justify-between">
+                              <span>{t.hasta === null ? `Desde ${t.desde} ${p.unidad}` : `De ${t.desde} a ${t.hasta} ${p.unidad}`}</span>
+                              <b className="text-foreground">{soles(t.precio)}</b>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="mt-1">
+                          Para que la compra salga, el grupo debe juntar al menos {p.minimo} {p.unidad}.
+                        </p>
+                      </details>
                     </div>
-                  ))}
-                </div>
-                <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  Precio por {p.unidad.replace(/s$/, "")} según la cantidad total del grupo. Mínimo para comprar juntos: {p.minimo} {p.unidad}.
-                </p>
+                  );
+                })()}
                 <div className="mt-auto pt-4">
                   {p.compraAbierta ? (
                     <div className="space-y-2">
                       <div className="rounded-xl bg-exito-suave px-3 py-2 text-sm text-exito">
                         <ShoppingBasket className="mr-1 inline size-4" />
-                        <span className="font-semibold">Compra abierta</span> · {p.compraAbierta.total}/{p.compraAbierta.minimo} · cierra el{" "}
-                        {fechaCorta(p.compraAbierta.fechaCierre)}
+                        <span className="font-semibold">Hay una compra en grupo abierta</span>
+                        <span className="block text-xs">
+                          {p.compraAbierta.total >= p.compraAbierta.minimo
+                            ? "Ya alcanzó el mínimo"
+                            : `Faltan ${p.compraAbierta.minimo - p.compraAbierta.total} ${p.unidad}`}{" "}
+                          · puedes unirte hasta el {fechaCorta(p.compraAbierta.fechaCierre)}
+                        </span>
                       </div>
                       <Button asChild className="w-full">
-                        <Link to={`/compras/${p.compraAbierta.id}`}>Ver compra y unirme</Link>
+                        <Link to={`/compras/${p.compraAbierta.id}`}>Ver la compra</Link>
                       </Button>
                     </div>
                   ) : (

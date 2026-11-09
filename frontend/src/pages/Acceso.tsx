@@ -41,7 +41,7 @@ export function Marco({
   const esProveedor = rol === "PROVEEDOR";
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/60">
-      <header className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-4">
+      <header className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-4">
         <Link to={esProveedor ? "/proveedor/ingresar" : "/ingresar"} className="flex items-center gap-3">
           <img src="/img/logo.png" alt="NEXORA" className="h-10 w-auto" />
           <span className="hidden border-l pl-3 text-xs leading-tight text-muted-foreground sm:block">
@@ -66,7 +66,7 @@ export function Marco({
           </>
         )}
       </header>
-      <main className="mx-auto grid max-w-6xl items-start gap-8 px-5 pb-12 pt-2 lg:grid-cols-[1.05fr_1fr]">
+      <main className="mx-auto grid max-w-7xl items-start gap-8 px-5 pb-12 pt-2 lg:grid-cols-[1.05fr_1fr]">
         <div className="relative hidden lg:block">
           <img src={imagen} alt="" className="aspect-[4/3] w-full rounded-[2rem] object-cover shadow-sm" />
           <div className="relative -mt-14 ml-4 mr-16 rounded-[1.75rem] bg-card/95 p-6 shadow-sm backdrop-blur">
@@ -87,22 +87,33 @@ export function Marco({
           <div className="mb-4 flex justify-center gap-1.5" role="group" aria-label="Perfil">
             <Link
               to="/ingresar"
-              className={cn("rounded-lg border px-3 py-1.5 text-xs font-semibold", !esProveedor ? "border-primary/40 bg-secondary text-primary" : "text-muted-foreground hover:bg-muted")}
+              className={cn(
+                "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                !esProveedor ? "border-primary/40 bg-secondary text-primary" : "text-muted-foreground hover:bg-muted",
+              )}
             >
               Comprador
             </Link>
             <Link
               to="/proveedor/ingresar"
-              className={cn("rounded-lg border px-3 py-1.5 text-xs font-semibold", esProveedor ? "border-primary/40 bg-secondary text-primary" : "text-muted-foreground hover:bg-muted")}
+              className={cn(
+                "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                esProveedor ? "border-primary/40 bg-secondary text-primary" : "text-muted-foreground hover:bg-muted",
+              )}
             >
               Proveedor
             </Link>
-            <span className="cursor-not-allowed rounded-lg border px-3 py-1.5 text-xs font-semibold text-muted-foreground/60" title="El perfil administrador está planificado para 2027">
+            <span
+              className="cursor-not-allowed rounded-lg border px-3 py-1.5 text-xs font-semibold text-muted-foreground/60"
+              title="El perfil administrador está planificado para 2027"
+            >
               Administrador
             </span>
           </div>
           {(insignia || etiqueta) && (
-            <span className="mb-2 inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">{insignia ?? etiqueta}</span>
+            <span className="mb-2 inline-block rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
+              {insignia ?? etiqueta}
+            </span>
           )}
           <h1 className="text-3xl font-extrabold">{titulo}</h1>
           <p className="mb-5 mt-1 text-sm text-muted-foreground">{subtitulo}</p>
@@ -136,7 +147,12 @@ export function Ingresar() {
   };
 
   return (
-    <Marco imagen="/img/acceso.webp" insignia="Acceso para bodegas" titulo="Inicia sesión" subtitulo="Revisa tus necesidades y las compras en grupo de tu zona.">
+    <Marco
+      imagen="/img/acceso.webp"
+      insignia="Acceso para bodegas"
+      titulo="Inicia sesión"
+      subtitulo="Revisa tus necesidades y las compras en grupo de tu zona."
+    >
       <form onSubmit={enviar} className="space-y-4" noValidate>
         {error && <Alert variant="destructive">{error}</Alert>}
         <div className="space-y-2">
@@ -150,7 +166,14 @@ export function Ingresar() {
         <Button type="submit" size="lg" className="w-full" disabled={enviando || !email || !password}>
           {enviando ? <Girando /> : <ArrowRight />} Iniciar sesión
         </Button>
-        <Button type="button" variant="outline" size="lg" className="h-auto min-h-12 w-full whitespace-normal py-2" disabled={enviando} onClick={() => enviar(undefined, true)}>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="h-auto min-h-12 w-full whitespace-normal py-2"
+          disabled={enviando}
+          onClick={() => enviar(undefined, true)}
+        >
           <Sparkles /> Entrar con datos de prueba (Bodega Rosita)
         </Button>
         <p className="text-center text-sm text-muted-foreground">
@@ -176,7 +199,9 @@ export function Registro() {
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    get<Zona[]>("/zonas").then(setZonas).catch(() => setError("No pudimos cargar las zonas. Revisa que el backend esté encendido."));
+    get<Zona[]>("/zonas")
+      .then(setZonas)
+      .catch(() => setError("No pudimos cargar las zonas. Revisa que el backend esté encendido."));
   }, []);
 
   const cambiar = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
@@ -203,7 +228,12 @@ export function Registro() {
   const distritos = [...new Set(zonas.map((z) => z.distrito))];
 
   return (
-    <Marco imagen="/img/registro.webp" insignia="Crea tu cuenta" titulo="Registra tu negocio" subtitulo="Es gratis y sin compromiso. Solo los datos básicos; lo demás lo completas después en tu perfil.">
+    <Marco
+      imagen="/img/registro.webp"
+      insignia="Crea tu cuenta"
+      titulo="Registra tu negocio"
+      subtitulo="Es gratis y sin compromiso. Solo los datos básicos; lo demás lo completas después en tu perfil."
+    >
       <form onSubmit={enviar} className="space-y-4" noValidate>
         {error && <Alert variant="destructive">{error}</Alert>}
         <div className="grid gap-4 sm:grid-cols-2">
@@ -226,15 +256,35 @@ export function Registro() {
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
             <div className="relative">
-              <Input id="password" type={mostrar ? "text" : "password"} autoComplete="new-password" value={f.password} onChange={cambiar("password")} placeholder="Mínimo 8 caracteres" className="pr-11" />
-              <button type="button" onClick={() => setMostrar(!mostrar)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-label={mostrar ? "Ocultar contraseña" : "Mostrar contraseña"}>
+              <Input
+                id="password"
+                type={mostrar ? "text" : "password"}
+                autoComplete="new-password"
+                value={f.password}
+                onChange={cambiar("password")}
+                placeholder="Mínimo 8 caracteres"
+                className="pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrar(!mostrar)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                aria-label={mostrar ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
                 {mostrar ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmar">Confirmar contraseña</Label>
-            <Input id="confirmar" type={mostrar ? "text" : "password"} autoComplete="new-password" value={confirmacion} onChange={(e) => setConfirmacion(e.target.value)} placeholder="Repite tu contraseña" />
+            <Input
+              id="confirmar"
+              type={mostrar ? "text" : "password"}
+              autoComplete="new-password"
+              value={confirmacion}
+              onChange={(e) => setConfirmacion(e.target.value)}
+              placeholder="Repite tu contraseña"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="distrito">Distrito</Label>

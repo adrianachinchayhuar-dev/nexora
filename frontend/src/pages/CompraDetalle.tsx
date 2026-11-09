@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CargandoLista, ErrorCarga, Girando } from "@/components/comun";
-import { EstadoBadge, ImagenProducto, TEXTO_ENTREGA, TextoAhorro as TextoAhorroCorto } from "@/components/compra";
+import { EstadoBadge, ImagenProducto, TEXTO_ENTREGA } from "@/components/compra";
 import { MensajesDeCompra } from "@/components/mensajes";
 import { get, post } from "@/lib/api";
 import {
@@ -67,6 +67,40 @@ function TextoAhorro({ ahorro, unidad }: { ahorro: Ahorro; unidad: string }) {
       <p className={cn("text-xs", positivo ? "text-exito/90" : "text-naranja-tinta")}>
         Comparado con {soles(ahorro.precioReferencia)} por {unidad.replace(/s$/, "")} ({etiqueta.ayuda.charAt(0).toLowerCase() + etiqueta.ayuda.slice(1)})
       </p>
+    </div>
+  );
+}
+
+/** «¿Me conviene?» en palabras simples, antes de unirse. */
+function Veredicto({ sim, unidad, fecha }: { sim: NonNullable<Compra["simulacion"]>; unidad: string; fecha: string | null }) {
+  const tarde = fecha !== null && !sim.llegaATiempo;
+  const monto = sim.ahorro.monto;
+  const caro = monto < 0;
+  const conviene = !tarde && !caro;
+  const u = singular(unidad);
+  const puntos: { ok: boolean; texto: string }[] = [];
+  if (fecha) puntos.push({ ok: !tarde, texto: tarde ? `Llega después de tu fecha (${fechaConDia(fecha)})` : "Llega a tiempo para tu fecha" });
+  puntos.push({
+    ok: !caro,
+    texto:
+      monto > 0
+        ? `Ahorras ${soles(monto)} (de ${soles(sim.ahorro.precioReferencia)} a ${soles(sim.ahorro.precioCompra)} por ${u})`
+        : caro
+          ? `Pagarías ${soles(-monto)} más: hoy pagas ${soles(sim.ahorro.precioReferencia)} y aquí ${soles(sim.ahorro.precioCompra)} por ${u}`
+          : "Pagarías lo mismo que hoy",
+  });
+  return (
+    <div className={cn("rounded-xl p-3.5", conviene ? "bg-exito-suave" : "bg-naranja-suave")}>
+      <p className={cn("text-base font-bold", conviene ? "text-exito" : "text-naranja-tinta")}>{conviene ? "👍 Te conviene" : "✋ Revisa antes de unirte"}</p>
+      <ul className="mt-1.5 space-y-1 text-sm">
+        {puntos.map((p) => (
+          <li key={p.texto} className="flex items-start gap-2">
+            {p.ok ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-exito" /> : <TriangleAlert className="mt-0.5 size-4 shrink-0 text-naranja-tinta" />}
+            <span>{p.texto}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-xs text-muted-foreground">Es un cálculo. El precio final lo confirma el proveedor y tú decides.</p>
     </div>
   );
 }
@@ -259,7 +293,6 @@ export default function CompraDetalle() {
   const necesidadElegida = compra.necesidadesCompatibles.find((n) => String(n.id) === necesidadId);
   const llega = requerida ? compra.entregaHasta <= requerida : null;
   const hoyPagas = necesidadElegida?.precioActual ?? (mia ? mia.ahorro.precioReferencia : sim?.ahorro.precioReferencia) ?? resumen.precioNormal;
-  const tuCantidad = mia?.cantidad ?? (Number(cantidad) > 0 ? Number(cantidad) : null);
   const nombreProveedor = proveedor.razonSocial.replace(/\s*\(.*\)$/, "");
   const iniciales = nombreProveedor
     .split(/\s+/)
@@ -316,11 +349,6 @@ export default function CompraDetalle() {
           {oculta && <Badge variant="muted">Oculta: no te interesa</Badge>}
           <span className="text-sm text-muted-foreground">{producto.presentacion}</span>
         </div>
-        {sim && !mia && (
-          <p className="mt-2 text-sm">
-            Si te unes con {sim.cantidad} {unidad}, pagarías {soles(sim.precioConmigo)} por {singular(unidad)}: <TextoAhorroCorto monto={sim.ahorro.monto} si />
-          </p>
-        )}
         {mia && mia.ahorro.monto > 0 && (
           <p className="mt-2 text-sm">
             Tu ahorro {mia.ahorro.etiqueta === "CONFIRMADO" ? "confirmado" : "estimado"}: <b className="text-exito">{soles(mia.ahorro.monto)}</b>
@@ -379,30 +407,25 @@ export default function CompraDetalle() {
                 </div>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-xl bg-muted p-2.5">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">{compra.precioFinal ? "Precio final" : "Precio en grupo hoy"}</p>
-                  <p className="font-extrabold">{soles(compra.precioFinal ?? resumen.precioActual)}</p>
-                  {sim && !mia && <p className="text-xs text-primary">Con tu pedido: {soles(sim.precioConmigo)}</p>}
+                <div className="rounded-xl bg-muted p-3">
+                  <p className="text-xs font-semibold text-muted-foreground">{compra.precioFinal ? "Precio final del grupo" : "Precio del grupo hoy"}</p>
+                  <p className="text-lg font-extrabold">
+                    {soles(compra.precioFinal ?? resumen.precioActual)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground">por {singular(unidad)}</span>
+                  </p>
+                  {sim && !mia && sim.precioConmigo !== (compra.precioFinal ?? resumen.precioActual) && (
+                    <p className="text-xs text-primary">Contigo bajaría a {soles(sim.precioConmigo)}</p>
+                  )}
                 </div>
-                <div className="rounded-xl bg-muted p-2.5">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Hoy pagas</p>
-                  <p className="font-extrabold">{soles(hoyPagas)}</p>
-                </div>
-                <div className="rounded-xl bg-muted p-2.5">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">{compra.fechaCierre < compra.hoy ? "Cerró el" : "Cierra el"}</p>
-                  <p className="font-extrabold">{fechaCorta(compra.fechaCierre)}.</p>
-                </div>
-                <div className="rounded-xl bg-muted p-2.5">
-                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Tu pedido</p>
-                  <p className="font-extrabold">{tuCantidad ? `${tuCantidad} ${unidad}` : "—"}</p>
+                <div className="rounded-xl bg-muted p-3">
+                  <p className="text-xs font-semibold text-muted-foreground">Lo que pagas hoy</p>
+                  <p className="text-lg font-extrabold">
+                    {hoyPagas ? soles(hoyPagas) : "—"}{" "}
+                    {hoyPagas ? <span className="text-xs font-normal text-muted-foreground">por {singular(unidad)}</span> : null}
+                  </p>
+                  {!hoyPagas && <p className="text-xs text-muted-foreground">Indícalo en tu pedido para comparar</p>}
                 </div>
               </div>
-              {(mia?.ahorro ?? sim?.ahorro) && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  <b className="text-foreground">{ETIQUETA_AHORRO[(mia?.ahorro ?? sim!.ahorro).etiqueta].texto.replace(/^./, (x) => x.toUpperCase())}:</b>{" "}
-                  {ETIQUETA_AHORRO[(mia?.ahorro ?? sim!.ahorro).etiqueta].ayuda}
-                </p>
-              )}
             </Card>
 
             {/* ¿Qué pasa ahora? */}
@@ -731,13 +754,7 @@ export default function CompraDetalle() {
                   <Label htmlFor="cantidad">Cantidad ({unidad})</Label>
                   <Input id="cantidad" type="number" min={1} inputMode="numeric" value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
                 </div>
-                {sim && Number(cantidad) > 0 && <TextoAhorro ahorro={sim.ahorro} unidad={unidad} />}
-                {necesidadElegida && sim && !sim.llegaATiempo && (
-                  <Alert variant="destructive">
-                    <TriangleAlert />
-                    <div>La entrega llega después de tu fecha ({fechaConDia(necesidadElegida.fechaRequerida)}).</div>
-                  </Alert>
-                )}
+                {sim && Number(cantidad) > 0 && <Veredicto sim={sim} unidad={unidad} fecha={necesidadElegida?.fechaRequerida ?? null} />}
                 <Button className="w-full" size="lg" onClick={() => setConfirmarUnion(true)} disabled={!(Number(cantidad) > 0)}>
                   Unirme con {Number(cantidad) > 0 ? `${cantidad} ${unidad}` : "mi pedido"}
                 </Button>

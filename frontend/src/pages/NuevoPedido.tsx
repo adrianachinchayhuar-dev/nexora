@@ -166,8 +166,12 @@ export default function NuevoPedido() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Encabezado titulo="Registrar necesidad" volver={{ a: "/pedidos", texto: "Mis necesidades" }} descripcion="Escribe, revisa y guarda tu pedido. Guardar no es comprar." />
+    <div className="mx-auto max-w-5xl">
+      <Encabezado
+        titulo="Registrar necesidad"
+        volver={{ a: "/pedidos", texto: "Mis necesidades" }}
+        descripcion="Escribe, revisa y guarda tu pedido. Guardar no es comprar."
+      />
       <ol className="mb-6 flex items-center gap-2 text-sm font-semibold" aria-label="Pasos">
         {["Escribe", "Revisa", "Listo"].map((t, i) => (
           <li key={t} className="flex items-center gap-2">
@@ -202,11 +206,20 @@ export default function NuevoPedido() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="texto">Tu pedido</Label>
-              <Textarea id="texto" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ej. 12 botellas de aceite y una caja de leche evaporada" />
+              <Textarea
+                id="texto"
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder="Ej. 12 botellas de aceite y una caja de leche evaporada"
+              />
             </div>
             <div className="flex flex-wrap gap-2">
               {EJEMPLOS.map((e) => (
-                <button key={e} onClick={() => setTexto(e)} className="rounded-full border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted">
+                <button
+                  key={e}
+                  onClick={() => setTexto(e)}
+                  className="rounded-full border bg-card px-3 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
+                >
                   {e}
                 </button>
               ))}
@@ -234,9 +247,7 @@ export default function NuevoPedido() {
           {texto && (
             <Alert variant="lila">
               <Sparkles />
-              <div>
-                Interpretamos: «{texto}». Revisa cada producto; nada se guarda sin tu confirmación.
-              </div>
+              <div>Interpretamos: «{texto}». Revisa cada producto; nada se guarda sin tu confirmación.</div>
             </Alert>
           )}
           {filas.map((f) => {
@@ -245,12 +256,17 @@ export default function NuevoPedido() {
               <Card key={f.clave}>
                 <CardContent className="space-y-4 p-5">
                   <div className="flex items-start gap-3">
-                    {p ? <ImagenProducto nombre={p.nombre} imagen={p.imagen} className="size-14" /> : <div className="flex size-14 items-center justify-center rounded-xl bg-muted"><CircleHelp className="size-6 text-muted-foreground" /></div>}
+                    {p ? (
+                      <ImagenProducto nombre={p.nombre} imagen={p.imagen} className="size-14" />
+                    ) : (
+                      <div className="flex size-14 items-center justify-center rounded-xl bg-muted">
+                        <CircleHelp className="size-6 text-muted-foreground" />
+                      </div>
+                    )}
                     <div className="flex-1 space-y-2">
                       {f.textoOriginal && (
                         <p className="text-xs text-muted-foreground">
-                          Escribiste: «{f.textoOriginal}»{" "}
-                          {f.confianza === "ALTA" && <Badge variant="exito">Reconocido</Badge>}
+                          Escribiste: «{f.textoOriginal}» {f.confianza === "ALTA" && <Badge variant="exito">Reconocido</Badge>}
                           {f.confianza === "MEDIA" && <Badge variant="aviso">Revisa la cantidad</Badge>}
                           {f.confianza === "BAJA" && <Badge variant="destructive">Elige el producto</Badge>}
                         </p>
@@ -272,7 +288,14 @@ export default function NuevoPedido() {
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="space-y-1.5">
                       <Label htmlFor={`cant-${f.clave}`}>Cantidad {p ? `(${p.unidad})` : ""}</Label>
-                      <Input id={`cant-${f.clave}`} type="number" min={1} inputMode="numeric" value={f.cantidad} onChange={(e) => cambiar(f.clave, { cantidad: e.target.value })} />
+                      <Input
+                        id={`cant-${f.clave}`}
+                        type="number"
+                        min={1}
+                        inputMode="numeric"
+                        value={f.cantidad}
+                        onChange={(e) => cambiar(f.clave, { cantidad: e.target.value })}
+                      />
                       {p && Number(f.cantidad) > 0 && (
                         <p className="text-xs text-muted-foreground">
                           ≈ {(Number(f.cantidad) / p.equivalencia).toFixed(1).replace(".0", "")} {p.unidadVenta.split(" ")[0]}(s)
@@ -281,14 +304,32 @@ export default function NuevoPedido() {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor={`precio-${f.clave}`}>Hoy pagas c/u (opcional)</Label>
-                      <Input id={`precio-${f.clave}`} type="number" step="0.01" min={0} placeholder="S/" value={f.precioActual} onChange={(e) => cambiar(f.clave, { precioActual: e.target.value })} />
+                      <Input
+                        id={`precio-${f.clave}`}
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="S/"
+                        value={f.precioActual}
+                        onChange={(e) => cambiar(f.clave, { precioActual: e.target.value })}
+                      />
                       <p className="text-xs text-muted-foreground">Así calculamos tu ahorro real.</p>
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor={`marca-${f.clave}`}>Marca preferida (opcional)</Label>
-                      <Input id={`marca-${f.clave}`} placeholder={p?.marca ?? "Cualquiera"} value={f.marcaPreferida} onChange={(e) => cambiar(f.clave, { marcaPreferida: e.target.value })} />
+                      <Input
+                        id={`marca-${f.clave}`}
+                        placeholder={p?.marca ?? "Cualquiera"}
+                        value={f.marcaPreferida}
+                        onChange={(e) => cambiar(f.clave, { marcaPreferida: e.target.value })}
+                      />
                       <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <input type="checkbox" className="size-4 accent-[hsl(var(--primary))]" checked={f.aceptaEquivalente} onChange={(e) => cambiar(f.clave, { aceptaEquivalente: e.target.checked })} />
+                        <input
+                          type="checkbox"
+                          className="size-4 accent-[hsl(var(--primary))]"
+                          checked={f.aceptaEquivalente}
+                          onChange={(e) => cambiar(f.clave, { aceptaEquivalente: e.target.checked })}
+                        />
                         Acepto una marca equivalente
                       </label>
                     </div>
@@ -324,10 +365,18 @@ export default function NuevoPedido() {
                 ))}
               </div>
               {opcionFecha === "elegir" && (
-                <Input type="date" min={hoy} value={fechaElegida} onChange={(e) => setFechaElegida(e.target.value)} aria-label="Fecha requerida" className="max-w-xs" />
+                <Input
+                  type="date"
+                  min={hoy}
+                  value={fechaElegida}
+                  onChange={(e) => setFechaElegida(e.target.value)}
+                  aria-label="Fecha requerida"
+                  className="max-w-xs"
+                />
               )}
               <p className="text-sm text-muted-foreground">
-                Solo te mostraremos compras cuya entrega llegue a más tardar el <span className="font-semibold text-foreground">{fechaConDia(fechaRequerida)}</span>.
+                Solo te mostraremos compras cuya entrega llegue a más tardar el{" "}
+                <span className="font-semibold text-foreground">{fechaConDia(fechaRequerida)}</span>.
               </p>
             </CardContent>
           </Card>
