@@ -32,6 +32,8 @@ export default function PanelProveedor() {
             {panel.porConfirmar > 0
               ? `Tienes ${panel.porConfirmar === 1 ? "1 compra que espera" : `${panel.porConfirmar} compras que esperan`} tu confirmación.`
               : "Revisa tus compras en grupo y mantén informados a los negocios."}
+            {panel.mensajesSinLeer + panel.preguntasSinResponder > 0 &&
+              ` También tienes ${panel.mensajesSinLeer + panel.preguntasSinResponder} mensaje(s) o pregunta(s) por responder.`}
           </p>
           <Button asChild className="mt-4">
             <Link to="/proveedor/compras">
@@ -45,7 +47,13 @@ export default function PanelProveedor() {
         {[
           { icono: Sparkles, valor: panel.porConfirmar, texto: "por confirmar", clase: "bg-naranja-suave/60", a: "/proveedor/compras" },
           { icono: Truck, valor: panel.enCurso, texto: "entregas en curso", clase: "bg-secondary/70", a: "/proveedor/compras" },
-          { icono: MessageSquareWarning, valor: panel.incidenciasAbiertas, texto: "incidencias abiertas", clase: "bg-info-suave/60", a: "/proveedor/incidencias" },
+          {
+            icono: MessageSquareWarning,
+            valor: panel.mensajesSinLeer + panel.preguntasSinResponder + panel.incidenciasAbiertas,
+            texto: `por responder (${panel.preguntasSinResponder} preguntas, ${panel.mensajesSinLeer} mensajes, ${panel.incidenciasAbiertas} incidencias)`,
+            clase: "bg-info-suave/60",
+            a: panel.incidenciasAbiertas > 0 ? "/proveedor/incidencias" : "/proveedor/mensajes",
+          },
           {
             icono: BadgeCheck,
             valor: panel.puntualidad === null ? "—" : `${panel.puntualidad} %`,

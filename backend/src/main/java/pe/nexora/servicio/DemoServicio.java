@@ -67,6 +67,9 @@ public class DemoServicio {
     private final NotificacionRepositorio notificacionesRepo;
     private final IncidenciaRepositorio incidencias;
     private final CompraServicio compraServicio;
+    private final pe.nexora.repositorio.PreguntaRepositorio preguntasRepo;
+    private final pe.nexora.repositorio.MensajeRepositorio mensajesRepo;
+    private final pe.nexora.repositorio.CompraOcultaRepositorio ocultasRepo;
     private final NotificacionServicio notificaciones;
     private final Vistas vistas;
     private final PasswordEncoder codificador;
@@ -79,7 +82,13 @@ public class DemoServicio {
                         ParticipacionRepositorio participaciones, AvisoRepositorio avisos,
                         NotificacionRepositorio notificacionesRepo, IncidenciaRepositorio incidencias,
                         CompraServicio compraServicio, NotificacionServicio notificaciones, Vistas vistas,
-                        PasswordEncoder codificador, Reloj reloj) {
+                        PasswordEncoder codificador, Reloj reloj,
+                        pe.nexora.repositorio.PreguntaRepositorio preguntasRepo,
+                        pe.nexora.repositorio.MensajeRepositorio mensajesRepo,
+                        pe.nexora.repositorio.CompraOcultaRepositorio ocultasRepo) {
+        this.preguntasRepo = preguntasRepo;
+        this.mensajesRepo = mensajesRepo;
+        this.ocultasRepo = ocultasRepo;
         this.zonas = zonas;
         this.usuarios = usuarios;
         this.sesiones = sesiones;
@@ -117,6 +126,9 @@ public class DemoServicio {
     /** Borra todo y vuelve a cargar la demo. */
     @Transactional
     public void restablecer() {
+        mensajesRepo.deleteAllInBatch();
+        preguntasRepo.deleteAllInBatch();
+        ocultasRepo.deleteAllInBatch();
         incidencias.deleteAllInBatch();
         notificacionesRepo.deleteAllInBatch();
         avisos.deleteAllInBatch();
@@ -239,6 +251,13 @@ public class DemoServicio {
                 "12 botellas de aceite", ahora.minusHours(20));
         necesidad(rosita, leche, 48, null, hoy.plusDays(10), Necesidad.Estado.ACTIVA,
                 "una caja de leche evaporada", ahora.minusHours(3));
+
+        // Comunicación de prueba: una pregunta respondida, otra pendiente y un chat sobre la entrega de vasos.
+        pregunta(cAceite, lucho, "¿El aceite viene en caja o en botellas sueltas?",
+                "Puede ser por botella o en caja de 12; cada bodega recibe la cantidad que pidió.", ahora.minusDays(1));
+        pregunta(cAceite, pilar, "¿Se puede pagar contra entrega?", null, ahora.minusHours(4));
+        mensaje(cVasos, rosita, pe.nexora.dominio.Mensaje.NEGOCIO, "Hola, ¿a qué hora llegarían los vasos? Abro a las 7 a. m.", true, ahora.minusHours(10));
+        mensaje(cVasos, rosita, pe.nexora.dominio.Mensaje.PROVEEDOR, "Buen día. La ruta pasa por su zona entre 9 y 11 a. m.", false, ahora.minusHours(9));
 
         notificacion(ana.id, "COMPRA", "Se formó una compra de aceite vegetal con 3 bodegas de tu zona.", "/compras/" + cAceite.id, false, ahora.minusHours(1));
         notificacion(ana.id, "COMPRA", "¡Compra de vasos descartables confirmada! Precio final S/ 7.48.", "/compras/" + cVasos.id, false, ahora.minusDays(1));
@@ -383,6 +402,28 @@ public class DemoServicio {
         a.texto = texto;
         a.creadoEn = cuando;
         avisos.save(a);
+    }
+
+    private void pregunta(CompraConjunta c, Negocio n, String texto, String respuesta, LocalDateTime cuando) {
+        pe.nexora.dominio.Pregunta p = new pe.nexora.dominio.Pregunta();
+        p.compraId = c.id;
+        p.negocioId = n.id;
+        p.texto = texto;
+        p.respuesta = respuesta;
+        p.creadaEn = cuando;
+        p.respondidaEn = respuesta == null ? null : cuando.plusHours(2);
+        preguntasRepo.save(p);
+    }
+
+    private void mensaje(CompraConjunta c, Negocio n, String autor, String texto, boolean leido, LocalDateTime cuando) {
+        pe.nexora.dominio.Mensaje m = new pe.nexora.dominio.Mensaje();
+        m.compraId = c.id;
+        m.negocioId = n.id;
+        m.autor = autor;
+        m.texto = texto;
+        m.leido = leido;
+        m.creadoEn = cuando;
+        mensajesRepo.save(m);
     }
 
     private void notificacion(Long usuarioId, String tipo, String texto, String enlace, boolean leida, LocalDateTime cuando) {

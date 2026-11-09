@@ -105,5 +105,22 @@ export interface CompraProveedor {
 }
 export interface PanelProveedor {
   razonSocial: string; ruc: string; puntualidad: number | null; entregasATiempo: number; entregasTotal: number;
-  porConfirmar: number; enCurso: number; incidenciasAbiertas: number; compras: CompraProveedor[];
+  porConfirmar: number; enCurso: number; incidenciasAbiertas: number; mensajesSinLeer: number; preguntasSinResponder: number;
+  compras: CompraProveedor[];
 }
+
+// ---------- Mensajería ----------
+
+export interface Pregunta { id: number; texto: string; respuesta: string | null; mia: boolean; creadaEn: string; respondidaEn: string | null }
+export interface ChatMensaje { id: number; autor: "NEGOCIO" | "PROVEEDOR"; texto: string; creadoEn: string }
+export interface MensajesCompra {
+  compraId: number; producto: string; proveedor: string; puedeEscribir: boolean; preguntas: Pregunta[]; chat: ChatMensaje[];
+}
+export interface Conversacion {
+  compraId: number; producto: string; imagen: string | null; contraparte: string; negocioId: number; ultimo: string;
+  ultimoAutor: string; fecha: string; sinLeer: number; preguntas: number; preguntasSinResponder: number;
+}
+export interface Bandeja { sinLeer: number; conversaciones: Conversacion[] }
+export interface PreguntaProveedor { id: number; compraId: number; producto: string; texto: string; respuesta: string | null; creadaEn: string }
+export interface BandejaProveedor { sinLeer: number; preguntasSinResponder: number; conversaciones: Conversacion[]; preguntas: PreguntaProveedor[] }
+export interface ChatProveedor { compraId: number; negocioId: number; producto: string; negocio: string; mensajes: ChatMensaje[] }

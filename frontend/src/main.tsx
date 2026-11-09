@@ -16,12 +16,14 @@ import Compras from "@/pages/Compras";
 import CompraDetalle from "@/pages/CompraDetalle";
 import Seguimiento from "@/pages/Seguimiento";
 import Perfil from "@/pages/Perfil";
+import Mensajes from "@/pages/Mensajes";
 import IngresarProveedor from "@/pages/proveedor/Ingresar";
 import PanelProveedor from "@/pages/proveedor/Panel";
 import ComprasProveedor from "@/pages/proveedor/Compras";
 import CompraProveedor from "@/pages/proveedor/CompraDetalle";
 import IncidenciasProveedor from "@/pages/proveedor/Incidencias";
 import DatosPrueba from "@/pages/proveedor/DatosPrueba";
+import MensajesProveedor from "@/pages/proveedor/Mensajes";
 import { Girando } from "@/components/comun";
 
 /** Cada área (bodeguero o proveedor) tiene su propia sesión y su color. */
@@ -70,6 +72,7 @@ const router = createBrowserRouter([
               { path: "compras", element: <ComprasProveedor /> },
               { path: "compras/:id", element: <CompraProveedor /> },
               { path: "incidencias", element: <IncidenciasProveedor /> },
+              { path: "mensajes", element: <MensajesProveedor /> },
               { path: "datos-de-prueba", element: <DatosPrueba /> },
               { path: "*", element: <Navigate to="/proveedor" replace /> },
             ],
@@ -102,6 +105,7 @@ const router = createBrowserRouter([
               { path: "/compras/:id", element: <CompraDetalle /> },
               { path: "/seguimiento", element: <Seguimiento /> },
               { path: "/perfil", element: <Perfil /> },
+              { path: "/mensajes", element: <Mensajes /> },
               { path: "*", element: <Navigate to="/" replace /> },
             ],
           },

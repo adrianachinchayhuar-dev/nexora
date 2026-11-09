@@ -223,6 +223,7 @@ public final class Dto {
 
     public record PanelProveedorVista(String razonSocial, String ruc, Integer puntualidad, int entregasATiempo,
                                       int entregasTotal, int porConfirmar, int enCurso, int incidenciasAbiertas,
+                                      int mensajesSinLeer, int preguntasSinResponder,
                                       List<CompraProveedorVista> compras) {
     }
 
@@ -231,6 +232,44 @@ public final class Dto {
 
     public record RespuestaIncidenciaRequest(@NotBlank(message = "Escribe tu respuesta.") @Size(max = 500) String respuesta,
                                              @NotBlank String estado) {
+    }
+
+    // ---------- Mensajería: preguntas anónimas y chat privado ----------
+
+    public record TextoRequest(@NotBlank(message = "Escribe el mensaje.") @Size(max = 500, message = "El mensaje es demasiado largo.") String texto) {
+    }
+
+    /** mia: la hizo el negocio que consulta (solo él lo sabe; para los demás es anónima). */
+    public record PreguntaVista(Long id, String texto, String respuesta, boolean mia, LocalDateTime creadaEn,
+                                LocalDateTime respondidaEn) {
+    }
+
+    /** autor: NEGOCIO o PROVEEDOR. */
+    public record ChatMensaje(Long id, String autor, String texto, LocalDateTime creadoEn) {
+    }
+
+    public record MensajesCompraVista(Long compraId, String producto, String proveedor, boolean puedeEscribir,
+                                      List<PreguntaVista> preguntas, List<ChatMensaje> chat) {
+    }
+
+    public record ConversacionVista(Long compraId, String producto, String imagen, String contraparte, Long negocioId,
+                                    String ultimo, String ultimoAutor, LocalDateTime fecha, int sinLeer,
+                                    int preguntas, int preguntasSinResponder) {
+    }
+
+    public record BandejaVista(int sinLeer, List<ConversacionVista> conversaciones) {
+    }
+
+    public record PreguntaProveedorVista(Long id, Long compraId, String producto, String texto, String respuesta,
+                                         LocalDateTime creadaEn) {
+    }
+
+    public record BandejaProveedorVista(int sinLeer, int preguntasSinResponder, List<ConversacionVista> conversaciones,
+                                        List<PreguntaProveedorVista> preguntas) {
+    }
+
+    public record ChatProveedorVista(Long compraId, Long negocioId, String producto, String negocio,
+                                     List<ChatMensaje> mensajes) {
     }
 
     // ---------- Acciones del proveedor y datos de prueba ----------

@@ -47,8 +47,9 @@ public class ProveedorServicio {
     private final NotificacionServicio notificaciones;
     private final Vistas vistas;
     private final Reloj reloj;
+    private final MensajeriaServicio mensajeria;
 
-    public ProveedorServicio(ProveedorRepositorio proveedores, CompraConjuntaRepositorio compras,
+    public ProveedorServicio(MensajeriaServicio mensajeria, ProveedorRepositorio proveedores, CompraConjuntaRepositorio compras,
                              ProductoRepositorio productos, ParticipacionRepositorio participaciones,
                              NecesidadRepositorio necesidades, NegocioRepositorio negocios, AvisoRepositorio avisos,
                              IncidenciaRepositorio incidencias, CompraServicio compraServicio,
@@ -65,6 +66,7 @@ public class ProveedorServicio {
         this.notificaciones = notificaciones;
         this.vistas = vistas;
         this.reloj = reloj;
+        this.mensajeria = mensajeria;
     }
 
     // ---------- Consultas ----------
@@ -82,9 +84,10 @@ public class ProveedorServicio {
         int abiertas = (int) lista.stream().flatMap(c -> c.incidencias().stream())
                 .filter(i -> !Incidencia.Estado.RESUELTA.name().equals(i.estado())).count();
         Proveedor p = proveedores.findById(yo.id).orElseThrow();
+        Dto.BandejaProveedorVista bandeja = mensajeria.bandejaProveedor(yo);
         return new Dto.PanelProveedorVista(p.razonSocial, p.ruc,
                 ReglasCompra.puntualidad(p.entregasATiempo, p.entregasTotal), p.entregasATiempo, p.entregasTotal,
-                porConfirmar, enCurso, abiertas, lista);
+                porConfirmar, enCurso, abiertas, bandeja.sinLeer(), bandeja.preguntasSinResponder(), lista);
     }
 
     private static int orden(Dto.CompraProveedorVista c) {

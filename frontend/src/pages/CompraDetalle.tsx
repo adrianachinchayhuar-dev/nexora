@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -7,14 +7,17 @@ import {
   CheckCircle2,
   CircleAlert,
   EyeOff,
+  HelpCircle,
   LogOut,
   Megaphone,
+  MessageCircle,
   PackageCheck,
   ShieldCheck,
   Star,
   TriangleAlert,
   Truck,
   Users,
+  XCircle,
 } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +29,10 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CargandoLista, ErrorCarga, Girando } from "@/components/comun";
-import { AvanceMinimo, EstadoBadge, ImagenProducto, LineaFechas, TEXTO_ENTREGA, TramosPrecio } from "@/components/compra";
+import { EstadoBadge, ImagenProducto, TEXTO_ENTREGA } from "@/components/compra";
+import { MensajesDeCompra } from "@/components/mensajes";
 import { get, post } from "@/lib/api";
-import { ESTADO_INCIDENCIA, ETIQUETA_AHORRO, MOTIVOS_INCIDENCIA, entregaTexto, fechaConDia, haceTiempo, soles } from "@/lib/formato";
+import { ESTADO_INCIDENCIA, ETIQUETA_AHORRO, MOTIVOS_INCIDENCIA, entregaTexto, fechaConDia, fechaCorta, haceTiempo, rangoCorto, relativo, singular, soles } from "@/lib/formato";
 import type { Ahorro, Compra, EntregaEstado } from "@/lib/tipos";
 import { cn } from "@/lib/utils";
 
@@ -107,6 +111,22 @@ export default function CompraDetalle() {
   const [incidencia, setIncidencia] = useState(false);
   const [motivo, setMotivo] = useState("NO_LLEGO");
   const [descripcion, setDescripcion] = useState("");
+  const navegar = useNavigate();
+  const ver = params.get("ver");
+  const [pestanaMensajes, setPestanaMensajes] = useState<"preguntas" | "chat">(ver === "mensajes" ? "chat" : "preguntas");
+  const [oculta, setOculta] = useState(false);
+
+  useEffect(() => {
+    get<number[]>("/compras/ocultas")
+      .then((ids) => setOculta(ids.includes(Number(id))))
+      .catch(() => undefined);
+  }, [id]);
+
+  useEffect(() => {
+    if (ver === "mensajes" || ver === "preguntas") {
+      window.setTimeout(() => document.getElementById("mensajes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 600);
+    }
+  }, [ver]);
 
   const cargar = async (cant?: string, nec?: string) => {
     const q = new URLSearchParams();
@@ -193,73 +213,272 @@ export default function CompraDetalle() {
   const mia = compra.miParticipacion;
   const sim = compra.simulacion;
   const unidad = producto.unidad;
-  const pendiente = estadoVisible.clave === "REUNIENDO" || estadoVisible.clave === "ESPERANDO_PROVEEDOR";
+  const clave = estadoVisible.clave;
+  const pendiente = clave === "REUNIENDO" || clave === "ESPERANDO_PROVEEDOR";
+  const abierta = pendiente && compra.fechaCierre >= compra.hoy;
   const requerida = mia?.fechaRequerida ?? compra.necesidadesCompatibles.find((n) => String(n.id) === necesidadId)?.fechaRequerida ?? null;
   const necesidadElegida = compra.necesidadesCompatibles.find((n) => String(n.id) === necesidadId);
+  const llega = requerida ? compra.entregaHasta <= requerida : null;
+  const hoyPagas = necesidadElegida?.precioActual ?? (mia ? mia.ahorro.precioReferencia : sim?.ahorro.precioReferencia) ?? resumen.precioNormal;
+  const tuCantidad = mia?.cantidad ?? (Number(cantidad) > 0 ? Number(cantidad) : null);
+  const nombreProveedor = proveedor.razonSocial.replace(/\s*\(.*\)$/, "");
+  const iniciales = nombreProveedor.split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase();
+  const tope = Math.max(compra.minimo * 2, compra.total, compra.tramos[compra.tramos.length - 1]?.desde ?? compra.minimo);
+  const pct = (n: number) => `${Math.min(100, (n / tope) * 100)}%`;
+
+  const abrirMensajes = (p: "preguntas" | "chat") => {
+    setPestanaMensajes(p);
+    window.setTimeout(() => document.getElementById("mensajes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+
+  const ocultar = async () => {
+    try {
+      const r = await post<{ mensaje: string }>(`/compras/${id}/${oculta ? "mostrar" : "ocultar"}`);
+      toast.success(r.mensaje);
+      if (oculta) setOculta(false);
+      else navegar("/compras");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No se pudo completar.");
+    }
+  };
+
+  const pasos = [
+    { clave: "REUNIENDO", titulo: "Reuniendo negocios", texto: "Otros negocios se están sumando. Aún no hay precio final." },
+    { clave: "ESPERANDO_PROVEEDOR", titulo: "Esperando precio del proveedor", texto: "Se alcanzó el mínimo; el proveedor confirma stock, precio y fecha." },
+    { clave: "CONFIRMADA", titulo: "Confirmada", texto: "Precio y entrega comprometidos. El pago y la entrega se coordinan con el proveedor." },
+  ];
+  const indicePaso = pasos.findIndex((p) => p.clave === clave);
 
   return (
-    <div className="space-y-6">
-      <Link to="/compras" className="inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Compras en grupo
-      </Link>
-
-      {/* Cabecera */}
-      <Card className="p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="size-24" />
-          <div className="flex-1">
-            <div className="flex flex-wrap gap-2">
-              <EstadoBadge clave={estadoVisible.clave} texto={estadoVisible.texto} />
-              {mia && <Badge variant="naranja">Participas con {mia.cantidad} {unidad}</Badge>}
-            </div>
-            <h1 className="mt-1.5 text-2xl font-extrabold">{producto.nombre}</h1>
-            <p className="text-muted-foreground">
-              {producto.marca} · {producto.presentacion} · se vende por {producto.unidadVenta} ({producto.equivalencia} {unidad}) · {compra.zona.nombre}
-            </p>
-          </div>
-          <div className="rounded-2xl bg-secondary px-5 py-3 text-center">
-            <div className="text-xs font-semibold text-secondary-foreground">{compra.precioFinal ? "Precio final" : "Precio actual"}</div>
-            <div className="text-3xl font-extrabold text-primary">{soles(compra.precioFinal ?? resumen.precioActual)}</div>
-            <div className="text-xs text-muted-foreground">por {unidad.replace(/s$/, "")} · normal {soles(resumen.precioNormal)}</div>
-          </div>
+    <div className="space-y-5">
+      <div>
+        <Link to="/compras" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          <ArrowLeft className="size-4" /> Compras en grupo
+        </Link>
+        <h1 className="mt-1 text-3xl font-extrabold">{producto.nombre}</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {abierta && <Badge variant="naranja">Abierta · cierra el {fechaCorta(compra.fechaCierre)}.</Badge>}
+          <EstadoBadge clave={clave} texto={estadoVisible.texto} />
+          {llega !== null && clave !== "NO_SE_CONCRETO" && (
+            <Badge variant={llega ? "exito" : "destructive"}>
+              {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega tarde para tu fecha"}
+            </Badge>
+          )}
+          {mia && <Badge variant="naranja">Participas con {mia.cantidad} {unidad}</Badge>}
+          {oculta && <Badge variant="muted">Oculta: no te interesa</Badge>}
+          <span className="text-sm text-muted-foreground">{producto.presentacion}</span>
         </div>
+        {sim && !mia && (
+          <p className="mt-2 text-sm">
+            Si te unes: ahorro estimado <b className="text-exito">{soles(Math.max(0, sim.ahorro.monto))}</b> · el precio bajaría a {soles(sim.precioConmigo)}{" "}
+            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">{ETIQUETA_AHORRO[sim.ahorro.etiqueta].texto}</span>
+          </p>
+        )}
+        {mia && mia.ahorro.monto > 0 && (
+          <p className="mt-2 text-sm">
+            Tu ahorro {mia.ahorro.etiqueta === "CONFIRMADO" ? "confirmado" : "estimado"}: <b className="text-exito">{soles(mia.ahorro.monto)}</b>
+          </p>
+        )}
+      </div>
+
+      {/* Línea de tiempo */}
+      <Card className="px-4 py-5">
+        <ol className="relative grid" style={{ gridTemplateColumns: `repeat(${requerida ? 4 : 3}, minmax(0,1fr))` }}>
+          <div className="absolute left-[12%] right-[12%] top-[9px] h-0.5 bg-lila" aria-hidden />
+          {[
+            { t: "Hoy", f: fechaCorta(compra.hoy), d: "", c: "border-primary bg-primary/20" },
+            { t: compra.fechaCierre < compra.hoy ? "Cerró" : "Cierra", f: fechaCorta(compra.fechaCierre), d: relativo(compra.fechaCierre, compra.hoy), c: "border-primary bg-primary/20" },
+            { t: "Entrega", f: rangoCorto(compra.entregaDesde, compra.entregaHasta), d: "", c: "border-exito bg-exito/30" },
+            ...(requerida ? [{ t: "Lo necesitas para", f: fechaCorta(requerida), d: llega ? "llega a tiempo" : "llega tarde", c: llega ? "rotate-45 rounded-none border-exito bg-exito" : "rotate-45 rounded-none border-destructive bg-destructive" }] : []),
+          ].map((p) => (
+            <li key={p.t} className="relative flex flex-col items-center text-center">
+              <span className={cn("z-10 size-5 rounded-full border-[3px] bg-card", p.c)} />
+              <span className={cn("mt-2 text-xs font-semibold", p.t === "Lo necesitas para" && (llega ? "text-exito" : "text-destructive"))}>{p.t}</span>
+              <span className="text-lg font-extrabold leading-tight sm:text-2xl">{p.f}</span>
+              {p.d && <span className="text-xs text-muted-foreground">{p.d}</span>}
+            </li>
+          ))}
+        </ol>
       </Card>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="min-w-0 space-y-6">
-          {/* Fechas */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Fechas de la compra</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <LineaFechas compra={compra} requerida={requerida} />
-              {pendiente && (
-                <p className="mt-3 text-center text-xs text-muted-foreground">
-                  Hasta el cierre puedes unirte o retirarte. Después, el proveedor confirma stock, precio final y la fecha de entrega.
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
+        <div className="min-w-0 space-y-5">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {/* Producto */}
+            <Card className="p-4">
+              <div className="flex gap-3">
+                <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="size-24 bg-secondary" />
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Compra en grupo</p>
+                  <p className="text-xl font-extrabold leading-tight">{producto.nombre}</p>
+                  <p className="text-sm text-muted-foreground">{producto.presentacion}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {producto.marca} · se vende por {producto.unidadVenta}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded-xl bg-muted p-2.5">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">{compra.precioFinal ? "Precio final" : "Precio en grupo hoy"}</p>
+                  <p className="font-extrabold">{soles(compra.precioFinal ?? resumen.precioActual)}</p>
+                  {sim && !mia && <p className="text-xs text-primary">Con tu pedido: {soles(sim.precioConmigo)}</p>}
+                </div>
+                <div className="rounded-xl bg-muted p-2.5">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Hoy pagas</p>
+                  <p className="font-extrabold">{soles(hoyPagas)}</p>
+                </div>
+                <div className="rounded-xl bg-muted p-2.5">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">{compra.fechaCierre < compra.hoy ? "Cerró el" : "Cierra el"}</p>
+                  <p className="font-extrabold">{fechaCorta(compra.fechaCierre)}.</p>
+                </div>
+                <div className="rounded-xl bg-muted p-2.5">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">Tu pedido</p>
+                  <p className="font-extrabold">{tuCantidad ? `${tuCantidad} ${unidad}` : "—"}</p>
+                </div>
+              </div>
+              {(mia?.ahorro ?? sim?.ahorro) && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  <b className="text-foreground">{ETIQUETA_AHORRO[(mia?.ahorro ?? sim!.ahorro).etiqueta].texto.replace(/^./, (x) => x.toUpperCase())}:</b>{" "}
+                  {ETIQUETA_AHORRO[(mia?.ahorro ?? sim!.ahorro).etiqueta].ayuda}
                 </p>
               )}
-            </CardContent>
+            </Card>
+
+            {/* ¿Qué pasa ahora? */}
+            <Card className="p-4">
+              <h2 className="mb-3 flex items-center gap-2 font-bold">
+                <span className="flex size-7 items-center justify-center rounded-full bg-secondary text-primary">
+                  <Users className="size-4" />
+                </span>
+                ¿Qué pasa ahora?
+              </h2>
+              {clave === "NO_SE_CONCRETO" ? (
+                <Alert variant="lila">
+                  <XCircle />
+                  <div>La compra cerró sin alcanzar el mínimo o sin la confirmación del proveedor. Tu pedido sigue guardado para otra compra.</div>
+                </Alert>
+              ) : (
+                <ol className="space-y-3">
+                  {pasos.map((p, i) => {
+                    const actual = i === indicePaso;
+                    const hecho = i < indicePaso;
+                    return (
+                      <li key={p.clave} className="flex gap-3">
+                        <span
+                          className={cn(
+                            "flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-xs",
+                            actual ? "border-primary bg-primary text-primary-foreground" : hecho ? "border-exito bg-exito text-white" : "border-border text-muted-foreground",
+                          )}
+                        >
+                          {hecho ? <CheckCircle2 className="size-4" /> : i + 1}
+                        </span>
+                        <div>
+                          <p className={cn("text-sm font-semibold", actual && "text-primary")}>{p.titulo}</p>
+                          {actual && <p className="text-xs text-muted-foreground">{p.texto}</p>}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </Card>
+          </div>
+
+          {/* Precio por cantidad */}
+          <Card className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="flex items-center gap-2 font-bold">
+                  <span className="flex size-7 items-center justify-center rounded-full bg-secondary text-primary">
+                    <Users className="size-4" />
+                  </span>
+                  Precio por cantidad
+                </h2>
+                <p className="mt-2 text-3xl font-extrabold">
+                  {compra.total} <span className="text-sm font-normal text-muted-foreground">{unidad} reunidas</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-extrabold text-primary">{soles(compra.precioFinal ?? resumen.precioActual)}</p>
+                <p className="text-xs text-muted-foreground">por {singular(unidad)}</p>
+              </div>
+            </div>
+            <div className="relative mt-6 h-3 rounded-full bg-lila">
+              <div className="h-3 rounded-full bg-gradient-to-r from-primary to-naranja" style={{ width: pct(compra.total) }} />
+              <div className="absolute -top-5 -translate-x-1/2 text-[10px] font-bold text-naranja-tinta" style={{ left: pct(compra.minimo) }}>
+                Mínimo {compra.minimo}
+              </div>
+              <div className="absolute -top-1 h-5 w-0.5 bg-naranja-tinta" style={{ left: pct(compra.minimo) }} />
+              {compra.tramos.slice(1).map((t) =>
+                t.desde !== compra.minimo ? <div key={t.desde} className="absolute -top-1 h-5 w-px bg-muted-foreground/50" style={{ left: pct(t.desde) }} /> : null,
+              )}
+            </div>
+            <div className="relative mt-1 h-4 text-[10px] text-muted-foreground">
+              {compra.tramos.slice(1).map((t) => (
+                <span key={t.desde} className="absolute -translate-x-1/2" style={{ left: pct(t.desde) }}>
+                  {t.desde}
+                </span>
+              ))}
+            </div>
+            {resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null && pendiente && (
+              <p className="mt-2 text-sm font-semibold">
+                Faltan <span className="text-primary">{resumen.faltanSiguiente}</span> para bajar a <span className="text-primary">{soles(resumen.precioSiguiente)}</span>
+              </p>
+            )}
+            {sim && !mia && Number(cantidad) > 0 && (
+              <p className="mt-2 rounded-xl bg-naranja-suave px-3 py-2 text-sm text-naranja-tinta">
+                Con tu pedido de {sim.cantidad} llegan a {sim.totalConmigo} y el precio sería <b>{soles(sim.precioConmigo)}</b>.
+              </p>
+            )}
+            <ul className="mt-3 space-y-1">
+              {compra.tramos.map((t, i) => (
+                <li
+                  key={t.desde}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg px-3 py-2 text-sm",
+                    i === resumen.indiceTramo ? "border-2 border-primary bg-secondary/50 font-semibold" : "text-muted-foreground",
+                  )}
+                >
+                  <span>{t.hasta === null ? `desde ${t.desde} ${unidad}` : `de ${t.desde} a ${t.hasta} ${unidad}`}</span>
+                  <span className="flex items-center gap-2">
+                    <b className="text-foreground">{soles(t.precio)}</b>
+                    {i === resumen.indiceTramo && <Badge variant="secondary">Precio actual</Badge>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Mínimo para comprar en grupo: {compra.minimo}
+              {resumen.faltaMinimo > 0 ? ` · faltan ${resumen.faltaMinimo}.` : " · alcanzado."}
+            </p>
           </Card>
 
-          {/* Avance y tramos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Precio por volumen</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <AvanceMinimo compra={compra} />
-              <TramosPrecio tramos={compra.tramos} indice={resumen.indiceTramo} unidad={unidad} total={compra.total} />
-              <p className="flex items-start gap-2 text-xs text-muted-foreground">
-                <EyeOff className="mt-0.5 size-4 shrink-0" />
-                Ves cuántas bodegas participan ({compra.negocios}) y la cantidad total. Nadie ve el nombre de tu bodega ni tu cantidad; el proveedor los verá solo si la
-                compra se confirma.
+          {/* Negocios unidos */}
+          <Card className="p-5">
+            <h2 className="mb-2 flex items-center gap-2 font-bold">
+              <span className="flex size-7 items-center justify-center rounded-full bg-secondary text-primary">
+                <Users className="size-4" />
+              </span>
+              Negocios unidos
+            </h2>
+            <div className="flex items-center gap-4">
+              <p className="text-3xl font-extrabold">
+                {compra.negocios} <span className="text-sm font-normal text-muted-foreground">negocios unidos</span>
               </p>
-            </CardContent>
+              <div className="flex flex-1 gap-1">
+                {Array.from({ length: Math.min(compra.negocios, 12) }).map((_, i) => (
+                  <span key={i} className="h-2 flex-1 rounded-full bg-primary" />
+                ))}
+              </div>
+            </div>
+            <p className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
+              <EyeOff className="mt-0.5 size-4 shrink-0" />
+              Nadie ve el nombre de tu bodega ni tu cantidad; el proveedor los verá solo si la compra se confirma.
+            </p>
           </Card>
 
           {/* Entrega (solo confirmadas) */}
-          {estadoVisible.clave === "CONFIRMADA" && (
+          {clave === "CONFIRMADA" && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -306,7 +525,8 @@ export default function CompraDetalle() {
                           <Badge variant={i.estado === "RESUELTA" ? "exito" : i.estado === "EN_REVISION" ? "aviso" : "info"}>{ESTADO_INCIDENCIA[i.estado]}</Badge>
                         </div>
                         <p className="text-muted-foreground">{i.descripcion}</p>
-                        <p className="text-xs text-muted-foreground">{haceTiempo(i.creadaEn)}</p>
+                        {i.respuesta && <p className="mt-1.5 rounded-lg bg-exito-suave px-3 py-2 text-exito">Respuesta del proveedor: {i.respuesta}</p>}
+                        <p className="mt-1 text-xs text-muted-foreground">{haceTiempo(i.creadaEn)}</p>
                       </div>
                     ))}
                   </div>
@@ -333,12 +553,24 @@ export default function CompraDetalle() {
               </CardContent>
             </Card>
           )}
+
+          {/* Mensajes */}
+          <Card id="mensajes" className="scroll-mt-20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageCircle className="size-5 text-primary" /> Preguntas y mensajes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <MensajesDeCompra compraId={compra.id} inicial={pestanaMensajes} />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Columna de decisión */}
         <div className="min-w-0 space-y-4">
           {mia?.debeAceptarPrecio && (
-            <Card className="border-naranja">
+            <Card className="border-naranja ring-1 ring-naranja/30">
               <CardHeader>
                 <CardTitle className="text-base">El proveedor confirmó con otro precio</CardTitle>
               </CardHeader>
@@ -363,7 +595,9 @@ export default function CompraDetalle() {
           {mia ? (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Tu participación</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CheckCircle2 className="size-5 text-primary" /> Tu participación
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
@@ -394,9 +628,11 @@ export default function CompraDetalle() {
           ) : compra.puedeUnirse ? (
             <Card className="border-primary/40">
               <CardHeader>
-                <CardTitle className="text-base">Únete a esta compra</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CheckCircle2 className="size-5 text-primary" /> Qué puedes hacer
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {compra.necesidadesCompatibles.length > 0 && (
                   <div className="space-y-1.5">
                     <Label htmlFor="pedido">Con tu pedido</Label>
@@ -422,53 +658,63 @@ export default function CompraDetalle() {
                   <Label htmlFor="cantidad">Cantidad ({unidad})</Label>
                   <Input id="cantidad" type="number" min={1} inputMode="numeric" value={cantidad} onChange={(e) => setCantidad(e.target.value)} />
                 </div>
-                {sim && Number(cantidad) > 0 && (
-                  <div className="space-y-2 rounded-xl border border-dashed p-3">
-                    <p className="text-sm">
-                      <b>Si te unes</b> con {sim.cantidad} {unidad}, el grupo llega a <b>{sim.totalConmigo}</b> y el precio sería{" "}
-                      <b className="text-primary">{soles(sim.precioConmigo)}</b>.{" "}
-                      {sim.alcanzaMinimo ? "Se alcanza el mínimo." : `Aún faltarían ${compra.minimo - sim.totalConmigo} para el mínimo.`}
-                    </p>
-                    <TextoAhorro ahorro={sim.ahorro} unidad={unidad} />
-                    {necesidadElegida && !sim.llegaATiempo && (
-                      <Alert variant="destructive">
-                        <TriangleAlert />
-                        <div>La entrega llega después de tu fecha ({fechaConDia(necesidadElegida.fechaRequerida)}).</div>
-                      </Alert>
-                    )}
-                  </div>
+                {sim && Number(cantidad) > 0 && <TextoAhorro ahorro={sim.ahorro} unidad={unidad} />}
+                {necesidadElegida && sim && !sim.llegaATiempo && (
+                  <Alert variant="destructive">
+                    <TriangleAlert />
+                    <div>La entrega llega después de tu fecha ({fechaConDia(necesidadElegida.fechaRequerida)}).</div>
+                  </Alert>
                 )}
                 <Button className="w-full" size="lg" onClick={() => setConfirmarUnion(true)} disabled={!(Number(cantidad) > 0)}>
-                  <Users /> Unirme a la compra
+                  Unirme con {Number(cantidad) > 0 ? `${cantidad} ${unidad}` : "mi pedido"}
+                </Button>
+                <Button variant="outline" className="w-full" onClick={ocultar}>
+                  {oculta ? "Volver a mostrar" : "No me interesa"}
                 </Button>
                 <p className="text-xs text-muted-foreground">Es voluntario: puedes retirarte hasta que el proveedor confirme.</p>
               </CardContent>
             </Card>
           ) : (
-            <Alert variant="lila">
-              <CircleAlert />
-              <div>{compra.motivoNoUnirse}</div>
-            </Alert>
+            <div className="space-y-2">
+              <Alert variant="lila">
+                <CircleAlert />
+                <div>{compra.motivoNoUnirse}</div>
+              </Alert>
+              {!mia && (
+                <Button variant="ghost" className="w-full" onClick={ocultar}>
+                  {oculta ? "Volver a mostrar" : "No me interesa"}
+                </Button>
+              )}
+            </div>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Proveedor</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 text-sm">
-              <p className="font-semibold">{proveedor.razonSocial}</p>
-              {proveedor.puntualidad !== null ? (
+          <Card className="p-4">
+            <div className="flex gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-primary">{iniciales}</span>
+              <div className="text-sm">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Te vende</p>
+                <p className="font-bold">{nombreProveedor}</p>
+                <p className="text-muted-foreground">{compra.negocios} negocios ya se unieron</p>
+                {proveedor.puntualidad !== null ? (
+                  <p className="flex items-center gap-1 text-muted-foreground">
+                    <Star className="size-3.5 fill-naranja text-naranja" /> Entregó a tiempo {proveedor.entregasATiempo} de {proveedor.entregasTotal} compras · {proveedor.puntualidad}%
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">Aún no tiene entregas registradas.</p>
+                )}
                 <p className="flex items-center gap-1 text-muted-foreground">
-                  <Star className="size-4 fill-naranja text-naranja" /> Entregó a tiempo {proveedor.entregasATiempo} de {proveedor.entregasTotal} compras ·{" "}
-                  <b className="text-foreground">{proveedor.puntualidad}%</b>
+                  <BadgeCheck className="size-3.5 text-primary" /> Proveedor aprobado por NEXORA
                 </p>
-              ) : (
-                <p className="text-muted-foreground">Aún no tiene entregas registradas.</p>
-              )}
-              <p className="flex items-center gap-1 text-muted-foreground">
-                <BadgeCheck className="size-4 text-primary" /> Proveedor aprobado por NEXORA
-              </p>
-            </CardContent>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2">
+              <Button variant="outline" onClick={() => abrirMensajes("chat")}>
+                <MessageCircle /> Escribir al proveedor
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => abrirMensajes("preguntas")}>
+                <HelpCircle /> Ver o hacer preguntas
+              </Button>
+            </div>
           </Card>
         </div>
       </div>

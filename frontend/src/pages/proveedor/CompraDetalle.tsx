@@ -372,6 +372,18 @@ export default function CompraProveedor() {
         </div>
 
         <div className="min-w-0 space-y-6">
+          <Card className="p-4">
+            <p className="font-bold">Preguntas y mensajes</p>
+            <p className="mb-3 text-sm text-muted-foreground">Las preguntas son anónimas y tu respuesta la ven todas las bodegas; el chat es privado con cada negocio.</p>
+            <div className="grid gap-2">
+              <Button asChild variant="outline">
+                <Link to="/proveedor/mensajes?ver=preguntas">Responder preguntas</Link>
+              </Button>
+              <Button asChild variant="ghost">
+                <Link to="/proveedor/mensajes">Ver conversaciones</Link>
+              </Button>
+            </div>
+          </Card>
           <Avisos compra={compra} recargar={recargar} />
           {(confirmada || compra.incidencias.length > 0) && (
             <Card>

@@ -19,13 +19,15 @@ public class InicioServicio {
     private final NecesidadServicio necesidades;
     private final NotificacionServicio notificaciones;
     private final Reloj reloj;
+    private final MensajeriaServicio mensajeria;
 
-    public InicioServicio(CompraServicio compras, NecesidadServicio necesidades, NotificacionServicio notificaciones,
+    public InicioServicio(MensajeriaServicio mensajeria, CompraServicio compras, NecesidadServicio necesidades, NotificacionServicio notificaciones,
                           Reloj reloj) {
         this.compras = compras;
         this.necesidades = necesidades;
         this.notificaciones = notificaciones;
         this.reloj = reloj;
+        this.mensajeria = mensajeria;
     }
 
     @Transactional
@@ -69,7 +71,9 @@ public class InicioServicio {
         List<Dto.NecesidadVista> conCompra = pedidos.stream()
                 .filter(n -> n.coincidencia() != null && n.coincidencia().tipo().equals("COMPRA"))
                 .limit(3).toList();
+        List<Long> ocultas = mensajeria.ocultas(yo);
         List<Dto.CompraVista> cercanas = zona.stream()
+                .filter(c -> !ocultas.contains(c.id()))
                 .filter(c -> c.miParticipacion() == null && c.puedeUnirse())
                 .limit(3).toList();
 

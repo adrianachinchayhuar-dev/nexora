@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarDays, ClipboardList, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, ClipboardList, MessageCircle, ShieldCheck, Sparkles, Truck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +9,8 @@ import { CargandoLista, ErrorCarga, Vacio } from "@/components/comun";
 import { ImagenProducto, TarjetaCompra } from "@/components/compra";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
-import { fechaConDia, fechaCorta, relativo, soles } from "@/lib/formato";
-import type { Compra, Inicio as TInicio, Necesidad } from "@/lib/tipos";
+import { fechaConDia, fechaCorta, haceTiempo, relativo, soles } from "@/lib/formato";
+import type { Bandeja, Compra, Inicio as TInicio, Necesidad } from "@/lib/tipos";
 import { cn } from "@/lib/utils";
 
 const TIPO_FECHA = {
@@ -76,6 +76,7 @@ export default function Inicio() {
   const { datos, error, cargando, recargar } = useApi<TInicio>("/inicio");
   const { datos: compras } = useApi<Compra[]>("/compras");
   const { datos: necesidades } = useApi<Necesidad[]>("/necesidades");
+  const { datos: bandeja } = useApi<Bandeja>("/mensajes");
 
   if (error) return <ErrorCarga mensaje={error} reintentar={recargar} />;
   if (cargando && !datos) return <CargandoLista filas={4} />;
@@ -222,6 +223,39 @@ export default function Inicio() {
         {/* Columna derecha */}
         <div className="min-w-0 space-y-4">
           <QueNecesitas />
+
+          <Card className="p-5">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-bold">
+                <MessageCircle className="size-5 text-primary" /> Mensajes recientes
+              </h2>
+              <Link to="/mensajes" className="text-sm font-semibold text-primary hover:underline">
+                Abrir
+              </Link>
+            </div>
+            {bandeja?.conversaciones.length ? (
+              <ul className="space-y-1">
+                {bandeja.conversaciones.slice(0, 2).map((c) => (
+                  <li key={c.compraId}>
+                    <Link to={`/mensajes?compra=${c.compraId}`} className="block rounded-xl p-2 hover:bg-muted">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold">{c.contraparte.replace(/\s*\(.*\)$/, "")}</span>
+                        {c.sinLeer > 0 ? (
+                          <span className="rounded-full bg-secondary px-2 text-[11px] font-bold text-primary">Sin leer</span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">{haceTiempo(c.fecha)}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{c.producto}</p>
+                      <p className="truncate text-sm">{c.ultimo}</p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">Cuando le escribas a un proveedor o hagas una pregunta, la verás aquí.</p>
+            )}
+          </Card>
 
           <Card className="p-5">
             <h2 className="mb-3 flex items-center gap-2 font-bold">

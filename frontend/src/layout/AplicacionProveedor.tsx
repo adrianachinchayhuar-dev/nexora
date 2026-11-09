@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import { ChevronDown, FlaskConical, Home, LogOut, MessageSquareWarning, Sparkles } from "lucide-react";
+import { ChevronDown, FlaskConical, Home, LogOut, MessageCircle, MessageSquareWarning, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,10 +25,11 @@ export function usePanel() {
   return useOutletContext<ContextoPanel>();
 }
 
-type Contador = "porConfirmar" | "incidenciasAbiertas";
+type Contador = "porConfirmar" | "incidenciasAbiertas" | "mensajes";
 const NAV: { a: string; texto: string; corto: string; icono: typeof Home; fin?: boolean; cuenta?: Contador }[] = [
   { a: "/proveedor", texto: "Inicio", corto: "Inicio", icono: Home, fin: true },
   { a: "/proveedor/compras", texto: "Compras en grupo", corto: "Compras", icono: Sparkles, cuenta: "porConfirmar" },
+  { a: "/proveedor/mensajes", texto: "Mensajes", corto: "Mensajes", icono: MessageCircle, cuenta: "mensajes" },
   { a: "/proveedor/incidencias", texto: "Incidencias", corto: "Incidencias", icono: MessageSquareWarning, cuenta: "incidenciasAbiertas" },
 ];
 
@@ -37,6 +38,11 @@ export default function AplicacionProveedor() {
   const navegar = useNavigate();
   const ubicacion = useLocation();
   const { datos: panel, error, recargar } = useApi<PanelProveedor>("/proveedor/panel");
+  const cuentas: Record<Contador, number> = {
+    porConfirmar: panel?.porConfirmar ?? 0,
+    incidenciasAbiertas: panel?.incidenciasAbiertas ?? 0,
+    mensajes: (panel?.mensajesSinLeer ?? 0) + (panel?.preguntasSinResponder ?? 0),
+  };
   const nombre = panel?.razonSocial ?? cuenta?.proveedor ?? "Proveedor";
   const nombreCorto = nombre.replace(/\s*\(.*\)\s*$/, "");
   const iniciales = nombreCorto.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -78,8 +84,8 @@ export default function AplicacionProveedor() {
               {({ isActive }) => (
                 <>
                   <Icono className="size-[18px]" /> <span className="flex-1">{texto}</span>
-                  {c && panel && panel[c] > 0 && (
-                    <span className={cn("rounded-full px-2 text-[11px] font-bold", isActive ? "bg-white/20" : "bg-naranja text-white")}>{panel[c]}</span>
+                  {c && cuentas[c] > 0 && (
+                    <span className={cn("rounded-full px-2 text-[11px] font-bold", isActive ? "bg-white/20" : "bg-naranja text-white")}>{cuentas[c]}</span>
                   )}
                 </>
               )}
@@ -141,7 +147,7 @@ export default function AplicacionProveedor() {
         <Outlet context={{ panel, error, recargar } satisfies ContextoPanel} />
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Principal">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Principal">
         {[...NAV, { a: "/proveedor/datos-de-prueba", corto: "Prueba", icono: FlaskConical, fin: false }].map(({ a, corto, icono: Icono, fin }) => (
           <NavLink
             key={a}
