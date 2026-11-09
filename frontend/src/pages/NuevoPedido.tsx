@@ -58,9 +58,11 @@ export default function NuevoPedido() {
   const [params] = useSearchParams();
   const navegar = useNavigate();
   const { datos: catalogo } = useApi<Producto[]>("/catalogo");
-  const [paso, setPaso] = useState<1 | 2 | 3>(params.get("producto") ? 2 : 1);
+  // ?producto=1 o ?producto=1,4,7 (desde «Mi lista» del catálogo)
+  const idsIniciales = (params.get("producto") ?? "").split(",").filter(Boolean);
+  const [paso, setPaso] = useState<1 | 2 | 3>(idsIniciales.length ? 2 : 1);
   const [texto, setTexto] = useState(params.get("texto") ?? "");
-  const [filas, setFilas] = useState<Fila[]>(() => (params.get("producto") ? [filaVacia(params.get("producto")!)] : []));
+  const [filas, setFilas] = useState<Fila[]>(() => idsIniciales.map((id) => filaVacia(id)));
   const [interpretando, setInterpretando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);

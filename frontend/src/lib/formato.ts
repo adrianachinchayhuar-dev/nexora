@@ -70,7 +70,8 @@ export function rangoCorto(desde: string, hasta: string): string {
 /** «botellas» → «botella» (para «por botella»). */
 export function singular(unidad: string): string {
   if (unidad === "kg") return "kilo";
-  return unidad.replace(/es$/, "").replace(/s$/, "");
+  const sin = unidad.replace(/s$/, "");
+  return /[dlnr]e$/.test(sin) ? sin.slice(0, -1) : sin;
 }
 
 export function haceTiempo(isoFechaHora: string): string {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Bell, ChevronDown, ClipboardList, Home, LineChart, LogOut, Plus, Sparkles, Store, UserRound } from "lucide-react";
+import { Bell, ChevronDown, ClipboardList, Home, LineChart, LogOut, MessageCircle, Plus, Sparkles, Store, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,11 +13,12 @@ import {
 import { useAuth } from "@/lib/auth";
 import { get, post } from "@/lib/api";
 import { haceTiempo } from "@/lib/formato";
-import type { Compra, Notificaciones } from "@/lib/tipos";
+import type { Bandeja, Compra, Notificaciones } from "@/lib/tipos";
 import { GuiaNexora } from "@/components/guia";
+import { AsistenteNexi } from "@/components/asistente";
 import { cn } from "@/lib/utils";
 
-type Cuenta = "compras" | "seguimiento";
+type Cuenta = "compras" | "seguimiento" | "mensajes";
 interface ItemNav { a: string; texto: string; corto: string; icono: typeof Home; fin?: boolean; cuenta?: Cuenta }
 
 const SECCIONES: { titulo: string; items: ItemNav[] }[] = [
@@ -30,7 +31,13 @@ const SECCIONES: { titulo: string; items: ItemNav[] }[] = [
       { a: "/catalogo", texto: "Catálogo", corto: "Catálogo", icono: Store },
     ],
   },
-  { titulo: "Mi actividad", items: [{ a: "/seguimiento", texto: "Seguimiento", corto: "Seguimiento", icono: LineChart, cuenta: "seguimiento" }] },
+  {
+    titulo: "Mi actividad",
+    items: [
+      { a: "/seguimiento", texto: "Seguimiento", corto: "Seguimiento", icono: LineChart, cuenta: "seguimiento" },
+      { a: "/mensajes", texto: "Mensajes", corto: "Mensajes", icono: MessageCircle, cuenta: "mensajes" },
+    ],
+  },
 ];
 const NAV = SECCIONES.flatMap((s) => s.items);
 
@@ -106,21 +113,31 @@ export default function Aplicacion() {
   const ubicacion = useLocation();
   const negocio = cuenta?.negocio;
   const iniciales = (negocio?.nombre ?? "N").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
-  const [cuentas, setCuentas] = useState<Record<Cuenta, number>>({ compras: 0, seguimiento: 0 });
+  const [cuentas, setCuentas] = useState<Record<Cuenta, number>>({ compras: 0, seguimiento: 0, mensajes: 0 });
   const [guia, setGuia] = useState(false);
+  const [nexi, setNexi] = useState(false);
   const [bienvenida, setBienvenida] = useState(false);
   const claveBienvenida = `nexora.bienvenida.${cuenta?.usuarioId}`;
 
-  // Contadores de la barra lateral: compras abiertas de la zona y compras en las que participa.
+  // Contadores de la barra lateral: compras abiertas, compras en las que participa y mensajes sin leer.
   useEffect(() => {
+    const contar = () => {
     get<Compra[]>("/compras")
       .then((lista) =>
-        setCuentas({
+        setCuentas((x) => ({
+          ...x,
           compras: lista.filter((c) => c.puedeUnirse || (c.miParticipacion && ["REUNIENDO", "ESPERANDO_PROVEEDOR"].includes(c.estadoVisible.clave))).length,
           seguimiento: lista.filter((c) => c.miParticipacion && c.estadoVisible.clave !== "NO_SE_CONCRETO" && !c.miParticipacion.recibido).length,
-        }),
+        })),
       )
       .catch(() => undefined);
+    get<Bandeja>("/mensajes")
+      .then((b) => setCuentas((x) => ({ ...x, mensajes: b.sinLeer })))
+      .catch(() => undefined);
+      };
+    contar();
+    const t = window.setInterval(contar, 15000);
+    return () => window.clearInterval(t);
   }, [ubicacion.pathname]);
 
   // La guía se muestra sola la primera vez que la cuenta entra en este navegador.
@@ -177,7 +194,7 @@ export default function Aplicacion() {
                   >
                     <Icono className="size-[18px]" /> <span className="flex-1">{texto}</span>
                     {c && cuentas[c] > 0 && (
-                      <span className="rounded-full bg-muted px-2 text-[11px] font-bold text-muted-foreground">{cuentas[c]}</span>
+                      <span className={cn("rounded-full px-2 text-[11px] font-bold", c === "mensajes" ? "bg-naranja text-white" : "bg-muted text-muted-foreground")}>{cuentas[c]}</span>
                     )}
                   </NavLink>
                 ))}
@@ -244,18 +261,27 @@ export default function Aplicacion() {
         <Outlet />
       </main>
 
-      {/* Nexi: abre la guía */}
+      {/* Nexi: asistente por reglas (la guía sigue en el menú y en la barra lateral) */}
+      <AsistenteNexi
+        abierto={nexi}
+        onCerrar={() => setNexi(false)}
+        onGuia={() => {
+          setNexi(false);
+          abrirGuia();
+        }}
+      />
       <button
-        onClick={abrirGuia}
+        onClick={() => setNexi((v) => !v)}
+        aria-expanded={nexi}
         className="fixed bottom-20 right-4 z-30 size-14 overflow-hidden rounded-full border-4 border-card bg-secondary shadow-lg transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:bottom-6 lg:right-6"
-        aria-label="Nexi: ¿cómo funciona NEXORA?"
+        aria-label="Abrir Nexi, tu asistente"
       >
         <img src="/img/nexi.webp" alt="" className="h-full w-full object-cover" />
       </button>
       <GuiaNexora abierta={guia} onCambio={setGuia} bienvenida={bienvenida} />
 
       {/* Navegación inferior (celular) */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Principal">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t bg-card pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Principal">
         {NAV.map(({ a, corto, icono: Icono, fin }) => (
           <NavLink
             key={a}
