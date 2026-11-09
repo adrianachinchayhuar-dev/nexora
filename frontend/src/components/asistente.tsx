@@ -20,12 +20,15 @@ export interface Respuesta {
   texto: string[];
   enlaces?: { texto: string; a: string }[];
   guia?: boolean;
+  /** Preguntas que tiene sentido hacer después de esta respuesta. */
+  siguientes?: string[];
 }
 interface Mensaje extends Respuesta {
   de: "yo" | "nexi";
 }
 
 export const SUGERENCIAS = ["¿Por qué mi pedido no tiene compra?", "¿Cuándo llega mi pedido?", "¿Qué significa cada estado?", "¿Cuánto estoy ahorrando?"];
+const MAS = ["¿Cómo hablo con el proveedor?", "¿Cómo funciona NEXORA?"];
 
 const normalizar = (s: string) =>
   s
@@ -69,6 +72,7 @@ export function responder(pregunta: string, necesidades: Necesidad[], compras: C
         ...(sin.some((n) => n.coincidencia.tipo === "PROPONER") ? [] : ["Si no hay compra, puedes proponer una desde «Mis necesidades»."]),
       ],
       enlaces: [{ texto: "Ir a mis necesidades", a: "/pedidos" }],
+      siguientes: ["¿Cuándo llega mi pedido?", "¿Qué significa cada estado?", "¿Cómo funciona NEXORA?"],
     };
   }
 
@@ -86,30 +90,46 @@ export function responder(pregunta: string, necesidades: Necesidad[], compras: C
     return {
       texto: activas.map((c) => {
         const cuando = entregaTexto(c.entregaDesde, c.entregaHasta);
-        if (c.estadoVisible.clave === "CONFIRMADA")
+        if (c.estadoVisible.clave === "CONFIRMADA") {
+          if (c.entregaEstado === "ENTREGADA") return `• ${c.producto.nombre}: el proveedor ya la entregó. Entra a la compra y pulsa «Recibí mi pedido».`;
+          if (c.entregaHasta < c.hoy)
+            return `• ${c.producto.nombre}: debía llegar el ${fechaCorta(c.entregaHasta)}. Si no llegó, repórtalo desde el detalle de la compra.`;
           return `• ${c.producto.nombre}: ${c.entregaEstado ? TEXTO_ENTREGA[c.entregaEstado].toLowerCase() : "confirmada"}, llega ${cuando}.${
             c.entregaEstado === "RETRASADA" ? " Puedes reportar una incidencia desde el detalle." : ""
           }`;
+        }
         if (c.estadoVisible.clave === "ESPERANDO_PROVEEDOR") return `• ${c.producto.nombre}: el proveedor debe confirmar; la entrega prevista es ${cuando}.`;
         return `• ${c.producto.nombre}: aún reúne negocios (${c.total}/${c.minimo} ${c.producto.unidad}). Si se completa antes del ${fechaCorta(c.fechaCierre)}, llegaría ${cuando}.`;
       }),
       enlaces: [{ texto: "Ver seguimiento", a: "/seguimiento" }],
+      siguientes: ["¿Qué significa cada estado?", "¿Cómo hablo con el proveedor?", "¿Cuánto estoy ahorrando?"],
     };
   }
 
   if (/significa|estado|que es|que quiere decir/.test(q)) {
-    return { texto: ["Estos son los estados de una compra en grupo:", ...ESTADOS.map(([t, d]) => `• ${t}: ${d}`)] };
+    return {
+      texto: ["Estos son los estados de una compra en grupo:", ...ESTADOS.map(([t, d]) => `• ${t}: ${d}`)],
+      siguientes: ["¿Cuándo llega mi pedido?", "¿Por qué mi pedido no tiene compra?", "¿Cuánto estoy ahorrando?"],
+    };
   }
 
   if (/ahorr|cuanto pago|precio/.test(q)) {
     const vigentes = compras.filter((c) => c.estadoVisible.clave !== "NO_SE_CONCRETO" && c.miParticipacion);
     const total = vigentes.reduce((s, c) => s + Math.max(c.miParticipacion!.ahorro.monto, 0), 0);
-    if (!vigentes.length) return { texto: ["Aún no participas en compras en grupo, así que todavía no hay ahorro que calcular."], enlaces: [{ texto: "Ver compras en grupo", a: "/compras" }] };
+    if (!vigentes.length)
+      return {
+        texto: ["Aún no participas en compras en grupo, así que todavía no hay ahorro que calcular."],
+        enlaces: [{ texto: "Ver compras en grupo", a: "/compras" }],
+      };
     return {
       texto: [
         `Tu ahorro estimado es ${soles(total)}, comparado con el precio que nos dijiste que pagas hoy (o el precio normal del proveedor).`,
-        ...vigentes.map((c) => `• ${c.producto.nombre}: ${soles(c.miParticipacion!.ahorro.monto)}`),
+        ...vigentes.map((c) => {
+          const m = c.miParticipacion!.ahorro.monto;
+          return `• ${c.producto.nombre}: ${m > 0 ? `ahorras ${soles(m)}` : m < 0 ? `pagas ${soles(-m)} más que hoy` : "mismo precio que hoy"}`;
+        }),
       ],
+      siguientes: ["¿Cuándo llega mi pedido?", "¿Por qué mi pedido no tiene compra?"],
     };
   }
 
@@ -121,6 +141,7 @@ export function responder(pregunta: string, necesidades: Necesidad[], compras: C
         "• Chat: es privado entre tu negocio y el proveedor.",
       ],
       enlaces: [{ texto: "Ver mis mensajes", a: "/mensajes" }],
+      siguientes: ["¿Cuándo llega mi pedido?", "¿Qué significa cada estado?"],
     };
   }
 
@@ -134,9 +155,7 @@ export function responder(pregunta: string, necesidades: Necesidad[], compras: C
 }
 
 export function AsistenteNexi({ abierto, onCerrar, onGuia }: { abierto: boolean; onCerrar: () => void; onGuia: () => void }) {
-  const [mensajes, setMensajes] = useState<Mensaje[]>([
-    { de: "nexi", texto: ["Hola, soy Nexi. Respondo con los datos de tu negocio. ¿En qué te ayudo?"] },
-  ]);
+  const [mensajes, setMensajes] = useState<Mensaje[]>([{ de: "nexi", texto: ["Hola, soy Nexi. Respondo con los datos de tu negocio. ¿En qué te ayudo?"] }]);
   const [texto, setTexto] = useState("");
   const [pensando, setPensando] = useState(false);
   const fin = useRef<HTMLDivElement>(null);
@@ -159,6 +178,10 @@ export function AsistenteNexi({ abierto, onCerrar, onGuia }: { abierto: boolean;
       setPensando(false);
     }
   };
+
+  const ultima = [...mensajes].reverse().find((m) => m.de === "nexi");
+  const preguntadas = new Set(mensajes.filter((m) => m.de === "yo").map((m) => m.texto[0]));
+  const chips = (ultima?.siguientes ?? [...SUGERENCIAS, ...MAS].filter((x) => !preguntadas.has(x))).slice(0, 4);
 
   if (!abierto) return null;
   return (
@@ -192,7 +215,10 @@ export function AsistenteNexi({ abierto, onCerrar, onGuia }: { abierto: boolean;
                     </Link>
                   ))}
                   {m.guia && (
-                    <button onClick={onGuia} className="inline-flex items-center gap-1 rounded-full bg-card px-3 py-1 text-xs font-semibold text-primary hover:underline">
+                    <button
+                      onClick={onGuia}
+                      className="inline-flex items-center gap-1 rounded-full bg-card px-3 py-1 text-xs font-semibold text-primary hover:underline"
+                    >
                       <BookOpen className="size-3.5" /> Ver la guía
                     </button>
                   )}
@@ -204,8 +230,11 @@ export function AsistenteNexi({ abierto, onCerrar, onGuia }: { abierto: boolean;
         {pensando && <p className="text-xs text-muted-foreground">Nexi está revisando tus datos…</p>}
         <div ref={fin} />
       </div>
-      <div className="flex flex-wrap gap-1.5 border-t px-3 pt-2.5">
-        {SUGERENCIAS.map((s) => (
+      <p className="border-t px-4 pt-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        {mensajes.length > 1 ? "También puedes preguntar" : "Toca una pregunta"}
+      </p>
+      <div className="flex flex-wrap gap-1.5 px-3 pt-1.5">
+        {chips.map((s) => (
           <button
             key={s}
             onClick={() => preguntar(s)}

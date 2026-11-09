@@ -29,10 +29,22 @@ import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CargandoLista, ErrorCarga, Girando } from "@/components/comun";
-import { EstadoBadge, ImagenProducto, TEXTO_ENTREGA } from "@/components/compra";
+import { EstadoBadge, ImagenProducto, TEXTO_ENTREGA, TextoAhorro as TextoAhorroCorto } from "@/components/compra";
 import { MensajesDeCompra } from "@/components/mensajes";
 import { get, post } from "@/lib/api";
-import { ESTADO_INCIDENCIA, ETIQUETA_AHORRO, MOTIVOS_INCIDENCIA, entregaTexto, fechaConDia, fechaCorta, haceTiempo, rangoCorto, relativo, singular, soles } from "@/lib/formato";
+import {
+  ESTADO_INCIDENCIA,
+  ETIQUETA_AHORRO,
+  MOTIVOS_INCIDENCIA,
+  entregaTexto,
+  fechaConDia,
+  fechaCorta,
+  haceTiempo,
+  rangoCorto,
+  relativo,
+  singular,
+  soles,
+} from "@/lib/formato";
 import type { Ahorro, Compra, EntregaEstado } from "@/lib/tipos";
 import { cn } from "@/lib/utils";
 
@@ -40,15 +52,19 @@ function TextoAhorro({ ahorro, unidad }: { ahorro: Ahorro; unidad: string }) {
   const etiqueta = ETIQUETA_AHORRO[ahorro.etiqueta];
   const positivo = ahorro.monto > 0;
   return (
-    <div className="rounded-xl bg-exito-suave p-3">
+    <div className={cn("rounded-xl p-3", positivo ? "bg-exito-suave" : "bg-naranja-suave")}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-semibold text-exito">{positivo ? "Ahorro estimado" : "Sin ahorro estimado"}</span>
+        <span className={cn("text-sm font-semibold", positivo ? "text-exito" : "text-naranja-tinta")}>
+          {positivo ? "Ahorro estimado" : ahorro.monto < 0 ? "Con esta compra pagarías más" : "Mismo precio que hoy"}
+        </span>
         <Badge variant="outline" className="border-exito/30 bg-card text-exito" title={etiqueta.ayuda}>
           {etiqueta.texto}
         </Badge>
       </div>
-      <div className="text-2xl font-extrabold text-exito">{soles(Math.max(0, ahorro.monto))}</div>
-      <p className="text-xs text-exito/90">
+      <div className={cn("text-2xl font-extrabold", positivo ? "text-exito" : "text-naranja-tinta")}>
+        {ahorro.monto < 0 ? `+${soles(-ahorro.monto)}` : soles(ahorro.monto)}
+      </div>
+      <p className={cn("text-xs", positivo ? "text-exito/90" : "text-naranja-tinta")}>
         Comparado con {soles(ahorro.precioReferencia)} por {unidad.replace(/s$/, "")} ({etiqueta.ayuda.charAt(0).toLowerCase() + etiqueta.ayuda.slice(1)})
       </p>
     </div>
@@ -72,10 +88,22 @@ function SeguimientoEntrega({ compra }: { compra: Compra }) {
               <div
                 className={cn(
                   "mx-auto flex size-9 items-center justify-center rounded-full border-2",
-                  esRetraso ? "border-destructive bg-destructive/10 text-destructive" : hecho ? "border-exito bg-exito text-white" : "border-border text-muted-foreground",
+                  esRetraso
+                    ? "border-destructive bg-destructive/10 text-destructive"
+                    : hecho
+                      ? "border-exito bg-exito text-white"
+                      : "border-border text-muted-foreground",
                 )}
               >
-                {esRetraso ? <TriangleAlert className="size-4" /> : i === 0 ? <PackageCheck className="size-4" /> : i === 1 ? <Truck className="size-4" /> : <CheckCircle2 className="size-4" />}
+                {esRetraso ? (
+                  <TriangleAlert className="size-4" />
+                ) : i === 0 ? (
+                  <PackageCheck className="size-4" />
+                ) : i === 1 ? (
+                  <Truck className="size-4" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
               </div>
               <div className={cn("mt-1 text-xs font-semibold", hecho ? "text-foreground" : "text-muted-foreground", esRetraso && "text-destructive")}>
                 {esRetraso ? "Retrasada" : TEXTO_ENTREGA[p]}
@@ -89,8 +117,15 @@ function SeguimientoEntrega({ compra }: { compra: Compra }) {
           <TriangleAlert />
           <div>
             La entrega está retrasada.
-            {compra.compensacion ? <> Compromiso del proveedor: <b>{compra.compensacion}</b>.</> : " El proveedor no registró una compensación."} NEXORA registra el
-            compromiso; la compensación la aplica el proveedor.
+            {compra.compensacion ? (
+              <>
+                {" "}
+                Compromiso del proveedor: <b>{compra.compensacion}</b>.
+              </>
+            ) : (
+              " El proveedor no registró una compensación."
+            )}{" "}
+            NEXORA registra el compromiso; la compensación la aplica el proveedor.
           </div>
         </Alert>
       )}
@@ -182,7 +217,11 @@ export default function CompraDetalle() {
   };
 
   const unirse = async () => {
-    const ok = await accion("unirse", { cantidad: Number(cantidad), necesidadId: necesidadId ? Number(necesidadId) : null }, "¡Te uniste a la compra en grupo!");
+    const ok = await accion(
+      "unirse",
+      { cantidad: Number(cantidad), necesidadId: necesidadId ? Number(necesidadId) : null },
+      "¡Te uniste a la compra en grupo!",
+    );
     if (ok) setConfirmarUnion(false);
   };
 
@@ -222,7 +261,12 @@ export default function CompraDetalle() {
   const hoyPagas = necesidadElegida?.precioActual ?? (mia ? mia.ahorro.precioReferencia : sim?.ahorro.precioReferencia) ?? resumen.precioNormal;
   const tuCantidad = mia?.cantidad ?? (Number(cantidad) > 0 ? Number(cantidad) : null);
   const nombreProveedor = proveedor.razonSocial.replace(/\s*\(.*\)$/, "");
-  const iniciales = nombreProveedor.split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase();
+  const iniciales = nombreProveedor
+    .split(/\s+/)
+    .map((x) => x[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   const tope = Math.max(compra.minimo * 2, compra.total, compra.tramos[compra.tramos.length - 1]?.desde ?? compra.minimo);
   const pct = (n: number) => `${Math.min(100, (n / tope) * 100)}%`;
 
@@ -264,14 +308,17 @@ export default function CompraDetalle() {
               {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega tarde para tu fecha"}
             </Badge>
           )}
-          {mia && <Badge variant="naranja">Participas con {mia.cantidad} {unidad}</Badge>}
+          {mia && (
+            <Badge variant="naranja">
+              Participas con {mia.cantidad} {unidad}
+            </Badge>
+          )}
           {oculta && <Badge variant="muted">Oculta: no te interesa</Badge>}
           <span className="text-sm text-muted-foreground">{producto.presentacion}</span>
         </div>
         {sim && !mia && (
           <p className="mt-2 text-sm">
-            Si te unes: ahorro estimado <b className="text-exito">{soles(Math.max(0, sim.ahorro.monto))}</b> · el precio bajaría a {soles(sim.precioConmigo)}{" "}
-            <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">{ETIQUETA_AHORRO[sim.ahorro.etiqueta].texto}</span>
+            Si te unes con {sim.cantidad} {unidad}, pagarías {soles(sim.precioConmigo)} por {singular(unidad)}: <TextoAhorroCorto monto={sim.ahorro.monto} si />
           </p>
         )}
         {mia && mia.ahorro.monto > 0 && (
@@ -287,9 +334,23 @@ export default function CompraDetalle() {
           <div className="absolute left-[12%] right-[12%] top-[9px] h-0.5 bg-lila" aria-hidden />
           {[
             { t: "Hoy", f: fechaCorta(compra.hoy), d: "", c: "border-primary bg-primary/20" },
-            { t: compra.fechaCierre < compra.hoy ? "Cerró" : "Cierra", f: fechaCorta(compra.fechaCierre), d: relativo(compra.fechaCierre, compra.hoy), c: "border-primary bg-primary/20" },
+            {
+              t: compra.fechaCierre < compra.hoy ? "Cerró" : "Cierra",
+              f: fechaCorta(compra.fechaCierre),
+              d: relativo(compra.fechaCierre, compra.hoy),
+              c: "border-primary bg-primary/20",
+            },
             { t: "Entrega", f: rangoCorto(compra.entregaDesde, compra.entregaHasta), d: "", c: "border-exito bg-exito/30" },
-            ...(requerida ? [{ t: "Lo necesitas para", f: fechaCorta(requerida), d: llega ? "llega a tiempo" : "llega tarde", c: llega ? "rotate-45 rounded-none border-exito bg-exito" : "rotate-45 rounded-none border-destructive bg-destructive" }] : []),
+            ...(requerida
+              ? [
+                  {
+                    t: "Lo necesitas para",
+                    f: fechaCorta(requerida),
+                    d: llega ? "llega a tiempo" : "llega tarde",
+                    c: llega ? "rotate-45 rounded-none border-exito bg-exito" : "rotate-45 rounded-none border-destructive bg-destructive",
+                  },
+                ]
+              : []),
           ].map((p) => (
             <li key={p.t} className="relative flex flex-col items-center text-center">
               <span className={cn("z-10 size-5 rounded-full border-[3px] bg-card", p.c)} />
@@ -367,7 +428,11 @@ export default function CompraDetalle() {
                         <span
                           className={cn(
                             "flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-xs",
-                            actual ? "border-primary bg-primary text-primary-foreground" : hecho ? "border-exito bg-exito text-white" : "border-border text-muted-foreground",
+                            actual
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : hecho
+                                ? "border-exito bg-exito text-white"
+                                : "border-border text-muted-foreground",
                           )}
                         >
                           {hecho ? <CheckCircle2 className="size-4" /> : i + 1}
@@ -409,9 +474,13 @@ export default function CompraDetalle() {
                 Mínimo {compra.minimo}
               </div>
               <div className="absolute -top-1 h-5 w-0.5 bg-naranja-tinta" style={{ left: pct(compra.minimo) }} />
-              {compra.tramos.slice(1).map((t) =>
-                t.desde !== compra.minimo ? <div key={t.desde} className="absolute -top-1 h-5 w-px bg-muted-foreground/50" style={{ left: pct(t.desde) }} /> : null,
-              )}
+              {compra.tramos
+                .slice(1)
+                .map((t) =>
+                  t.desde !== compra.minimo ? (
+                    <div key={t.desde} className="absolute -top-1 h-5 w-px bg-muted-foreground/50" style={{ left: pct(t.desde) }} />
+                  ) : null,
+                )}
             </div>
             <div className="relative mt-1 h-4 text-[10px] text-muted-foreground">
               {compra.tramos.slice(1).map((t) => (
@@ -422,7 +491,8 @@ export default function CompraDetalle() {
             </div>
             {resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null && pendiente && (
               <p className="mt-2 text-sm font-semibold">
-                Faltan <span className="text-primary">{resumen.faltanSiguiente}</span> para bajar a <span className="text-primary">{soles(resumen.precioSiguiente)}</span>
+                Faltan <span className="text-primary">{resumen.faltanSiguiente}</span> para bajar a{" "}
+                <span className="text-primary">{soles(resumen.precioSiguiente)}</span>
               </p>
             )}
             {sim && !mia && Number(cantidad) > 0 && (
@@ -522,7 +592,9 @@ export default function CompraDetalle() {
                       <div key={i.id} className="rounded-xl border p-3 text-sm">
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-semibold">{MOTIVOS_INCIDENCIA[i.motivo] ?? i.motivo}</span>
-                          <Badge variant={i.estado === "RESUELTA" ? "exito" : i.estado === "EN_REVISION" ? "aviso" : "info"}>{ESTADO_INCIDENCIA[i.estado]}</Badge>
+                          <Badge variant={i.estado === "RESUELTA" ? "exito" : i.estado === "EN_REVISION" ? "aviso" : "info"}>
+                            {ESTADO_INCIDENCIA[i.estado]}
+                          </Badge>
                         </div>
                         <p className="text-muted-foreground">{i.descripcion}</p>
                         {i.respuesta && <p className="mt-1.5 rounded-lg bg-exito-suave px-3 py-2 text-exito">Respuesta del proveedor: {i.respuesta}</p>}
@@ -576,7 +648,8 @@ export default function CompraDetalle() {
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  Precio final <b>{soles(compra.precioFinal)}</b> (te uniste con {soles(mia.precioEstimado)}). Entrega {entregaTexto(compra.entregaDesde, compra.entregaHasta)}
+                  Precio final <b>{soles(compra.precioFinal)}</b> (te uniste con {soles(mia.precioEstimado)}). Entrega{" "}
+                  {entregaTexto(compra.entregaDesde, compra.entregaHasta)}
                   {!mia.llegaATiempo && <b className="text-destructive"> · ya no llega a tiempo para tu fecha</b>}.
                 </p>
                 <p className="text-muted-foreground">Decide si continúas. Si te retiras, tu pedido queda guardado.</p>
@@ -697,7 +770,8 @@ export default function CompraDetalle() {
                 <p className="text-muted-foreground">{compra.negocios} negocios ya se unieron</p>
                 {proveedor.puntualidad !== null ? (
                   <p className="flex items-center gap-1 text-muted-foreground">
-                    <Star className="size-3.5 fill-naranja text-naranja" /> Entregó a tiempo {proveedor.entregasATiempo} de {proveedor.entregasTotal} compras · {proveedor.puntualidad}%
+                    <Star className="size-3.5 fill-naranja text-naranja" /> Entregó a tiempo {proveedor.entregasATiempo} de {proveedor.entregasTotal} compras ·{" "}
+                    {proveedor.puntualidad}%
                   </p>
                 ) : (
                   <p className="text-muted-foreground">Aún no tiene entregas registradas.</p>
@@ -723,10 +797,12 @@ export default function CompraDetalle() {
       <Dialog open={confirmarUnion} onOpenChange={setConfirmarUnion}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>¿Te unes con {cantidad} {unidad}?</DialogTitle>
+            <DialogTitle>
+              ¿Te unes con {cantidad} {unidad}?
+            </DialogTitle>
             <DialogDescription>
-              El precio estimado es {soles(sim?.precioConmigo ?? resumen.precioActual)} por {unidad.replace(/s$/, "")}. Cuando se alcance el mínimo, el proveedor confirmará el precio final: si no
-              sube, se acepta solo; si sube, tú decides.
+              El precio estimado es {soles(sim?.precioConmigo ?? resumen.precioActual)} por {unidad.replace(/s$/, "")}. Cuando se alcance el mínimo, el
+              proveedor confirmará el precio final: si no sube, se acepta solo; si sube, tú decides.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -744,7 +820,9 @@ export default function CompraDetalle() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>¿Te retiras de esta compra?</DialogTitle>
-            <DialogDescription>Se recalculan la cantidad total, el tramo y el ahorro de las demás bodegas. Tu pedido queda guardado para otra compra.</DialogDescription>
+            <DialogDescription>
+              Se recalculan la cantidad total, el tramo y el ahorro de las demás bodegas. Tu pedido queda guardado para otra compra.
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmarRetiro(false)}>

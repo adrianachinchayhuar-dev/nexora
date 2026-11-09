@@ -33,7 +33,7 @@ export default function PanelProveedor() {
               ? `Tienes ${panel.porConfirmar === 1 ? "1 compra que espera" : `${panel.porConfirmar} compras que esperan`} tu confirmación.`
               : "Revisa tus compras en grupo y mantén informados a los negocios."}
             {panel.mensajesSinLeer + panel.preguntasSinResponder > 0 &&
-              ` También tienes ${panel.mensajesSinLeer + panel.preguntasSinResponder} mensaje(s) o pregunta(s) por responder.`}
+              ` Y tienes ${panel.mensajesSinLeer + panel.preguntasSinResponder === 1 ? "1 mensaje" : `${panel.mensajesSinLeer + panel.preguntasSinResponder} mensajes`} de negocios por responder.`}
           </p>
           <Button asChild className="mt-4">
             <Link to="/proveedor/compras">
@@ -50,7 +50,7 @@ export default function PanelProveedor() {
           {
             icono: MessageSquareWarning,
             valor: panel.mensajesSinLeer + panel.preguntasSinResponder + panel.incidenciasAbiertas,
-            texto: `por responder (${panel.preguntasSinResponder} preguntas, ${panel.mensajesSinLeer} mensajes, ${panel.incidenciasAbiertas} incidencias)`,
+            texto: "por responder (mensajes, preguntas e incidencias)",
             clase: "bg-info-suave/60",
             a: panel.incidenciasAbiertas > 0 ? "/proveedor/incidencias" : "/proveedor/mensajes",
           },
@@ -104,7 +104,9 @@ export default function PanelProveedor() {
         <ol className="grid gap-4 sm:grid-cols-3">
           {PASOS.map((p, i) => (
             <li key={p} className="flex items-center gap-3 sm:flex-col sm:text-center">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">{i + 1}</span>
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                {i + 1}
+              </span>
               <span className="text-sm font-semibold">{p}</span>
             </li>
           ))}

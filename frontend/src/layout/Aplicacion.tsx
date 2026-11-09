@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Bell, ChevronDown, ClipboardList, Home, LineChart, LogOut, MessageCircle, Plus, Sparkles, Store, UserRound } from "lucide-react";
+import { Bell, ChevronDown, ClipboardList, Home, LineChart, LogOut, MessageCircle, PanelLeft, Plus, Sparkles, Store, Type, UserRound } from "lucide-react";
+import { toast } from "sonner";
+import { SIGUIENTE_BARRA, usePreferencias } from "@/lib/preferencias";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,7 +21,14 @@ import { AsistenteNexi } from "@/components/asistente";
 import { cn } from "@/lib/utils";
 
 type Cuenta = "compras" | "seguimiento" | "mensajes";
-interface ItemNav { a: string; texto: string; corto: string; icono: typeof Home; fin?: boolean; cuenta?: Cuenta }
+interface ItemNav {
+  a: string;
+  texto: string;
+  corto: string;
+  icono: typeof Home;
+  fin?: boolean;
+  cuenta?: Cuenta;
+}
 
 const SECCIONES: { titulo: string; items: ItemNav[] }[] = [
   {
@@ -46,10 +55,28 @@ function Campana() {
   const navegar = useNavigate();
   const ubicacion = useLocation();
 
-  const cargar = () => get<Notificaciones>("/notificaciones").then(setDatos).catch(() => undefined);
+  const vistas = useRef<Set<number> | null>(null);
+  const cargar = () =>
+    get<Notificaciones>("/notificaciones")
+      .then((d) => {
+        // Aviso emergente para lo que llegó mientras la persona estaba en otra pantalla.
+        if (vistas.current) {
+          const nuevas = d.lista.filter((n) => !n.leida && !vistas.current!.has(n.id)).slice(0, 2);
+          nuevas.forEach((n) =>
+            toast(n.texto, {
+              icon: <Bell className="size-4 text-naranja" />,
+              duration: 8000,
+              action: n.enlace ? { label: "Ver", onClick: () => abrir(n.id, n.enlace) } : undefined,
+            }),
+          );
+        }
+        vistas.current = new Set(d.lista.map((n) => n.id));
+        setDatos(d);
+      })
+      .catch(() => undefined);
   useEffect(() => {
     cargar();
-    const t = window.setInterval(cargar, 20000);
+    const t = window.setInterval(cargar, 8000);
     return () => window.clearInterval(t);
   }, [ubicacion.pathname]);
 
@@ -112,31 +139,52 @@ export default function Aplicacion() {
   const navegar = useNavigate();
   const ubicacion = useLocation();
   const negocio = cuenta?.negocio;
-  const iniciales = (negocio?.nombre ?? "N").split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+  const iniciales = (negocio?.nombre ?? "N")
+    .split(/\s+/)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   const [cuentas, setCuentas] = useState<Record<Cuenta, number>>({ compras: 0, seguimiento: 0, mensajes: 0 });
   const [guia, setGuia] = useState(false);
   const [nexi, setNexi] = useState(false);
   const [bienvenida, setBienvenida] = useState(false);
   const claveBienvenida = `nexora.bienvenida.${cuenta?.usuarioId}`;
+  const { barra, setBarra, letraGrande, alternarLetra, margen, ancho } = usePreferencias();
+  const compacta = barra === "iconos";
 
+  const antes = useRef<number | null>(null);
   // Contadores de la barra lateral: compras abiertas, compras en las que participa y mensajes sin leer.
   useEffect(() => {
     const contar = () => {
-    get<Compra[]>("/compras")
-      .then((lista) =>
-        setCuentas((x) => ({
-          ...x,
-          compras: lista.filter((c) => c.puedeUnirse || (c.miParticipacion && ["REUNIENDO", "ESPERANDO_PROVEEDOR"].includes(c.estadoVisible.clave))).length,
-          seguimiento: lista.filter((c) => c.miParticipacion && c.estadoVisible.clave !== "NO_SE_CONCRETO" && !c.miParticipacion.recibido).length,
-        })),
-      )
-      .catch(() => undefined);
-    get<Bandeja>("/mensajes")
-      .then((b) => setCuentas((x) => ({ ...x, mensajes: b.sinLeer })))
-      .catch(() => undefined);
-      };
+      get<Compra[]>("/compras")
+        .then((lista) =>
+          setCuentas((x) => ({
+            ...x,
+            compras: lista.filter((c) => c.puedeUnirse || (c.miParticipacion && ["REUNIENDO", "ESPERANDO_PROVEEDOR"].includes(c.estadoVisible.clave))).length,
+            seguimiento: lista.filter((c) => c.miParticipacion && c.estadoVisible.clave !== "NO_SE_CONCRETO" && !c.miParticipacion.recibido).length,
+          })),
+        )
+        .catch(() => undefined);
+      get<Bandeja>("/mensajes")
+        .then((b) => {
+          if (antes.current !== null && b.sinLeer > antes.current) {
+            const c = b.conversaciones.find((k) => k.sinLeer > 0);
+            toast("Tienes un mensaje nuevo del proveedor", {
+              id: "mensaje-nuevo",
+              description: c ? `${c.producto}: «${c.ultimo}»` : undefined,
+              icon: <MessageCircle className="size-4 text-primary" />,
+              duration: 8000,
+              action: c ? { label: "Abrir", onClick: () => navegar(`/mensajes?compra=${c.compraId}`) } : undefined,
+            });
+          }
+          antes.current = b.sinLeer;
+          setCuentas((x) => ({ ...x, mensajes: b.sinLeer }));
+        })
+        .catch(() => undefined);
+    };
     contar();
-    const t = window.setInterval(contar, 15000);
+    const t = window.setInterval(contar, 8000);
     return () => window.clearInterval(t);
   }, [ubicacion.pathname]);
 
@@ -167,59 +215,101 @@ export default function Aplicacion() {
   };
 
   return (
-    <div className="min-h-screen lg:pl-64">
-      {/* Barra lateral (escritorio) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r bg-card lg:flex">
-        <Link to="/" className="flex h-[72px] items-center px-5" aria-label="NEXORA, ir al inicio">
-          <img src="/img/logo.png" alt="NEXORA" className="h-10 w-auto" />
+    <div className={cn("min-h-screen transition-[padding]", margen)}>
+      {/* Barra lateral (escritorio): completa, solo íconos u oculta */}
+      <aside className={cn("fixed inset-y-0 left-0 z-30 hidden flex-col border-r bg-card", ancho)}>
+        <Link to="/" className={cn("flex h-[72px] items-center", compacta ? "justify-center px-2" : "px-5")} aria-label="NEXORA, ir al inicio">
+          <img src={compacta ? "/img/nexi.webp" : "/img/logo.png"} alt="NEXORA" className={compacta ? "size-10 rounded-full object-cover" : "h-10 w-auto"} />
         </Link>
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 pt-2" aria-label="Principal">
           {SECCIONES.map((sec) => (
             <div key={sec.titulo}>
-              <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground/70">{sec.titulo}</p>
+              {compacta ? (
+                <div className="mx-3 mb-2 border-t" />
+              ) : (
+                <p className="mb-1.5 px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-foreground/70">{sec.titulo}</p>
+              )}
               <div className="space-y-1">
                 {sec.items.map(({ a, texto, icono: Icono, fin, cuenta: c }) => (
                   <NavLink
                     key={a}
                     to={a}
                     end={fin}
+                    title={compacta ? texto : undefined}
+                    aria-label={compacta ? texto : undefined}
                     className={({ isActive }) =>
                       cn(
-                        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-semibold transition-colors",
+                        compacta && "justify-center",
                         isActive
                           ? "bg-secondary text-primary before:absolute before:inset-y-2 before:-left-3 before:w-1 before:rounded-r-full before:bg-primary"
                           : "text-foreground/80 hover:bg-muted hover:text-foreground",
                       )
                     }
                   >
-                    <Icono className="size-[18px]" /> <span className="flex-1">{texto}</span>
-                    {c && cuentas[c] > 0 && (
-                      <span className={cn("rounded-full px-2 text-[11px] font-bold", c === "mensajes" ? "bg-naranja text-white" : "bg-muted text-muted-foreground")}>{cuentas[c]}</span>
-                    )}
+                    <Icono className="size-5" /> {!compacta && <span className="flex-1">{texto}</span>}
+                    {c &&
+                      cuentas[c] > 0 &&
+                      (compacta ? (
+                        <span className="absolute right-2 top-1.5 size-2.5 rounded-full bg-naranja" />
+                      ) : (
+                        <span
+                          className={cn(
+                            "rounded-full px-2 text-[11px] font-bold",
+                            c === "mensajes" ? "bg-naranja text-white" : "bg-muted text-muted-foreground",
+                          )}
+                        >
+                          {cuentas[c]}
+                        </span>
+                      ))}
                   </NavLink>
                 ))}
               </div>
             </div>
           ))}
         </nav>
-        <button
-          onClick={abrirGuia}
-          className="m-3 rounded-2xl bg-secondary p-3 text-left transition-colors hover:bg-lila focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <img src="/img/sidebar.webp" alt="" className="mx-auto h-28 w-auto" />
-          <span className="mt-2 block text-sm font-bold">¿Cómo funciona NEXORA?</span>
-          <span className="block text-xs text-muted-foreground">Te lo contamos en 3 pasos</span>
-        </button>
+        {compacta ? (
+          <button
+            onClick={abrirGuia}
+            title="¿Cómo funciona NEXORA?"
+            aria-label="¿Cómo funciona NEXORA?"
+            className="m-3 flex justify-center rounded-xl bg-secondary p-2.5 hover:bg-lila"
+          >
+            <Sparkles className="size-5 text-primary" />
+          </button>
+        ) : (
+          <button
+            onClick={abrirGuia}
+            className="m-3 rounded-2xl bg-secondary p-3 text-left transition-colors hover:bg-lila focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <img src="/img/sidebar.webp" alt="" className="mx-auto h-28 w-auto" />
+            <span className="mt-2 block text-sm font-bold">¿Cómo funciona NEXORA?</span>
+            <span className="block text-xs text-muted-foreground">Te lo contamos en 3 pasos</span>
+          </button>
+        )}
       </aside>
 
       {/* Barra superior */}
       <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur sm:gap-3 sm:px-6 lg:border-transparent">
-        <Link to="/" className="lg:hidden" aria-label="NEXORA, ir al inicio">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden lg:inline-flex"
+          onClick={() => setBarra(SIGUIENTE_BARRA[barra].siguiente)}
+          title={SIGUIENTE_BARRA[barra].texto}
+          aria-label={SIGUIENTE_BARRA[barra].texto}
+        >
+          <PanelLeft className="!size-5" />
+        </Button>
+        <Link to="/" className={cn(barra === "oculta" ? "" : "lg:hidden")} aria-label="NEXORA, ir al inicio">
           <img src="/img/logo.png" alt="NEXORA" className="h-8 w-auto" />
         </Link>
         <div className="flex-1" />
         {cuenta?.email === "ana@nexora.pe" && (
-          <span className="hidden items-center gap-1.5 rounded-full border border-dashed border-naranja/60 px-3 py-1 text-xs font-semibold text-muted-foreground md:inline-flex" title="Cuenta con datos de prueba para la sustentación">
+          <span
+            className="hidden items-center gap-1.5 rounded-full border border-dashed border-naranja/60 px-3 py-1 text-xs font-semibold text-muted-foreground md:inline-flex"
+            title="Cuenta con datos de prueba para la sustentación"
+          >
             <span className="size-1.5 rounded-full bg-naranja" /> Datos de prueba
           </span>
         )}
@@ -232,7 +322,9 @@ export default function Aplicacion() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full border bg-card p-1 pr-3 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-[#B0456B] to-primary text-xs font-bold text-white">{iniciales}</span>
+              <span className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-[#B0456B] to-primary text-xs font-bold text-white">
+                {iniciales}
+              </span>
               <span className="hidden text-sm font-semibold sm:block">{negocio?.nombre}</span>
               <ChevronDown className="hidden size-4 text-muted-foreground sm:block" />
             </button>
@@ -246,6 +338,14 @@ export default function Aplicacion() {
             <DropdownMenuItem onSelect={() => navegar("/perfil")}>
               <UserRound /> Mi perfil
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                alternarLetra();
+              }}
+            >
+              <Type /> Letra grande: {letraGrande ? "sí" : "no"}
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={abrirGuia}>
               <Sparkles /> ¿Cómo funciona NEXORA?
             </DropdownMenuItem>
@@ -257,7 +357,7 @@ export default function Aplicacion() {
         </DropdownMenu>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-28 pt-4 sm:px-6 lg:pb-12">
+      <main className="mx-auto w-full max-w-[1480px] px-4 pb-28 pt-4 sm:px-6 lg:px-8 lg:pb-12">
         <Outlet />
       </main>
 

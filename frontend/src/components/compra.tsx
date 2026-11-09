@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { ETIQUETA_AHORRO, diasEntre, fechaConDia, fechaCorta, imagenProducto, rangoCorto, relativo, singular, soles } from "@/lib/formato";
+import { diasEntre, entregaTexto, fechaConDia, fechaCorta, imagenProducto, relativo, singular, soles } from "@/lib/formato";
 import type { ClaveVisible, Compra, EntregaEstado, Tramo } from "@/lib/tipos";
 
 // ---------- Estado visible (las 4 etiquetas de la tesis) ----------
@@ -62,11 +62,12 @@ export function AvanceMinimo({ compra, compacto = false }: { compra: Compra; com
       <Progress value={total} max={minimo} label="Avance hacia el mínimo" barClassName={resumen.alcanzaMinimo ? "bg-exito" : undefined} />
       {!compacto && (
         <p className="text-xs text-muted-foreground">
-          {resumen.alcanzaMinimo
-            ? "Se alcanzó el mínimo."
-            : `Faltan ${resumen.faltaMinimo} ${u} para el mínimo.`}
+          {resumen.alcanzaMinimo ? "Se alcanzó el mínimo." : `Faltan ${resumen.faltaMinimo} ${u} para el mínimo.`}
           {resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null && (
-            <> Con {resumen.faltanSiguiente} más, el precio baja a {soles(resumen.precioSiguiente)}.</>
+            <>
+              {" "}
+              Con {resumen.faltanSiguiente} más, el precio baja a {soles(resumen.precioSiguiente)}.
+            </>
           )}
         </p>
       )}
@@ -85,11 +86,7 @@ export function TramosPrecio({ tramos, indice, unidad, total }: { tramos: Tramo[
         return (
           <div
             key={t.desde}
-            className={cn(
-              "rounded-xl border p-3 transition-colors",
-              activo ? "border-primary bg-secondary" : "bg-card",
-              pasado && "opacity-60",
-            )}
+            className={cn("rounded-xl border p-3 transition-colors", activo ? "border-primary bg-secondary" : "bg-card", pasado && "opacity-60")}
           >
             <div className="text-xs font-semibold text-muted-foreground">
               {t.hasta === null ? `${t.desde} o más` : `${t.desde} a ${t.hasta}`} {unidad}
@@ -97,7 +94,9 @@ export function TramosPrecio({ tramos, indice, unidad, total }: { tramos: Tramo[
             <div className={cn("text-xl font-extrabold", activo && "text-primary")}>{soles(t.precio)}</div>
             <div className="text-xs text-muted-foreground">
               {activo ? (
-                <span className="font-semibold text-primary">Tramo actual · {total} {unidad}</span>
+                <span className="font-semibold text-primary">
+                  Tramo actual · {total} {unidad}
+                </span>
               ) : i === 0 ? (
                 "Precio normal"
               ) : (
@@ -178,22 +177,38 @@ export function LineaFechas({ compra, requerida }: { compra: Compra; requerida?:
 
 // ---------- Tarjeta de compra (como en el prototipo) ----------
 
-function ChipFechas({ compra }: { compra: Compra }) {
-  const pendiente = compra.estadoVisible.clave === "REUNIENDO" || compra.estadoVisible.clave === "ESPERANDO_PROVEEDOR";
-  const abierta = compra.fechaCierre >= compra.hoy;
-  const partes = [
-    pendiente && abierta ? `Cierra ${relativo(compra.fechaCierre, compra.hoy)}` : `Cerró ${relativo(compra.fechaCierre, compra.hoy)}`,
-    compra.estadoVisible.clave !== "NO_SE_CONCRETO" ? `Llega ${rangoCorto(compra.entregaDesde, compra.entregaHasta)}` : null,
-  ].filter(Boolean);
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold">
-      <span className="size-1.5 rounded-full bg-foreground" /> {partes.join(" · ")}
-    </span>
-  );
+/** Una sola frase con la fecha que importa según el momento de la compra. */
+export function fraseFecha(compra: Compra): string {
+  const clave = compra.estadoVisible.clave;
+  const { hoy } = compra;
+  if (clave === "NO_SE_CONCRETO") return `Se cerró el ${fechaCorta(compra.fechaCierre)}`;
+  if (clave === "CONFIRMADA") {
+    if (compra.entregaEstado === "ENTREGADA") return "Ya fue entregada";
+    if (compra.entregaHasta < hoy) return `Debía llegar el ${fechaCorta(compra.entregaHasta)}`;
+    return `Llega ${entregaTexto(compra.entregaDesde, compra.entregaHasta)}`;
+  }
+  const cierre =
+    compra.fechaCierre >= hoy
+      ? `Puedes unirte hasta ${relativo(compra.fechaCierre, hoy) === "hoy" ? "hoy" : `el ${fechaConDia(compra.fechaCierre)}`}`
+      : "Ya no recibe más negocios";
+  return `${cierre} · llegaría ${entregaTexto(compra.entregaDesde, compra.entregaHasta)}`;
 }
 
-function EtiquetaAhorro({ etiqueta }: { etiqueta: string }) {
-  return <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 align-middle text-[10px] font-semibold text-muted-foreground">{ETIQUETA_AHORRO[etiqueta]?.texto ?? etiqueta.toLowerCase()}</span>;
+/** Ahorro en palabras: positivo en verde; si conviene menos que lo que pagas hoy, lo dice claro. */
+export function TextoAhorro({ monto, si = false }: { monto: number; si?: boolean }) {
+  if (monto > 0)
+    return (
+      <span className="font-semibold text-exito">
+        {si ? "Ahorrarías" : "Ahorras"} {soles(monto)}
+      </span>
+    );
+  if (monto < 0)
+    return (
+      <span className="font-semibold text-naranja-tinta">
+        {si ? "Pagarías" : "Pagas"} {soles(-monto)} más que hoy
+      </span>
+    );
+  return <span className="text-muted-foreground">Mismo precio que hoy</span>;
 }
 
 export function TarjetaCompra({ compra }: { compra: Compra }) {
@@ -204,89 +219,77 @@ export function TarjetaCompra({ compra }: { compra: Compra }) {
   const sim = compra.simulacion;
   const u = producto.unidad;
   const llega = mia ? (mia.fechaRequerida ? mia.llegaATiempo : null) : sim ? sim.llegaATiempo : null;
+  const precio = compra.precioFinal ?? resumen.precioActual;
 
   let avance: string;
-  if (clave === "NO_SE_CONCRETO") avance = `${compra.total} / ${compra.minimo} · no llegó al mínimo`;
-  else if (resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null && pendiente)
-    avance = `${compra.total} / ${compra.minimo} · faltan ${resumen.faltanSiguiente} para ${soles(resumen.precioSiguiente)}`;
-  else if (!resumen.alcanzaMinimo) avance = `${compra.total} / ${compra.minimo} · faltan ${resumen.faltaMinimo} para el mínimo`;
-  else avance = `${compra.total} ${u} · mejor precio ${soles(compra.precioFinal ?? resumen.precioActual)}`;
+  if (clave === "NO_SE_CONCRETO") avance = `No se juntó lo suficiente (${compra.total} de ${compra.minimo} ${u})`;
+  else if (!resumen.alcanzaMinimo) avance = `Faltan ${resumen.faltaMinimo} ${u} para que la compra salga`;
+  else if (pendiente && resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null)
+    avance = `Ya sale ✓ · con ${resumen.faltanSiguiente} ${u} más baja a ${soles(resumen.precioSiguiente)}`;
+  else avance = `Se juntaron ${compra.total} ${u} ✓`;
 
   return (
     <Link to={`/compras/${compra.id}`} className="group block focus-visible:outline-none">
       <Card className="h-full p-4 transition-shadow group-hover:shadow-md group-focus-visible:ring-2 group-focus-visible:ring-ring sm:p-5">
         <div className="flex gap-4">
-          <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="mt-7 size-14 bg-secondary sm:size-16" />
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <ChipFechas compra={compra} />
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-bold leading-snug">{producto.nombre}</h3>
-              {pendiente && compra.fechaCierre >= compra.hoy ? (
-                <Badge variant="naranja" className="shrink-0">Cierra el {fechaCorta(compra.fechaCierre)}.</Badge>
-              ) : clave === "NO_SE_CONCRETO" ? (
-                <Badge variant="muted" className="shrink-0">Cerró el {fechaCorta(compra.fechaCierre)}.</Badge>
-              ) : null}
-            </div>
-            <p className="truncate text-sm text-muted-foreground">
-              {producto.presentacion} · {compra.proveedor.razonSocial}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              <EstadoBadge clave={clave} texto={estadoVisible.texto} />
-              {llega !== null && clave !== "NO_SE_CONCRETO" && (
-                <Badge variant={llega ? "exito" : "destructive"}>
-                  {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega tarde para tu fecha"}
+          <ImagenProducto nombre={producto.nombre} imagen={producto.imagen} className="size-16 bg-secondary sm:size-20" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <EstadoBadge clave={clave} texto={estadoVisible.texto} className="whitespace-normal" />
+              {mia && (
+                <Badge variant="naranja" className="whitespace-normal">
+                  Estás dentro · {mia.cantidad} {u}
                 </Badge>
               )}
-              {mia && <Badge variant="naranja">Participas · {mia.cantidad} {u}</Badge>}
-              {compra.entregaEstado && (
+              {compra.entregaEstado && compra.entregaEstado !== "EN_PREPARACION" && (
                 <Badge variant={compra.entregaEstado === "RETRASADA" ? "destructive" : "secondary"}>
                   <PackageCheck /> {TEXTO_ENTREGA[compra.entregaEstado]}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-              <span className="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-lila">
+            <div>
+              <h3 className="text-lg font-bold leading-snug">{producto.nombre}</h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {producto.presentacion} · {compra.proveedor.razonSocial}
+              </p>
+            </div>
+            <p className="flex items-center gap-1.5 text-sm font-semibold">
+              <CalendarClock className="size-4 shrink-0 text-primary" /> {fraseFecha(compra)}
+            </p>
+            {llega !== null && clave !== "NO_SE_CONCRETO" && (
+              <Badge variant={llega ? "exito" : "destructive"} className="whitespace-normal">
+                {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega después de tu fecha"}
+              </Badge>
+            )}
+            <div className="space-y-1">
+              <div className="h-2 overflow-hidden rounded-full bg-lila">
                 <span
                   className={cn("block h-full rounded-full", resumen.alcanzaMinimo ? "bg-exito" : "bg-primary")}
                   style={{ width: `${Math.min(100, (compra.total / Math.max(1, compra.minimo)) * 100)}%` }}
                 />
-              </span>
-              {avance}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <Users className="mr-1 inline size-3.5" />
-              {compra.negocios} {compra.negocios === 1 ? "negocio" : "negocios"}
-            </p>
-            <p className="text-sm">
-              {clave === "NO_SE_CONCRETO" ? (
-                <>Precio en grupo: {soles(resumen.precioActual)} por {singular(u)}</>
-              ) : (
-                <>
-                  {compra.precioFinal ? "Precio final" : "Precio en grupo hoy"}: {soles(compra.precioFinal ?? resumen.precioActual)}
-                  {sim && (
-                    <>
-                      {" "}· Si te unes: {soles(sim.precioConmigo)} · Ahorro estimado{" "}
-                      <b className="text-exito">{soles(sim.ahorro.monto)}</b>
-                      <EtiquetaAhorro etiqueta={sim.ahorro.etiqueta} />
-                    </>
-                  )}
-                  {mia && mia.ahorro.monto > 0 && (
-                    <>
-                      {" "}· Tu ahorro {mia.ahorro.etiqueta === "CONFIRMADO" ? "confirmado" : "estimado"}{" "}
-                      <b className="text-exito">{soles(mia.ahorro.monto)}</b>
-                      {mia.ahorro.etiqueta !== "CONFIRMADO" && <EtiquetaAhorro etiqueta={mia.ahorro.etiqueta} />}
-                    </>
-                  )}
-                </>
-              )}
-            </p>
-            {(sim || mia) && (
+              </div>
               <p className="text-xs text-muted-foreground">
-                Tu pedido: {mia ? mia.cantidad : sim!.cantidad} {u}
+                {avance} · <Users className="inline size-3.5" /> {compra.negocios} {compra.negocios === 1 ? "negocio" : "negocios"}
               </p>
-            )}
+            </div>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t pt-2">
+              <span>
+                <span className="text-xl font-extrabold">{soles(clave === "NO_SE_CONCRETO" ? resumen.precioActual : sim ? sim.precioConmigo : precio)}</span>
+                <span className="text-sm text-muted-foreground"> por {singular(u)}</span>
+              </span>
+              {clave !== "NO_SE_CONCRETO" && sim && (
+                <span className="text-sm">
+                  Con tus {sim.cantidad} {u}: <TextoAhorro monto={sim.ahorro.monto} si />
+                </span>
+              )}
+              {clave !== "NO_SE_CONCRETO" && mia && (
+                <span className="text-sm">
+                  <TextoAhorro monto={mia.ahorro.monto} />
+                </span>
+              )}
+            </div>
           </div>
-          <ChevronRight className="mt-8 size-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="size-5 shrink-0 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5" />
         </div>
       </Card>
     </Link>
