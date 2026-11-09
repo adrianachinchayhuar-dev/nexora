@@ -66,9 +66,14 @@ NEXORA/
 | Navegación común: barra lateral, campana, menú de cuenta y barra inferior en el celular | HU-43 | todo |
 | Notificaciones con enlace, hora y «Marcar todo como leído» | HU-33 | campana |
 | Privacidad: las otras bodegas aparecen solo como un número; nadie ve tu nombre ni tu cantidad | HU-42 | todo |
-| Perfil del negocio con datos opcionales (RUC, horario, descripción) | HU-07 | `/perfil` |
+| Perfil del negocio con datos opcionales (RUC, horario, descripción), «Completa tu perfil» y resumen de actividad | HU-07 | `/perfil` |
+| Catálogo con «Mi lista»: se juntan varios productos y se guardan en un solo pedido | HU-08, HU-12 | `/catalogo` |
+| «No me interesa»: ocultar una compra en grupo (y volver a mostrarla desde el filtro «Ocultadas») | — | `/compras`, `/compras/:id` |
+| Preguntas anónimas por compra: la respuesta del proveedor la ven todas las bodegas | — | `/compras/:id`, `/mensajes` |
+| Chat privado negocio–proveedor por compra, con mensajes sin leer y actualización cada 5 s | — | `/compras/:id`, `/mensajes` |
+| Nexi, asistente por reglas: «¿Por qué mi pedido no tiene compra?», «¿Cuándo llega?», «¿Qué significa cada estado?», «¿Cuánto ahorro?», respondidas con los datos del negocio | HU-34 (parcial) | botón flotante |
 
-**Perfil proveedor mínimo** (`/proveedor`, con su propio acceso y color verde): el proveedor ingresa con su cuenta y solo ve **sus** compras en grupo. Confirma stock, precio final, fecha de entrega, costo de entrega y compromiso por retraso; avanza la entrega (en preparación → en camino → entregada, o retrasada); publica avisos y responde incidencias. Por privacidad, ve los nombres de los negocios solo cuando la compra ya está confirmada. La sección **Datos de prueba** permite sumar una bodega simulada, cerrar una compra sin confirmar y restablecer todo para la sustentación. El catálogo propio del proveedor y el perfil administrador quedan para el VI ciclo.
+**Perfil proveedor mínimo** (`/proveedor`, con su propio acceso y color verde): el proveedor ingresa con su cuenta y solo ve **sus** compras en grupo. Confirma stock, precio final, fecha de entrega, costo de entrega y compromiso por retraso; avanza la entrega (en preparación → en camino → entregada, o retrasada); publica avisos, responde incidencias y atiende **Mensajes**: las preguntas anónimas de cada compra y el chat privado con cada negocio (`/proveedor/mensajes`). Por privacidad, ve los nombres de los negocios solo cuando la compra ya está confirmada; antes, en el chat aparecen como «Bodega 1», «Bodega 2»… La sección **Datos de prueba** permite sumar una bodega simulada, cerrar una compra sin confirmar y restablecer todo para la sustentación. El catálogo propio del proveedor y el perfil administrador quedan para el VI ciclo.
 
 ---
 
@@ -141,6 +146,8 @@ Abre dos ventanas del navegador, una al lado de la otra (cada perfil guarda su s
 En cada acceso también está el botón **«Entrar con datos de prueba»**.
 
 > Si tu base se creó antes del perfil proveedor, al arrancar se agrega sola la cuenta `andina@nexora.pe`. Para que el detergente aparezca entre las compras del proveedor, entra como proveedor y usa **Datos de prueba → Restablecer** una vez (o `docker compose down -v`).
+>
+> Después de actualizar a la versión con **Mensajes**, el backend crea solo las tablas nuevas (migración `V3__mensajeria.sql`). Usa **Datos de prueba → Restablecer** una vez para cargar las preguntas y el chat de ejemplo.
 
 ### 5. Prototipo de los 3 perfiles (opcional)
 
@@ -161,14 +168,16 @@ Abre http://localhost:8000.
 4. **Proveedor** (otra ventana, se actualiza sola): el aceite aparece con **Te toca confirmar**. Confirma con un precio mayor o una fecha más tarde: en la ventana del bodeguero llega la notificación con **Acepto** o **Me retiro**.
 5. **Proveedor → Detergente**: confírmalo con el precio del tramo; queda **Confirmada** de inmediato.
 6. **Proveedor → Vasos** (confirmada): **Marcar en camino**. El bodeguero pulsa **Recibí mi pedido** y **Reportar un problema**; la incidencia aparece al proveedor, que la responde.
-7. **Proveedor → Datos de prueba → Restablecer** para empezar de nuevo; las fechas se recalculan desde hoy.
+7. **Mensajes**: en el detalle del aceite, el bodeguero hace una pregunta anónima y escribe por el chat privado. En la ventana del proveedor aparece en **Mensajes** (con contador); responde y la respuesta llega al bodeguero en unos segundos.
+8. **Nexi** (botón flotante): «¿Por qué mi pedido no tiene compra?» y «¿Cuándo llega mi pedido?».
+9. **Proveedor → Datos de prueba → Restablecer** para empezar de nuevo; las fechas se recalculan desde hoy.
 
 ---
 
 ## Pruebas
 
 ```bash
-cd backend && mvn test           # reglas de compra e intérprete de pedidos (JUnit 5)
+cd backend && mvn test           # reglas de compra, intérprete de pedidos y privacidad de la mensajería (JUnit 5)
 cd frontend && npm run build     # verificación de tipos y compilación
 cd prototipo && for t in tests/*.test.cjs; do node "$t" >/dev/null && echo "PASS $t" || echo "FAIL $t"; done
 ```
@@ -192,6 +201,11 @@ Todas las rutas empiezan con `/api`. Salvo registro, inicio de sesión, zonas y 
 | POST | `/compras/{id}/unirse`, `/retirarse`, `/aceptar-precio`, `/recibido`, `/incidencias` | Acciones del bodeguero |
 | GET | `/participaciones`, `/incidencias` | Seguimiento |
 | GET/POST | `/notificaciones`, `/notificaciones/{id}/leer`, `/notificaciones/leer-todas` | Notificaciones |
+| GET | `/mensajes` · `/compras/{id}/mensajes` | Bandeja del negocio y preguntas + chat de una compra |
+| POST | `/compras/{id}/preguntas`, `/compras/{id}/chat` | Pregunta anónima y mensaje privado al proveedor |
+| GET/POST | `/compras/ocultas` · `/compras/{id}/ocultar`, `/mostrar` | «No me interesa» |
+| GET | `/proveedor/mensajes` · `/proveedor/compras/{id}/chat/{negocioId}` | Bandeja del proveedor y chat con un negocio |
+| POST | `/proveedor/compras/{id}/chat/{negocioId}` · `/proveedor/preguntas/{id}/responder` | Respuestas del proveedor |
 | GET | `/proveedor/panel` | Panel del proveedor: sus compras, avisos e incidencias (perfil PROVEEDOR) |
 | POST | `/proveedor/compras/{id}/confirmar`, `/entrega`, `/aviso` · `/proveedor/incidencias/{id}/responder` | Acciones del proveedor |
 | POST | `/proveedor/prueba/restablecer`, `/proveedor/prueba/compras/{id}/sumar-bodega`, `/cerrar` | Datos de prueba para la sustentación |
@@ -200,7 +214,7 @@ Todas las rutas empiezan con `/api`. Salvo registro, inicio de sesión, zonas y 
 
 ## Reglas de negocio implementadas
 
-Están en `backend/src/main/java/pe/nexora/reglas/ReglasCompra.java` y tienen pruebas en `ReglasCompraTest.java`.
+Están en `backend/src/main/java/pe/nexora/reglas/` (`ReglasCompra.java`, `ReglasMensajeria.java`) y tienen pruebas en `ReglasCompraTest.java` y `ReglasMensajeriaTest.java`.
 
 - **Tramo de precio**: el que alcanza la cantidad total del grupo.
 - **Estado**: al llegar al mínimo, la compra pasa a «Esperando confirmación del proveedor»; si un retiro la deja por debajo, vuelve a «Reuniendo negocios». Unirse nunca confirma la compra. Si vence el cierre sin confirmar, queda en «No se concretó».
@@ -209,6 +223,7 @@ Están en `backend/src/main/java/pe/nexora/reglas/ReglasCompra.java` y tienen pr
 - **Ahorro neto estimado** = cantidad × (precio de referencia − precio de la compra) − costo de entrega conocido. Es **referencial** sin precio individual, **preliminar** con precio individual y **confirmado** cuando el proveedor confirmó precio y costo de entrega.
 - **Compra propuesta**: cierra a más tardar en 5 días y antes de que la entrega deje de llegar a tiempo.
 - **Unidad de venta**: «2 cajas de aceite» se convierte en 24 botellas (1 caja = 12).
+- **Mensajería**: un negocio puede preguntar o escribir en las compras de su zona o en las que participa; las preguntas son anónimas; el proveedor ve «Bodega 1, 2…» hasta que la compra se confirma y el negocio participa; si la compra no se concretó, el chat queda en solo lectura.
 
 ## Configuración
 
@@ -235,6 +250,6 @@ Están en `backend/src/main/java/pe/nexora/reglas/ReglasCompra.java` y tienen pr
 
 - Perfil proveedor completo (catálogo propio, ofertas, registro y aprobación) y perfil administrador (hoy existen en el prototipo).
 - Normalización con embeddings Sentence-BERT y pgvector (hoy: reglas).
-- Asistente conversacional con un LLM (hoy: el intérprete por reglas).
-- Chat privado comprador–proveedor y preguntas anónimas.
+- Asistente conversacional con un LLM (hoy: Nexi e intérprete por reglas).
+- Mensajería en tiempo real con WebSocket (hoy: consulta periódica cada pocos segundos).
 - Aplicación móvil en Flutter con las funciones esenciales del bodeguero.
