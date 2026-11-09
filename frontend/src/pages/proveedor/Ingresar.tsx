@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,10 @@ export default function IngresarProveedor() {
   return (
     <Marco
       imagen="/img/proveedor/hero.webp"
-      etiqueta="Portal del proveedor"
-      titulo="Ingresa a tu panel"
+      rol="PROVEEDOR"
+      insignia="Portal del proveedor"
+      puntos={["Recibe pedidos ya agrupados por zona", "Confirma solo lo que puedes cumplir", "Coordina la entrega con cada negocio"]}
+      titulo="Inicia sesión"
       subtitulo="Revisa tus compras en grupo, confirma precio y entrega, y atiende a tus clientes."
       lema="Vende por volumen a las bodegas de cada zona."
       texto="NEXORA reúne los pedidos de varias bodegas. Tú confirmas stock, precio final y fecha de entrega."
@@ -56,12 +58,6 @@ export default function IngresarProveedor() {
         <Button type="button" variant="outline" size="lg" className="h-auto min-h-12 w-full whitespace-normal py-2" disabled={enviando} onClick={() => enviar(undefined, true)}>
           <Sparkles /> Entrar con datos de prueba (Distribuidora Andina)
         </Button>
-        <p className="border-t pt-4 text-center text-sm text-muted-foreground">
-          ¿Tienes una bodega?{" "}
-          <Link to="/ingresar" className="font-semibold text-primary hover:underline">
-            Ingresa como negocio
-          </Link>
-        </p>
       </form>
     </Marco>
   );
