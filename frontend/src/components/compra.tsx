@@ -223,9 +223,13 @@ export function TarjetaCompra({ compra }: { compra: Compra }) {
 
   let avance: string;
   if (clave === "NO_SE_CONCRETO") avance = `No se juntó lo suficiente (${compra.total} de ${compra.minimo} ${u})`;
-  else if (!resumen.alcanzaMinimo) avance = `Faltan ${resumen.faltaMinimo} ${u} para que la compra salga`;
+  else if (!resumen.alcanzaMinimo)
+    avance =
+      compra.negocios === 0
+        ? `Sé la primera bodega · el grupo necesita ${resumen.faltaMinimo} ${u}`
+        : `Faltan ${resumen.faltaMinimo} ${u} para llegar al mínimo`;
   else if (pendiente && resumen.faltanSiguiente !== null && resumen.precioSiguiente !== null)
-    avance = `Ya sale ✓ · con ${resumen.faltanSiguiente} ${u} más baja a ${soles(resumen.precioSiguiente)}`;
+    avance = `Mínimo alcanzado · con ${resumen.faltanSiguiente} ${u} más baja a ${soles(resumen.precioSiguiente)}`;
   else avance = `Se juntaron ${compra.total} ${u} ✓`;
 
   return (
@@ -264,12 +268,18 @@ export function TarjetaCompra({ compra }: { compra: Compra }) {
             <div className="space-y-1">
               <div className="h-2 overflow-hidden rounded-full bg-lila">
                 <span
-                  className={cn("block h-full rounded-full", resumen.alcanzaMinimo ? "bg-exito" : "bg-primary")}
+                  className={cn("block h-full rounded-full", clave === "CONFIRMADA" ? "bg-exito" : "bg-primary")}
                   style={{ width: `${Math.min(100, (compra.total / Math.max(1, compra.minimo)) * 100)}%` }}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                {avance} · <Users className="inline size-3.5" /> {compra.negocios} {compra.negocios === 1 ? "negocio" : "negocios"}
+                {avance}
+                {compra.negocios > 0 && (
+                  <>
+                    {" "}
+                    · <Users className="inline size-3.5" /> {compra.negocios} {compra.negocios === 1 ? "bodega" : "bodegas"}
+                  </>
+                )}
               </p>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t pt-2">
@@ -280,6 +290,9 @@ export function TarjetaCompra({ compra }: { compra: Compra }) {
               {clave !== "NO_SE_CONCRETO" && sim && (
                 <span className="text-sm">
                   Con tus {sim.cantidad} {u}: <TextoAhorro monto={sim.ahorro.monto} si />
+                  {sim.ahorro.monto === 0 && resumen.precioSiguiente !== null && (
+                    <span className="text-muted-foreground"> · baja a {soles(resumen.precioSiguiente)} si se suman más bodegas</span>
+                  )}
                 </span>
               )}
               {clave !== "NO_SE_CONCRETO" && mia && (

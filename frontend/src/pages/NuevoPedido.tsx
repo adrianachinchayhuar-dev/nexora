@@ -12,7 +12,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Encabezado, Girando } from "@/components/comun";
 import { ImagenProducto } from "@/components/compra";
-import { AccionCoincidencia } from "@/pages/Pedidos";
+import { AccionCoincidencia, SituacionPedido } from "@/pages/Pedidos";
 import { post } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 import { fechaConDia, hoyLima, sumarDias } from "@/lib/formato";
@@ -409,7 +409,7 @@ export default function NuevoPedido() {
                   <div className="font-bold">
                     {n.producto.nombre} · {n.cantidad} {n.producto.unidad}
                   </div>
-                  <p className="text-sm text-muted-foreground">{n.coincidencia.mensaje}</p>
+                  <SituacionPedido n={n} />
                   <div className="mt-2">
                     <AccionCoincidencia n={n} alProponer={proponer} />
                   </div>

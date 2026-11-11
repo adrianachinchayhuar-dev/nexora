@@ -120,32 +120,36 @@ export default function Catalogo() {
                 {(() => {
                   const orden = [...p.tramos].sort((x, y) => x.desde - y.desde);
                   const solo = orden[0];
-                  const mejor = orden[orden.length - 1];
                   const u = p.unidad.replace(/s$/, "");
                   return (
                     <div className="mt-3 rounded-xl bg-muted/70 p-3">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-sm text-muted-foreground">Precio por {u}</span>
-                        <span className="whitespace-nowrap text-lg font-extrabold">{soles(solo.precio)}</span>
+                      <p className="text-xs font-bold text-primary">Precio por {u}: mientras más compra el grupo, menos pagas</p>
+                      <div className="mt-2 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${orden.length}, minmax(0,1fr))` }}>
+                        {orden.map((t, i) => {
+                          const mejorTramo = i === orden.length - 1 && orden.length > 1;
+                          const descuento = Math.round((1 - t.precio / solo.precio) * 100);
+                          return (
+                            <div
+                              key={t.desde}
+                              className={cn(
+                                "flex flex-col items-center rounded-lg px-1 py-2 text-center",
+                                i === 0 ? "bg-card" : mejorTramo ? "bg-exito-suave text-exito" : "bg-secondary",
+                              )}
+                            >
+                              <span className="text-[11px] font-semibold leading-tight text-muted-foreground">
+                                {i === 0 ? "Si compras sola" : `Grupo de ${t.desde}+`}
+                              </span>
+                              <span className={cn("whitespace-nowrap text-base font-extrabold", mejorTramo ? "text-exito" : i > 0 && "text-primary")}>
+                                {soles(t.precio)}
+                              </span>
+                              <span className="text-[11px] font-semibold">{i === 0 ? "precio normal" : `−${descuento} %`}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-sm font-semibold text-exito">En grupo, desde</span>
-                        <span className="whitespace-nowrap text-lg font-extrabold text-exito">{soles(mejor.precio)}</span>
-                      </div>
-                      <details className="mt-1 text-xs text-muted-foreground">
-                        <summary className="cursor-pointer font-semibold text-primary">Ver todos los precios</summary>
-                        <ul className="mt-1.5 space-y-0.5">
-                          {orden.map((t) => (
-                            <li key={t.desde} className="flex justify-between">
-                              <span>{t.hasta === null ? `Desde ${t.desde} ${p.unidad}` : `De ${t.desde} a ${t.hasta} ${p.unidad}`}</span>
-                              <b className="text-foreground">{soles(t.precio)}</b>
-                            </li>
-                          ))}
-                        </ul>
-                        <p className="mt-1">
-                          Para que la compra salga, el grupo debe juntar al menos {p.minimo} {p.unidad}.
-                        </p>
-                      </details>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Las cantidades son del grupo, no solo tuyas: la compra sale desde {p.minimo} {p.unidad} entre todas las bodegas.
+                      </p>
                     </div>
                   );
                 })()}

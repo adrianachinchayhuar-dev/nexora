@@ -34,7 +34,9 @@ export function Burbujas({ mensajes, yo, vacio }: { mensajes: ChatMensaje[]; yo:
         const mio = m.autor === yo;
         return (
           <div key={m.id} className={cn("flex", mio ? "justify-end" : "justify-start")}>
-            <div className={cn("max-w-[85%] rounded-2xl px-3.5 py-2 text-sm", mio ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted")}>
+            <div
+              className={cn("max-w-[85%] rounded-2xl px-3.5 py-2 text-sm", mio ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm bg-muted")}
+            >
               <p className="whitespace-pre-wrap">{m.texto}</p>
               <p className={cn("mt-0.5 text-[11px]", mio ? "text-primary-foreground/75" : "text-muted-foreground")}>{haceTiempo(m.creadoEn)}</p>
             </div>
@@ -96,12 +98,18 @@ export function CajaEscribir({
 
 type Pestana = "preguntas" | "chat";
 
-/** Preguntas anónimas y chat privado de una compra, vistos por el bodeguero. */
-export function MensajesDeCompra({ compraId, inicial = "preguntas" }: { compraId: number | string; inicial?: Pestana }) {
+/**
+ * Preguntas anónimas y chat privado de una compra, vistos por el bodeguero.
+ * `solo` muestra una sola parte: las preguntas viven en la compra y el chat en Mensajes.
+ */
+export function MensajesDeCompra({ compraId, inicial = "preguntas", solo }: { compraId: number | string; inicial?: Pestana; solo?: Pestana }) {
   const [datos, setDatos] = useState<MensajesCompra | null>(null);
-  const [pestana, setPestana] = useState<Pestana>(inicial);
+  const [eleccion, setPestana] = useState<Pestana>(solo ?? inicial);
+  const pestana = solo ?? eleccion;
   const cargar = useCallback(() => {
-    get<MensajesCompra>(`/compras/${compraId}/mensajes`).then(setDatos).catch(() => undefined);
+    get<MensajesCompra>(`/compras/${compraId}/mensajes`)
+      .then(setDatos)
+      .catch(() => undefined);
   }, [compraId]);
   useEffect(() => {
     cargar();
@@ -123,27 +131,29 @@ export function MensajesDeCompra({ compraId, inicial = "preguntas" }: { compraId
   const pendientes = datos?.preguntas.filter((p) => !p.respuesta).length ?? 0;
   return (
     <div className="space-y-4">
-      <div className="flex gap-1 rounded-full bg-muted p-1" role="tablist">
-        {(
-          [
-            ["preguntas", `Preguntas de la compra${datos ? ` (${datos.preguntas.length})` : ""}`, HelpCircle],
-            ["chat", "Chat con el proveedor", MessageCircle],
-          ] as const
-        ).map(([clave, texto, Icono]) => (
-          <button
-            key={clave}
-            role="tab"
-            aria-selected={pestana === clave}
-            onClick={() => setPestana(clave)}
-            className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors",
-              pestana === clave ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Icono className="size-4" /> {texto}
-          </button>
-        ))}
-      </div>
+      {!solo && (
+        <div className="flex gap-1 rounded-full bg-muted p-1" role="tablist">
+          {(
+            [
+              ["preguntas", `Preguntas de la compra${datos ? ` (${datos.preguntas.length})` : ""}`, HelpCircle],
+              ["chat", "Chat con el proveedor", MessageCircle],
+            ] as const
+          ).map(([clave, texto, Icono]) => (
+            <button
+              key={clave}
+              role="tab"
+              aria-selected={pestana === clave}
+              onClick={() => setPestana(clave)}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold transition-colors",
+                pestana === clave ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Icono className="size-4" /> {texto}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!datos ? (
         <div className="flex justify-center py-6 text-primary">
@@ -152,7 +162,8 @@ export function MensajesDeCompra({ compraId, inicial = "preguntas" }: { compraId
       ) : pestana === "preguntas" ? (
         <div className="space-y-3">
           <p className="flex items-start gap-2 rounded-xl bg-secondary/60 px-3 py-2 text-xs text-secondary-foreground">
-            <EyeOff className="mt-0.5 size-4 shrink-0" /> Las preguntas son anónimas: todas las bodegas de la compra ven la pregunta y la respuesta, pero nadie sabe quién preguntó.
+            <EyeOff className="mt-0.5 size-4 shrink-0" /> Las preguntas son anónimas: todas las bodegas de la compra ven la pregunta y la respuesta, pero nadie
+            sabe quién preguntó.
           </p>
           {datos.preguntas.length ? (
             <ul className="space-y-2">
@@ -176,14 +187,22 @@ export function MensajesDeCompra({ compraId, inicial = "preguntas" }: { compraId
             <p className="py-3 text-center text-sm text-muted-foreground">Aún no hay preguntas. ¡Haz la primera!</p>
           )}
           {datos.puedeEscribir && (
-            <CajaEscribir id={`pregunta-${compraId}`} placeholder="Ej: ¿Viene en caja o suelto?" boton="Preguntar" onEnviar={enviar("preguntas", "Pregunta publicada de forma anónima.")} />
+            <CajaEscribir
+              id={`pregunta-${compraId}`}
+              placeholder="Ej: ¿Viene en caja o suelto?"
+              boton="Preguntar"
+              onEnviar={enviar("preguntas", "Pregunta publicada de forma anónima.")}
+            />
           )}
-          {pendientes > 0 && <p className="text-xs text-muted-foreground">{pendientes} pregunta(s) esperan respuesta. Te avisaremos cuando el proveedor responda.</p>}
+          {pendientes > 0 && (
+            <p className="text-xs text-muted-foreground">{pendientes} pregunta(s) esperan respuesta. Te avisaremos cuando el proveedor responda.</p>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
           <p className="rounded-xl bg-secondary/60 px-3 py-2 text-xs text-secondary-foreground">
-            Chat privado con <b>{datos.proveedor.replace(/\s*\(.*\)$/, "")}</b>: úsalo para coordinar dirección, horario o detalles de tu pedido. Para dudas de todos, usa las preguntas.
+            Chat privado con <b>{datos.proveedor.replace(/\s*\(.*\)$/, "")}</b>: solo tú y el proveedor lo ven. Úsalo para coordinar dirección, horario o
+            detalles de tu pedido.
           </p>
           <Burbujas mensajes={datos.chat} yo="NEGOCIO" vacio="Todavía no le escribes al proveedor." />
           {datos.puedeEscribir ? (

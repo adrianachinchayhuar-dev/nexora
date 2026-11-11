@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { MessageCircle, Search } from "lucide-react";
+import { HelpCircle, MessageCircle, Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CargandoLista, Encabezado, ErrorCarga, Pildoras, Vacio } from "@/components/comun";
@@ -36,10 +36,14 @@ export default function Mensajes() {
 
   return (
     <div>
-      <Encabezado titulo="Mensajes" etiqueta="Conversaciones" descripcion="Habla con los proveedores de tus compras en grupo y revisa las preguntas de cada compra." />
+      <Encabezado
+        titulo="Mensajes"
+        etiqueta="Conversaciones"
+        descripcion="Tus chats privados con los proveedores. Las preguntas de cada compra están dentro de la compra en grupo."
+      />
       {error && <ErrorCarga mensaje={error} reintentar={recargar} />}
       {cargando && !datos && <CargandoLista />}
-      {datos && datos.conversaciones.length === 0 && (
+      {datos && datos.conversaciones.length === 0 && !elegida && (
         <Vacio
           icono={<MessageCircle />}
           titulo="Aún no tienes conversaciones"
@@ -51,12 +55,18 @@ export default function Mensajes() {
           }
         />
       )}
-      {datos && datos.conversaciones.length > 0 && (
+      {datos && (datos.conversaciones.length > 0 || elegida) && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
           <Card className="h-fit p-4">
             <div className="relative mb-3">
               <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar proveedor o producto…" className="rounded-full pl-10" aria-label="Buscar conversaciones" />
+              <Input
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar proveedor o producto…"
+                className="rounded-full pl-10"
+                aria-label="Buscar conversaciones"
+              />
             </div>
             <Pildoras
               etiqueta="Filtrar conversaciones"
@@ -85,7 +95,11 @@ export default function Mensajes() {
                         <p className="text-xs text-muted-foreground">{c.producto}</p>
                         <p className={cn("truncate text-sm", c.sinLeer ? "font-semibold" : "text-muted-foreground")}>{c.ultimo}</p>
                       </div>
-                      {c.sinLeer > 0 && <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-naranja text-[11px] font-bold text-white">{c.sinLeer}</span>}
+                      {c.sinLeer > 0 && (
+                        <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-naranja text-[11px] font-bold text-white">
+                          {c.sinLeer}
+                        </span>
+                      )}
                     </button>
                   </li>
                 );
@@ -93,21 +107,26 @@ export default function Mensajes() {
               {lista.length === 0 && <li className="py-4 text-center text-sm text-muted-foreground">No hay conversaciones en esta vista.</li>}
             </ul>
           </Card>
-          {actual && (
+          {elegida && (
             <Card className="p-5">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <ImagenProducto nombre={actual.producto} imagen={actual.imagen} className="size-12 bg-secondary" />
+                  {actual && <ImagenProducto nombre={actual.producto} imagen={actual.imagen} className="size-12 bg-secondary" />}
                   <div>
-                    <p className="font-bold">{actual.contraparte.replace(/\s*\(.*\)$/, "")}</p>
-                    <p className="text-sm text-muted-foreground">Proveedor · {actual.producto}</p>
+                    <p className="font-bold">{actual ? actual.contraparte.replace(/\s*\(.*\)$/, "") : "Chat con el proveedor"}</p>
+                    <p className="text-sm text-muted-foreground">{actual ? `Proveedor · ${actual.producto}` : "Nueva conversación"}</p>
                   </div>
                 </div>
-                <Link to={`/compras/${actual.compraId}`} className="text-sm font-semibold text-primary hover:underline">
-                  Ver compra en grupo
-                </Link>
+                <div className="flex flex-wrap gap-3 text-sm font-semibold">
+                  <Link to={`/compras/${elegida}#mensajes`} className="inline-flex items-center gap-1 text-primary hover:underline">
+                    <HelpCircle className="size-4" /> Preguntas de la compra
+                  </Link>
+                  <Link to={`/compras/${elegida}`} className="text-primary hover:underline">
+                    Ver compra en grupo
+                  </Link>
+                </div>
               </div>
-              <MensajesDeCompra key={actual.compraId} compraId={actual.compraId} inicial="chat" />
+              <MensajesDeCompra key={elegida} compraId={elegida} solo="chat" />
             </Card>
           )}
         </div>

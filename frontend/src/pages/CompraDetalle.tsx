@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   BadgeCheck,
+  CalendarClock,
   CheckCircle2,
   CircleAlert,
   EyeOff,
@@ -182,7 +183,7 @@ export default function CompraDetalle() {
   const [descripcion, setDescripcion] = useState("");
   const navegar = useNavigate();
   const ver = params.get("ver");
-  const [pestanaMensajes, setPestanaMensajes] = useState<"preguntas" | "chat">(ver === "mensajes" ? "chat" : "preguntas");
+  const { hash } = useLocation();
   const [oculta, setOculta] = useState(false);
 
   useEffect(() => {
@@ -192,10 +193,13 @@ export default function CompraDetalle() {
   }, [id]);
 
   useEffect(() => {
-    if (ver === "mensajes" || ver === "preguntas") {
+    // El chat privado vive en Mensajes; aquí quedan las preguntas de la compra.
+    if (ver === "mensajes") navegar(`/mensajes?compra=${id}`, { replace: true });
+    else if (ver === "preguntas" || hash === "#mensajes") {
       window.setTimeout(() => document.getElementById("mensajes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 600);
     }
-  }, [ver]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ver, hash, id]);
 
   const cargar = async (cant?: string, nec?: string) => {
     const q = new URLSearchParams();
@@ -303,10 +307,7 @@ export default function CompraDetalle() {
   const tope = Math.max(compra.minimo * 2, compra.total, compra.tramos[compra.tramos.length - 1]?.desde ?? compra.minimo);
   const pct = (n: number) => `${Math.min(100, (n / tope) * 100)}%`;
 
-  const abrirMensajes = (p: "preguntas" | "chat") => {
-    setPestanaMensajes(p);
-    window.setTimeout(() => document.getElementById("mensajes")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
-  };
+  const verPreguntas = () => document.getElementById("mensajes")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const ocultar = async () => {
     try {
@@ -336,11 +337,6 @@ export default function CompraDetalle() {
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {abierta && <Badge variant="naranja">Abierta · cierra el {fechaCorta(compra.fechaCierre)}.</Badge>}
           <EstadoBadge clave={clave} texto={estadoVisible.texto} />
-          {llega !== null && clave !== "NO_SE_CONCRETO" && (
-            <Badge variant={llega ? "exito" : "destructive"}>
-              {llega ? <CheckCircle2 /> : <TriangleAlert />} {llega ? "Llega a tiempo para tu fecha" : "Llega tarde para tu fecha"}
-            </Badge>
-          )}
           {mia && (
             <Badge variant="naranja">
               Participas con {mia.cantidad} {unidad}
@@ -356,38 +352,30 @@ export default function CompraDetalle() {
         )}
       </div>
 
-      {/* Línea de tiempo */}
-      <Card className="px-4 py-5">
-        <ol className="relative grid" style={{ gridTemplateColumns: `repeat(${requerida ? 4 : 3}, minmax(0,1fr))` }}>
-          <div className="absolute left-[12%] right-[12%] top-[9px] h-0.5 bg-lila" aria-hidden />
-          {[
-            { t: "Hoy", f: fechaCorta(compra.hoy), d: "", c: "border-primary bg-primary/20" },
-            {
-              t: compra.fechaCierre < compra.hoy ? "Cerró" : "Cierra",
-              f: fechaCorta(compra.fechaCierre),
-              d: relativo(compra.fechaCierre, compra.hoy),
-              c: "border-primary bg-primary/20",
-            },
-            { t: "Entrega", f: rangoCorto(compra.entregaDesde, compra.entregaHasta), d: "", c: "border-exito bg-exito/30" },
-            ...(requerida
-              ? [
-                  {
-                    t: "Lo necesitas para",
-                    f: fechaCorta(requerida),
-                    d: llega ? "llega a tiempo" : "llega tarde",
-                    c: llega ? "rotate-45 rounded-none border-exito bg-exito" : "rotate-45 rounded-none border-destructive bg-destructive",
-                  },
-                ]
-              : []),
-          ].map((p) => (
-            <li key={p.t} className="relative flex flex-col items-center text-center">
-              <span className={cn("z-10 size-5 rounded-full border-[3px] bg-card", p.c)} />
-              <span className={cn("mt-2 text-xs font-semibold", p.t === "Lo necesitas para" && (llega ? "text-exito" : "text-destructive"))}>{p.t}</span>
-              <span className="text-lg font-extrabold leading-tight sm:text-2xl">{p.f}</span>
-              {p.d && <span className="text-xs text-muted-foreground">{p.d}</span>}
-            </li>
-          ))}
-        </ol>
+      {/* Fechas en una sola línea */}
+      <Card className="flex flex-wrap items-center gap-x-6 gap-y-3 px-5 py-3.5">
+        <span className="flex items-center gap-2 text-sm">
+          <CalendarClock className="size-5 text-primary" />
+          <span className="text-muted-foreground">{compra.fechaCierre < compra.hoy ? "Cerró" : "Puedes unirte hasta"}</span>
+          <b className="text-base">{fechaConDia(compra.fechaCierre)}</b>
+          {compra.fechaCierre >= compra.hoy && <span className="text-xs text-muted-foreground">({relativo(compra.fechaCierre, compra.hoy)})</span>}
+        </span>
+        <span className="flex items-center gap-2 text-sm">
+          <Truck className="size-5 text-exito" />
+          <span className="text-muted-foreground">Llega</span>
+          <b className="text-base">{rangoCorto(compra.entregaDesde, compra.entregaHasta)}</b>
+        </span>
+        {requerida && clave !== "NO_SE_CONCRETO" && (
+          <span
+            className={cn(
+              "flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold",
+              llega ? "bg-exito-suave text-exito" : "bg-destructive/10 text-destructive",
+            )}
+          >
+            {llega ? <CheckCircle2 className="size-4" /> : <TriangleAlert className="size-4" />}
+            Lo necesitas el {fechaCorta(requerida)} · {llega ? "llega a tiempo" : "llega tarde"}
+          </span>
+        )}
       </Card>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_330px]">
@@ -564,6 +552,9 @@ export default function CompraDetalle() {
                 ))}
               </div>
             </div>
+            {compra.negocios === 0 && pendiente && (
+              <p className="mt-1 text-sm font-semibold text-primary">Aún no se une nadie: ¡puedes ser la primera bodega!</p>
+            )}
             <p className="mt-2 flex items-start gap-2 text-xs text-muted-foreground">
               <EyeOff className="mt-0.5 size-4 shrink-0" />
               Nadie ve el nombre de tu bodega ni tu cantidad; el proveedor los verá solo si la compra se confirma.
@@ -653,11 +644,11 @@ export default function CompraDetalle() {
           <Card id="mensajes" className="scroll-mt-20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <MessageCircle className="size-5 text-primary" /> Preguntas y mensajes
+                <HelpCircle className="size-5 text-primary" /> Preguntas de la compra
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <MensajesDeCompra compraId={compra.id} inicial={pestanaMensajes} />
+              <MensajesDeCompra compraId={compra.id} solo="preguntas" />
             </CardContent>
           </Card>
         </div>
@@ -784,7 +775,11 @@ export default function CompraDetalle() {
               <div className="text-sm">
                 <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Te vende</p>
                 <p className="font-bold">{nombreProveedor}</p>
-                <p className="text-muted-foreground">{compra.negocios} negocios ya se unieron</p>
+                <p className="text-muted-foreground">
+                  {compra.negocios === 0
+                    ? "Aún no se une ninguna bodega"
+                    : `${compra.negocios} ${compra.negocios === 1 ? "bodega ya se unió" : "bodegas ya se unieron"}`}
+                </p>
                 {proveedor.puntualidad !== null ? (
                   <p className="flex items-center gap-1 text-muted-foreground">
                     <Star className="size-3.5 fill-naranja text-naranja" /> Entregó a tiempo {proveedor.entregasATiempo} de {proveedor.entregasTotal} compras ·{" "}
@@ -799,10 +794,10 @@ export default function CompraDetalle() {
               </div>
             </div>
             <div className="mt-3 grid gap-2">
-              <Button variant="outline" onClick={() => abrirMensajes("chat")}>
-                <MessageCircle /> Escribir al proveedor
+              <Button variant="outline" onClick={() => navegar(`/mensajes?compra=${compra.id}`)}>
+                <MessageCircle /> Escribir al proveedor (chat privado)
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => abrirMensajes("preguntas")}>
+              <Button variant="ghost" size="sm" onClick={verPreguntas}>
                 <HelpCircle /> Ver o hacer preguntas
               </Button>
             </div>

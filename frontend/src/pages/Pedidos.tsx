@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowRight, CalendarClock, CheckCircle2, ClipboardList, Pencil, Plus, Search, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRight, CalendarClock, CheckCircle2, CircleSlash, ClipboardList, Info, Pencil, Plus, Search, Sparkles, Trash2, TriangleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,6 +28,31 @@ const ESTADO: Record<
   CANCELADA: { texto: "Cancelado", variante: "muted" },
 };
 
+/** La situación de cada pedido en una frase corta, con color e icono (el detalle está en la compra). */
+const SITUACION: Record<string, { texto: (n: Necesidad) => string; clase: string; Icono: typeof Info }> = {
+  COMPRA: { texto: () => "Hay una compra en grupo para ti", clase: "bg-exito-suave text-exito", Icono: CheckCircle2 },
+  UNIDO: {
+    texto: (n) => (n.estado === "ATENDIDA" ? "Pedido recibido" : "Ya estás en una compra en grupo"),
+    clase: "bg-secondary text-primary",
+    Icono: CheckCircle2,
+  },
+  TARDE: { texto: () => "Hay una compra, pero llegaría después de tu fecha", clase: "bg-destructive/10 text-destructive", Icono: TriangleAlert },
+  PROPONER: { texto: () => "Aún no hay compra en grupo: propón una y otras bodegas se suman", clase: "bg-naranja-suave text-naranja-tinta", Icono: Info },
+  SIN_OFERTA: { texto: () => "Por ahora ningún proveedor llega a tiempo a tu zona", clase: "bg-muted text-muted-foreground", Icono: CircleSlash },
+  CANCELADA: { texto: () => "Pedido cancelado", clase: "bg-muted text-muted-foreground", Icono: CircleSlash },
+};
+
+export function SituacionPedido({ n }: { n: Necesidad }) {
+  const s = SITUACION[n.coincidencia.tipo];
+  // La regla de marca necesita el detalle del backend (qué marca pediste y cuál se ofrece).
+  if (!s) return <p className="text-sm">{n.coincidencia.mensaje}</p>;
+  return (
+    <p className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold ${s.clase}`}>
+      <s.Icono className="size-4 shrink-0" /> {s.texto(n)}
+    </p>
+  );
+}
+
 export function AccionCoincidencia({ n, alProponer }: { n: Necesidad; alProponer: (n: Necesidad) => void }) {
   const c = n.coincidencia;
   switch (c.tipo) {
@@ -35,7 +60,7 @@ export function AccionCoincidencia({ n, alProponer }: { n: Necesidad; alProponer
       return (
         <Button asChild size="sm">
           <Link to={`/compras/${c.compraId}?pedido=${n.id}`}>
-            Ver compra y unirme <ArrowRight />
+            Ver y unirme <ArrowRight />
           </Link>
         </Button>
       );
@@ -54,7 +79,7 @@ export function AccionCoincidencia({ n, alProponer }: { n: Necesidad; alProponer
     case "PROPONER":
       return (
         <Button size="sm" variant="naranja" onClick={() => alProponer(n)}>
-          <Plus /> Proponer compra en grupo
+          <Plus /> Proponer compra
         </Button>
       );
     default:
@@ -247,9 +272,9 @@ export default function Pedidos() {
                           </span>
                         )}
                       </p>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        <CalendarClock className="mr-1 inline size-4" />
-                        Lo necesitas para el <span className="font-semibold text-foreground">{fechaConDia(n.fechaRequerida)}</span>
+                      <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg bg-secondary px-2.5 py-1 text-sm text-primary">
+                        <CalendarClock className="size-4" />
+                        Lo necesitas para el <b>{fechaConDia(n.fechaRequerida)}</b>
                       </p>
                     </div>
                     {n.estado === "ACTIVA" && (
@@ -263,8 +288,8 @@ export default function Pedidos() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-3 flex flex-col gap-2 rounded-xl bg-muted p-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm">{n.coincidencia.mensaje}</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <SituacionPedido n={n} />
                     <AccionCoincidencia n={n} alProponer={proponer} />
                   </div>
                 </Card>
