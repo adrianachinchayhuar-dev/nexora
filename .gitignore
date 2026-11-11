@@ -12,3 +12,4 @@ backend/data/
 # Variables locales
 .env
 *.local
+backend/.idea/
